@@ -1,0 +1,18 @@
+<launch>
+
+  <!-- start openni kinect drivers -->
+  <include file="$(find openni_camera)/launch/openni_kinect.launch" />
+
+  <!-- start openni_tracker -->
+  <node pkg="openni_tracker" type="openni_tracker" name="openni_tracker" />
+
+  <!-- start rh2 simulation in gazebo -->
+  <include file="$(find reem_teleop)/launch/reem_teleop_empty_world.launch" />
+  
+  <!-- start rviz -->
+  <node pkg="rviz" type="rviz" output="screen" name="rviz" args="-d $(find reem_teleop)/rviz_config_reem_teleop.vcg" />
+
+  <!-- start motion adaption node -->
+  <!-- <node pkg="motion_adaption" type="motion_adaption_node" name="motion_adaption_node" /> -->   
+
+</launch>

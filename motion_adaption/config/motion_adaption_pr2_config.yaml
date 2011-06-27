@@ -1,0 +1,59 @@
+motion_adaption_node:
+
+  wait_for_tf_in_sec:           0.5
+  world_ref_frame_name:         /openni_depth_optical_frame
+
+  user:
+    torso_frame_name:           /torso
+    head_frame_name:            /head
+    right_shoulder_frame_name:  /right_shoulder
+    right_elbow_frame_name:     /right_elbow
+    right_hand_frame_name:      /right_hand
+    left_shoulder_frame_name:   /left_shoulder
+    left_elbow_frame_name:      /left_elbow
+    left_hand_frame_name:       /left_hand
+
+  robot:
+    base_frame_name:            /base_link
+    torso_ref_frame_name:       /pr2_torso
+    head_frame_name:            /head_tilt_link
+    right_shoulder_frame_name:  /r_shoulder_pan_link
+    right_elbow_frame_name:     /r_forearm_link
+    right_hand_frame_name:      /r_gripper_palm_link  
+    left_shoulder_frame_name:   /l_shoulder_pan_link
+
+  # define roations of orientations by roll pitch yaw
+  rotation_angles:
+    # align the orientation of the user torso with robot torso
+    # i.e.: user bends foward -> ref frame rotates forward
+    ref_frame_rot:
+      r:                        rad(0.5 * pi)
+      p:                        0.0
+      y:                        rad(0.5 * -pi)
+    # align adjusted frames with goal frames
+    goals:
+      torso_goal_rot:
+        r:                      rad(pi)
+        p:                      rad(0.5 * pi)
+        y:                      0.0
+      head_goal_rot:
+        r:                      rad(0.5 * -pi)
+        p:                      rad(0.5 * pi)
+        y:                      0.0
+      right_elbow_goal_rot:
+        r:                      rad(pi)
+        p:                      0.0
+        y:                      rad(pi)
+      right_hand_goal_rot:
+        r:                      0.0
+        p:                      rad(0.5 * pi)
+        y:                      0.0
+      left_elbow_goal_rot:
+        r:                      0.0
+        p:                      rad(pi)
+        y:                      0.0
+      left_hand_goal_rot:
+        r:                      0.0
+        p:                      rad(0.5 * -pi)
+        y:                      0.0     
+                    
