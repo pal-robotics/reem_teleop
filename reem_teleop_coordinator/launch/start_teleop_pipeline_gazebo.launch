@@ -1,0 +1,16 @@
+<launch>
+    <!-- step 1: load parameters onto the server -->
+    <rosparam command="load" file="$(find reem_teleop_coordinator)/config/reem_teleop_config.yaml" />
+    
+    <!-- step 2: motion adaption node -->
+    <node pkg="motion_adaption" type="motion_adaption_node" name="motion_adaption_node" />
+
+    <!-- step 3: the kinematics node -->
+    <node pkg="tree_kinematics" type="tree_kinematics_node" name="tree_kinematics_node" />
+    
+    <!-- step 4: the start tree_joint_controller -->
+    <node pkg="pr2_controller_manager" type="spawner" args="joint_position_controller" name="pr2_controller_manger" />
+
+    <!-- step 5: the reem teleop coordinator -->
+    <node pkg="reem_teleop_coordinator" type="reem_teleop_coordinator_node" name="reem_teleop_coordinator_node" />
+</launch>    

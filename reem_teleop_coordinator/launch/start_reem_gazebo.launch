@@ -1,8 +1,13 @@
 <launch>
+
   <!-- start gazebo with an empty plane -->
   <param name="/use_sim_time" value="true" />
   <node name="gazebo" pkg="gazebo" type="gazebo" args="$(find gazebo_worlds)/worlds/empty.world" respawn="false" />
 
   <!-- start Reem-H2 without any defaut controllers -->
   <include file="$(find rh2_gazebo)/launch/rh2_no_controllers.launch" />
+  
+  <!-- start environment server (for self-collision checking)-->
+  <include file="$(find rh2_3dnav)/launch/trajectory_validator.launch" />
+  
 </launch>
