@@ -1,0 +1,17 @@
+<stack>
+  <description brief="reem_teleop">reem_teleop</description>
+    A stack for teleoperating REEM using the Kinect
+  <author>Maintained by Marcus Liebhardt</author>
+  <license>BSD</license>  
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/reem_teleop</url>
+  <depend stack="common_msgs" /> <!-- sensor_msgs, geometry_msgs -->
+  <depend stack="geometry" /> <!-- tf, eigen, bullet -->
+  <depend stack="kinematics" /> <!-- kinematics_msgs -->
+  <depend stack="motion_planning_common" /> <!-- motion_planning_msgs -->
+  <depend stack="motion_planning_environment" /> <!-- planning_environment_msgs -->
+  <depend stack="orocos_kinematics_dynamics" /> <!-- orocos_kdl -->
+  <depend stack="robot_model" /> <!-- urdf -->
+  <depend stack="ros" /> <!-- roscpp -->
+
+</stack>
