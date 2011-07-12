@@ -149,19 +149,19 @@ int main(int argc, char** argv)
   
   // service client for IK calculations
   tree_kinematics::get_tree_position_ik tree_ik_srv;
-  ros::ServiceClient tree_ik_srv_client = nh.serviceClient<tree_kinematics::get_tree_position_ik>
-  (IK_SERVICE, true);
+  //ros::ServiceClient tree_ik_srv_client = nh.serviceClient<tree_kinematics::get_tree_position_ik>
+  //(IK_SERVICE, true);
 
   // service client for FK calculations
   kinematics_msgs::GetPositionFK tree_fk_srv;
-  ros::ServiceClient tree_fk_srv_client = nh.serviceClient<kinematics_msgs::GetPositionFK>
-  (FK_SERVICE, true);
+  //ros::ServiceClient tree_fk_srv_client = nh.serviceClient<kinematics_msgs::GetPositionFK>
+  //(FK_SERVICE, true);
   
   // service client for self-collision and joint limits checking
   planning_environment_msgs::GetStateValidity::Request state_val_req;
   planning_environment_msgs::GetStateValidity::Response state_val_res;  
-  ros::ServiceClient check_state_validity_client = nh.serviceClient<planning_environment_msgs::GetStateValidity>
-  (CC_SERVICE, true);
+  //ros::ServiceClient check_state_validity_client = nh.serviceClient<planning_environment_msgs::GetStateValidity>
+  //(CC_SERVICE, true);
   bool no_self_collision = false;
   bool check_self_collision, check_joint_limits = true;
   nh_private.param("check_self_collision", check_self_collision, true);
@@ -194,27 +194,40 @@ int main(int argc, char** argv)
   double cjp_duration_median = 0.0;
   
   ros::service::waitForService(IK_SERVICE);
-  ros::service::waitForService(FK_SERVICE);  
+  ros::ServiceClient tree_ik_srv_client = nh.serviceClient<tree_kinematics::get_tree_position_ik>
+  (IK_SERVICE, true);
+  
+  ros::service::waitForService(FK_SERVICE);
+  ros::ServiceClient tree_fk_srv_client = nh.serviceClient<kinematics_msgs::GetPositionFK>
+  (FK_SERVICE, true);
+  
   ros::service::waitForService(CC_SERVICE);
+  ros::ServiceClient check_state_validity_client = nh.serviceClient<planning_environment_msgs::GetStateValidity>
+  (CC_SERVICE, true);
   
   while (nh.ok())
   {
     ros::spinOnce();
-
-    if (joint_states_valid == true)
+    
+    // transform goal frames into pose messages      
+    std::map<std::string, geometry_msgs::PoseStamped>::iterator poses_it;
+    geometry_msgs::PoseStamped pose;
+    bool goal_transforms_valid = true;
+    for(poses_it = poses.begin(); poses_it != poses.end(); ++poses_it)
+    {
+      if(getGoalTransform(tf_listener, root_frame_name, poses_it->first, pose))
+        poses_it->second = pose;
+      else
+      {
+        ROS_WARN_THROTTLE(0.5, "No valid transformation available for endpoint goal '%s'", poses_it->first.c_str());
+        ROS_WARN_THROTTLE(0.5, "No commands will be calculated.");
+        goal_transforms_valid = false;
+      }
+    }
+    
+    if (joint_states_valid && goal_transforms_valid
     {
       // IK calculations
-
-      // transform goal frames into pose messages      
-      std::map<std::string, geometry_msgs::PoseStamped>::iterator poses_it;
-      geometry_msgs::PoseStamped pose;
-      for(poses_it = poses.begin(); poses_it != poses.end(); ++poses_it)
-      {
-        if(getGoalTransform(tf_listener, root_frame_name, poses_it->first, pose))
-          poses_it->second = pose;
-        else
-          ROS_WARN_THROTTLE(0.5, "No valid transformation available for endpoint goal '%s'", poses_it->first.c_str());
-      }
 
       // feed pose messages for every endpoint into the request
       tree_ik_srv.request.pos_ik_request.clear();
@@ -331,13 +344,15 @@ int main(int argc, char** argv)
       tree_fk_srv.request.header.frame_id = "/base_footprint";      
       tree_fk_srv.request.robot_state.joint_state = tree_ik_srv.response.solution.joint_state;
       tree_fk_srv.request.robot_state.joint_state = *joint_states_ptr;                  
-      tree_fk_srv.request.fk_link_names.resize(6);
-      tree_fk_srv.request.fk_link_names[0] = "arm_right_4_link";
-      tree_fk_srv.request.fk_link_names[1] = "palm_right_link";
-      tree_fk_srv.request.fk_link_names[2] = "arm_left_4_link";      
-      tree_fk_srv.request.fk_link_names[3] = "palm_left_link";
-      tree_fk_srv.request.fk_link_names[4] = "head_2_link";
-      tree_fk_srv.request.fk_link_names[5] = "torso_2_link";      
+      tree_fk_srv.request.fk_link_names.resize(8);
+      tree_fk_srv.request.fk_link_names[0] = "arm_right_2_link";
+      tree_fk_srv.request.fk_link_names[1] = "arm_right_4_link";
+      tree_fk_srv.request.fk_link_names[2] = "palm_right_link";
+      tree_fk_srv.request.fk_link_names[3] = "arm_left_2_link";      
+      tree_fk_srv.request.fk_link_names[4] = "arm_left_4_link";      
+      tree_fk_srv.request.fk_link_names[5] = "palm_left_link";
+      tree_fk_srv.request.fk_link_names[6] = "head_2_link";
+      tree_fk_srv.request.fk_link_names[7] = "torso_2_link";      
       if (tree_fk_srv_client.call(tree_fk_srv))
       {
         if(tree_fk_srv.request.fk_link_names.size() == tree_fk_srv.response.pose_stamped.size())
