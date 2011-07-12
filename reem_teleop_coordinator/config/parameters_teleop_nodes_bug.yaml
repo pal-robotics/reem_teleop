@@ -25,15 +25,36 @@ motion_adaption_node:
   rotation_angles:
     # align the orientation of the user torso with robot torso
     # i.e.: user bends foward -> ref frame rotates forward
-    ref_frame_rot: {p: 0.0, r: 1.5707963267948966, y: -1.5707963267948966}  
+    ref_frame_rot:
+      r:                        rad(0.5 * pi)
+      p:                        0.0
+      y:                        rad(0.5 * -pi)
     # align adapted frames with goal frames
     goals:
-      torso_goal_rot: {p: 1.5707963267948966, r: 3.1415926535897931, y: 0.0}
-      head_goal_rot: {p: 1.5707963267948966, r: 3.1415926535897931, y: 0.0}
-      right_elbow_goal_rot: {p: 0.0, r: 3.1415926535897931, y: 3.1415926535897931}
-      right_hand_goal_rot: {p: 1.5707963267948966, r: 0.0, y: 0.0}
-      left_elbow_goal_rot: {p: 3.1415926535897931, r: 0.0, y: 0.0}
-      left_hand_goal_rot: {p: -1.5707963267948966, r: 0.0, y: 0.0}
+      torso_goal_rot:
+        r:                      rad(pi)
+        p:                      rad(0.5 * pi)
+        y:                      0.0
+      head_goal_rot:
+        r:                      rad(pi)
+        p:                      rad(0.5 * pi)
+        y:                      0.0
+      right_elbow_goal_rot:
+        r:                      rad(pi)
+        p:                      0.0
+        y:                      rad(pi)
+      right_hand_goal_rot:
+        r:                      0.0
+        p:                      rad(0.5 * pi)
+        y:                      0.0
+      left_elbow_goal_rot:
+        r:                      0.0
+        p:                      rad(pi)
+        y:                      0.0
+      left_hand_goal_rot:
+        r:                      0.0
+        p:                      rad(0.5 * -pi)
+        y:                      0.0    
 
 #----------------------------------------------------------------------------------------------------------------------#
 
