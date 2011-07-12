@@ -1,6 +1,6 @@
 <launch>
   
   <!-- load parameters onto the parameter server -->
-  <rosparam command="load" file="$(find reem_teleop_coordinator)/config/reem_teleop_config.yaml" />
+  <rosparam command="load" file="$(find reem_teleop_coordinator)/config/parameters_teleop_nodes.yaml" />
   
 </launch>

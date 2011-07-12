@@ -1,5 +1,9 @@
 <launch>
 
+  <!-- start environment server (for self-collision checking)-->
+  <!-- Load URDF in param server -->
+  <include file="$(find rh2_description)/robots/upload_rh2.launch" />
+
   <!-- start gazebo with an empty plane -->
   <param name="/use_sim_time" value="true" />
   <node name="gazebo" pkg="gazebo" type="gazebo" args="$(find gazebo_worlds)/worlds/empty.world" respawn="false" />
@@ -8,7 +12,9 @@
   <include file="$(find rh2_gazebo)/launch/rh2_no_controllers.launch" />
   
   <!-- start environment server (for self-collision checking)-->
-  <include file="$(find rh2_3dnav)/launch/trajectory_validator.launch" />
+  <!-- <include file="$(find rh2_3dnav)/launch/trajectory_validator.launch" /> -->
+  <!-- Arm navigation -->
+  <include file="$(find rh2_3dnav)/launch/upper_body_navigation.launch"/>
   
   <!-- start the joint position controller (stopped) -->
   <include file="$(find reem_teleop_coordinator)/launch/start_joint_position_controller.launch" />
