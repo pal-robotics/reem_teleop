@@ -4,10 +4,13 @@
   <param name="/use_sim_time" value="true" />
   <node name="gazebo" pkg="gazebo" type="gazebo" args="$(find gazebo_worlds)/worlds/empty.world" respawn="false" />
 
-  <!-- start Reem-H2 without any defaut controllers -->
+  <!-- start reem without any defaut controllers -->
   <include file="$(find rh2_gazebo)/launch/rh2_no_controllers.launch" />
   
   <!-- start environment server (for self-collision checking)-->
   <include file="$(find rh2_3dnav)/launch/trajectory_validator.launch" />
+  
+  <!-- start the joint position controller (stopped) -->
+  <include file="$(find reem_teleop_coordinator)/launch/start_joint_position_controller.launch" />
   
 </launch>

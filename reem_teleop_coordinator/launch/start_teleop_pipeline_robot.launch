@@ -1,8 +1,5 @@
 <launch>
 
-  <!-- start reem motion planning pipeline -->
-  <include file="$(find rh2_3dnav)/launch/trajectory_validator.launch" />
-  
   <!-- start kinect -->
   <include file="$(find reem_teleop_coordinator)/launch/start_kinect.launch" />
   
