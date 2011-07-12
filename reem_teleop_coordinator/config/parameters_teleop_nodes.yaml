@@ -18,7 +18,7 @@ motion_adaption_node:
     head_frame_name:              /head_2_link    
     right_shoulder_frame_name:    /arm_right_2_link
     right_elbow_frame_name:       /arm_right_4_link
-    right_hand_frame_name:        /hand_right_link    
+    right_hand_frame_name:        /palm_right_link    
     left_shoulder_frame_name:     /arm_left_2_link
     
   # define roations of orientations by roll pitch yaw
