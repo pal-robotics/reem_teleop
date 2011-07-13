@@ -225,7 +225,7 @@ int main(int argc, char** argv)
       }
     }
     
-    if (joint_states_valid && goal_transforms_valid
+    if (joint_states_valid && goal_transforms_valid)
     {
       // IK calculations
 
