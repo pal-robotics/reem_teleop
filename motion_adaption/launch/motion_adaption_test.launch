@@ -6,7 +6,7 @@
   <!-- start openni_tracker -->
   <node pkg="openni_tracker" type="openni_tracker" name="openni_tracker" />
 
-  <!-- start rh2 simulation in gazebo -->
+  <!-- start reem simulation in gazebo -->
   <include file="$(find reem_teleop)/launch/reem_teleop_empty_world.launch" />
   
   <!-- start rviz -->
