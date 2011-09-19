@@ -1,0 +1,9 @@
+<launch>
+
+  <!-- start rviz for visualizing the kinect input-->
+  <node pkg="rviz" type="rviz" output="screen" name="rviz_kinect" args="-d $(find reem_teleop_coordinator)/config/rviz_config_kinect.vcg" />
+  
+  <!-- start rviz for visualizing reem and the teleoperation pipeline output-->
+  <node pkg="rviz" type="rviz" output="screen" name="rviz_reem" args="-d $(find reem_teleop_coordinator)/config/rviz_config_reem.vcg" />
+  
+</launch>    

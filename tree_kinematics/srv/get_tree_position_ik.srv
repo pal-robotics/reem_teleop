@@ -1,0 +1,13 @@
+# A service call to carry out an inverse kinematics computation for tree structured kinematics
+# It consists of a kinematics_msgs/PositionIKRequest fpr every specified endpoint
+
+# The inverse kinematics request
+kinematics_msgs/PositionIKRequest[] pos_ik_request
+
+---
+
+# The returned solution 
+# (in the same order as the list of joints specified in the IKRequest message)
+motion_planning_msgs/RobotState solution
+
+motion_planning_msgs/ArmNavigationErrorCodes error_code

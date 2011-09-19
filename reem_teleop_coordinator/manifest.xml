@@ -1,0 +1,24 @@
+<package>
+  <description brief="reem_teleop_coordinator">
+
+     reem_teleop_coordinator
+
+  </description>
+  <author>Marcus Liebhardt</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/reem_teleop</url>
+  <depend package="geometry_msgs"/>
+  <depend package="kdl_parser"/>
+  <depend package="kinematics_msgs"/>
+  <depend package="orocos_kdl"/>
+  <depend package="planning_environment_msgs"/>
+  <depend package="roscpp"/>
+  <depend package="sensor_msgs"/>
+  <depend package="tf"/>
+  <depend package="tf_conversions"/>
+  <!-- <depend package="joint_position_controller"/>  -->
+  <depend package="tree_kinematics"/>
+</package>
+
+

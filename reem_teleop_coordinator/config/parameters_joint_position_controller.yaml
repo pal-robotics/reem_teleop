@@ -1,0 +1,87 @@
+joint_position_controller:
+
+  type: joint_position_controller/JointPositionController
+
+  robot_description: /robot_description
+
+  limit_error: false
+
+  q_err_max: 0.01
+  q_err_dot_max_factor: 2.0
+
+  PGain: 500.0
+  DGain: 200000.0
+  DGainFactor: 0.7
+  
+  Kp_0:  0.5
+  Kp_1:  0.5
+  Kp_2:  0.5
+  Kp_3:  0.5
+  Kp_4:  1.5
+  Kp_5:  1.5
+  Kp_6:  1.0
+  Kp_7:  1.0
+  Kp_8:  0.9
+  Kp_9:  0.9
+  Kp_10: 0.6
+  Kp_11: 0.6
+  Kp_12: 0.6
+  Kp_13: 1.0
+  Kp_14: 1.0
+  Kp_15: 0.9
+  Kp_16: 0.9
+  Kp_17: 0.6
+  Kp_18: 0.6
+  Kp_19: 0.6
+  Kp_20: 0.6
+  Kp_21: 0.6
+
+  Kd_0:  0.5
+  Kd_1:  0.5
+  Kd_2:  0.5
+  Kd_3:  0.5
+  Kd_4:  1.5
+  Kd_5:  1.5
+  Kd_6:  1.0
+  Kd_7:  1.0
+  Kd_8:  0.9
+  Kd_9:  0.9
+  Kd_10: 0.6
+  Kd_11: 0.6
+  Kd_12: 0.6
+  Kd_13: 1.0
+  Kd_14: 1.0
+  Kd_15: 0.9
+  Kd_16: 0.9
+  Kd_17: 0.6
+  Kd_18: 0.6
+  Kd_19: 0.6
+  Kd_20: 0.6
+  Kd_21: 0.6
+  
+  tau_max_value: 80.0
+  tau_max_factor_0:  0.0
+  tau_max_factor_1:  0.0
+  tau_max_factor_2:  0.0
+  tau_max_factor_3:  0.0
+  tau_max_factor_4:  1.5
+  tau_max_factor_5:  1.5
+  tau_max_factor_6:  1.0
+  tau_max_factor_7:  1.0
+  tau_max_factor_8:  0.9
+  tau_max_factor_9:  0.9
+  tau_max_factor_10: 0.6
+  tau_max_factor_11: 0.6
+  tau_max_factor_12: 0.6
+  tau_max_factor_13: 1.0
+  tau_max_factor_14: 1.0
+  tau_max_factor_15: 0.9
+  tau_max_factor_16: 0.9
+  tau_max_factor_17: 0.6
+  tau_max_factor_18: 0.6
+  tau_max_factor_19: 0.6
+  tau_max_factor_20: 0.6
+  tau_max_factor_21: 0.6
+  tau_max_factor_22: 0.5
+  tau_max_factor_23: 0.5
+  

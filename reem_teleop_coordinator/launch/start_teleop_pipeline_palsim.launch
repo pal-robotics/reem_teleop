@@ -1,0 +1,15 @@
+<launch>
+
+  <!-- start reem motion planning pipeline -->
+  <include file="$(find reem_3dnav)/launch/trajectory_validator.launch" />
+  
+  <!-- start kinect -->
+  <include file="$(find reem_teleop_coordinator)/launch/start_kinect.launch" />
+  
+  <!-- start teleop nodes -->
+  <include file="$(find reem_teleop_coordinator)/launch/start_teleop_nodes.launch" />
+  
+  <!-- start rviz -->
+  <include file="$(find reem_teleop_coordinator)/launch/start_rviz.launch" />
+  
+</launch>    

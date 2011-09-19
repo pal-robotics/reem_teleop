@@ -1,0 +1,15 @@
+<launch>
+
+  <!-- load parameters for the nodes onto the parameter server -->
+  <include file="$(find reem_teleop_coordinator)/launch/load_teleop_nodes_parameters.launch" />
+
+  <!-- motion adaption node -->
+  <node pkg="motion_adaption" type="motion_adaption_node" name="motion_adaption_node" />
+
+  <!-- the kinematics node -->
+  <node pkg="tree_kinematics" type="tree_kinematics_node" name="tree_kinematics_node" />
+
+  <!-- the reem teleop coordinator node -->
+  <node pkg="reem_teleop_coordinator" type="reem_teleop_coordinator_node" name="reem_teleop_coordinator_node" />
+    
+</launch>    

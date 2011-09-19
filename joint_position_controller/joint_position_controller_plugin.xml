@@ -1,0 +1,5 @@
+<library path="lib/libjoint_position_controller">
+  <class name="joint_position_controller/JointPositionController" 
+         type="JointPositionController" 
+         base_class_type="pr2_controller_interface::Controller" />
+</library>

@@ -1,0 +1,15 @@
+<launch>
+
+  <!-- start reem in gazebo -->
+  <include file="$(find reem_teleop_coordinator)/launch/start_reem_gazebo.launch" />
+  
+  <!-- start kinect -->
+  <include file="$(find reem_teleop_coordinator)/launch/start_kinect.launch" />
+  
+  <!-- start teleop nodes -->
+  <include file="$(find reem_teleop_coordinator)/launch/start_teleop_nodes.launch" />
+  
+  <!-- start rviz -->
+  <include file="$(find reem_teleop_coordinator)/launch/start_rviz.launch" />
+  
+</launch>    

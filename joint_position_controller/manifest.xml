@@ -1,0 +1,24 @@
+<package>
+  <description brief="joint_position_controller">
+
+     joint_position_controller
+
+  </description>
+  <author>Marcus Liebhardt</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/tree_joint_controller</url>
+  <depend package="geometry_msgs"/>
+  <depend package="sensor_msgs"/>
+  <depend package="orocos_kdl"/>
+  <depend package="pluginlib"/>
+  <depend package="pr2_controller_interface"/>
+  <depend package="pr2_mechanism_model"/>  
+  <depend package="roscpp"/>
+  <export>
+    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -ljoint_position_controller -Wl,-rpath,${prefix}"/>    
+    <pr2_controller_interface plugin="${prefix}/joint_position_controller_plugin.xml"/>
+  </export>
+</package>
+
+
