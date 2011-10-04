@@ -347,10 +347,10 @@ int main(int argc, char** argv)
       tree_fk_srv.request.fk_link_names.resize(8);
       tree_fk_srv.request.fk_link_names[0] = "arm_right_2_link";
       tree_fk_srv.request.fk_link_names[1] = "arm_right_4_link";
-      tree_fk_srv.request.fk_link_names[2] = "palm_right_link";
+      tree_fk_srv.request.fk_link_names[2] = "hand_right_link";
       tree_fk_srv.request.fk_link_names[3] = "arm_left_2_link";      
       tree_fk_srv.request.fk_link_names[4] = "arm_left_4_link";      
-      tree_fk_srv.request.fk_link_names[5] = "palm_left_link";
+      tree_fk_srv.request.fk_link_names[5] = "hand_left_link";
       tree_fk_srv.request.fk_link_names[6] = "head_2_link";
       tree_fk_srv.request.fk_link_names[7] = "torso_2_link";      
       if (tree_fk_srv_client.call(tree_fk_srv))

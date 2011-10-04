@@ -1,7 +1,7 @@
 motion_adaption_node:
 
   wait_for_tf_in_sec:             0.5
-  world_ref_frame_name:           /openni_depth_optical_frame
+  world_ref_frame_name:           /openni_depth_frame
   user:
     torso_frame_name:             /torso
     head_frame_name:              /head
@@ -18,7 +18,7 @@ motion_adaption_node:
     head_frame_name:              /head_2_link    
     right_shoulder_frame_name:    /arm_right_2_link
     right_elbow_frame_name:       /arm_right_4_link
-    right_hand_frame_name:        /palm_right_link    
+    right_hand_frame_name:         /arm_right_7_link   
     left_shoulder_frame_name:     /arm_left_2_link
     
   # define roations of orientations by roll pitch yaw
