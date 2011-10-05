@@ -3,14 +3,14 @@ motion_adaption_node:
   wait_for_tf_in_sec:             0.5
   world_ref_frame_name:           /openni_depth_frame
   user:
-    torso_frame_name:             /torso_filtered
-    head_frame_name:              /head_filtered
-    right_shoulder_frame_name:    /right_shoulder_filtered
-    right_elbow_frame_name:       /right_elbow_filtered
-    right_hand_frame_name:        /right_hand_filtered
-    left_shoulder_frame_name:     /left_shoulder_filtered
-    left_elbow_frame_name:        /left_elbow_filtered
-    left_hand_frame_name:         /left_hand_filtered
+    torso_frame_name:             /torso
+    head_frame_name:              /head
+    right_shoulder_frame_name:    /right_shoulder
+    right_elbow_frame_name:       /right_elbow
+    right_hand_frame_name:        /right_hand
+    left_shoulder_frame_name:     /left_shoulder
+    left_elbow_frame_name:        /left_elbow
+    left_hand_frame_name:         /left_hand
   robot:
     base_frame_name:              /base_link
     torso_ref_frame_name:         /torso_1_link
