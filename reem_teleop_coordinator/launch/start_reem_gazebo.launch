@@ -12,7 +12,7 @@
   <include file="$(find reem_gazebo)/launch/reem_no_controllers.launch" />
   
   <!-- start environment server (for self-collision checking)-->
-  <include file="$(find reem_3dnav)/launch/trajectory_validator_static.launch" />
+  <include file="$(find reem_3dnav)/launch/trajectory_validator.launch" />
   <!-- Arm navigation -->
   <!-- <include file="$(find reem_3dnav)/launch/upper_body_navigation.launch"/>-->
   
