@@ -2,6 +2,7 @@
   <node pkg="tf" type="static_transform_publisher" name="puente" args="1 0 0 0 0 0 base_footprint openni_camera 100" />
 
   <!-- start reem motion planning pipeline -->
+  <include file="$(find reem_bringup)/launch/reem.launch" />
   <include file="$(find reem_3dnav)/launch/trajectory_validator.launch" />
   
   <!-- start kinect -->
