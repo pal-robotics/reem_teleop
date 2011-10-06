@@ -2,7 +2,7 @@
   <description brief="reem_teleop">reem_teleop</description>
     A stack for teleoperating REEM using the Kinect
   <author>Maintained by Marcus Liebhardt</author>
-  <license>BSD</license>  
+  <license>Modified BSD, LGPL</license>  
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/reem_teleop</url>
   <depend stack="common_msgs" /> <!-- sensor_msgs, geometry_msgs -->
