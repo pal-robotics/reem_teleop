@@ -1,5 +1,5 @@
 <launch>
-  <node pkg="tf" type="static_transform_publisher" name="linker" args="0 0 0 0 0 0 odom_combined openni_camera 100" />
+  <node pkg="tf" type="static_transform_publisher" name="linker" args="0 0 0 90 0 0 odom openni_camera 100" />
   <!-- start reem in gazebo -->
   <include file="$(find reem_teleop_coordinator)/launch/start_reem_gazebo.launch" />
   
@@ -11,5 +11,8 @@
   
   <!-- start rviz -->
   <include file="$(find reem_teleop_coordinator)/launch/start_rviz.launch" />
+
+ <!-- start filters -->
+  <include file="$(find tf_pose_ekf)/launch/full_body_filter_single_node_upperbody.launch" />
   
 </launch>    
