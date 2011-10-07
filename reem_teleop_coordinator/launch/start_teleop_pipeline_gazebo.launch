@@ -1,5 +1,6 @@
 <launch>
-  <node pkg="tf" type="static_transform_publisher" name="linker" args="0 0 0 90 0 0 odom openni_camera 100" />
+  <include file="$(find reem_teleop_coordinator)/launch/tree_conector.launch" />
+
   <!-- start reem in gazebo -->
   <include file="$(find reem_teleop_coordinator)/launch/start_reem_gazebo.launch" />
   

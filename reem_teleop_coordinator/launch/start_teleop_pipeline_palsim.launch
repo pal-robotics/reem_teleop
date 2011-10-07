@@ -1,5 +1,5 @@
 <launch>
-  <node pkg="tf" type="static_transform_publisher" name="puente" args="1 0 0 0 0 0 base_footprint openni_camera 100" />
+  <include file="$(find reem_teleop_coordinator)/launch/tree_conector.launch" />
 
   <!-- start reem motion planning pipeline -->
   <include file="$(find reem_bringup)/launch/reem.launch" />

@@ -1,0 +1,5 @@
+<launch>
+  <!-- static transform to conect the trees -->
+  <node pkg="tf" type="static_transform_publisher" name="linker" args="2 -2 0 -1.57 0 1.57  odom openni_camera 100" />
+</launch>
+
