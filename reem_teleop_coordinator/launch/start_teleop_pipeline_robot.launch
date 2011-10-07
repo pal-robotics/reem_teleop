@@ -1,4 +1,5 @@
 <launch>
+  <include file="$(find reem_teleop_coordinator)/launch/tree_conector.launch" />
 
   <!-- start kinect -->
   <include file="$(find reem_teleop_coordinator)/launch/start_kinect.launch" />
@@ -8,5 +9,8 @@
   
   <!-- start rviz -->
   <include file="$(find reem_teleop_coordinator)/launch/start_rviz.launch" />
+
+  <!-- start filters -->
+  <include file="$(find tf_pose_ekf)/launch/full_body_filter_single_node_upperbody.launch" />
   
 </launch>    
