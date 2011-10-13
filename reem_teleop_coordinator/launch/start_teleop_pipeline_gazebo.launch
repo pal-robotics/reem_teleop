@@ -11,7 +11,7 @@
   <include file="$(find reem_teleop_coordinator)/launch/start_teleop_nodes.launch" />
   
   <!-- start rviz -->
-  <include file="$(find reem_teleop_coordinator)/launch/start_rviz.launch" />
+  <include file="$(find reem_teleop_coordinator)/launch/start_rviz_launch_single.launch" />
 
  <!-- start filters -->
   <include file="$(find tf_pose_ekf)/launch/full_body_filter_single_node_upperbody.launch" />
