@@ -1,4 +1,5 @@
 <launch>
+  <include file="$(find reem_teleop_coordinator)/launch/tree_conector.launch" />
 
   <!-- start reem in gazebo -->
   <include file="$(find reem_teleop_coordinator)/launch/start_reem_gazebo.launch" />
@@ -10,6 +11,9 @@
   <include file="$(find reem_teleop_coordinator)/launch/start_teleop_nodes.launch" />
   
   <!-- start rviz -->
-  <include file="$(find reem_teleop_coordinator)/launch/start_rviz.launch" />
+  <include file="$(find reem_teleop_coordinator)/launch/start_rviz_launch_single.launch" />
+
+ <!-- start filters -->
+  <include file="$(find tf_pose_ekf)/launch/full_body_filter_single_node_upperbody.launch" />
   
 </launch>    

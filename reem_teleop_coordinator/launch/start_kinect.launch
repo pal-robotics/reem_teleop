@@ -1,7 +1,7 @@
 <launch>
 
   <!-- start openni kinect drivers -->
-  <include file="$(find openni_camera)/launch/openni_kinect.launch" />
+  <include file="$(find openni_camera)/launch/openni_node.launch" />
     
   <!-- start openni_tracker -->
   <node pkg="openni_tracker" type="openni_tracker" name="openni_tracker" />

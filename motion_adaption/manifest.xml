@@ -5,7 +5,7 @@
 
   </description>
   <author>Marcus Liebhardt</author>
-  <license>BSD</license>
+  <license>Modified BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/motion_adaption</url>
   <depend package="bullet"/>
