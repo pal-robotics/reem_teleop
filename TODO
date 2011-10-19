@@ -1,0 +1,19 @@
+- Reduce bandwidth of /tf topic: Do not broadcast intermediate frames.
+
+- Reduce log statements, make better use of severity levels.
+
+- Use a KDL subtree with only relevant joints/links, and not the whole robot tree.
+
+- Allow more general endpoint specification (Investigate possible use of iTaSC for this point and the above).
+
+- Move away from service-based IK calls to a plugin-based one.
+
+- Simplify configuration files.
+
+- Make stack robot-agnostic (and remove reem_ prefix from name).
+
+- Document public API.
+
+- Add proper unit test suite.
+
+- Create branches specific to each supported ros release.
