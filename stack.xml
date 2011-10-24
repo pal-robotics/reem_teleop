@@ -1,6 +1,7 @@
 <stack>
-  <description brief="reem_teleop">reem_teleop</description>
+  <description brief="reem_teleop">
     Motion retargeting packages for teleoperating REEM.
+  </description>
   <author>Maintained by Marcus Liebhardt</author>
   <license>Modified BSD, LGPL</license>  
   <review status="unreviewed" notes=""/>
