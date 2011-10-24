@@ -1,6 +1,6 @@
 <stack>
   <description brief="reem_teleop">reem_teleop</description>
-    A stack for teleoperating REEM using the Kinect
+    Motion retargeting packages for teleoperating REEM.
   <author>Maintained by Marcus Liebhardt</author>
   <license>Modified BSD, LGPL</license>  
   <review status="unreviewed" notes=""/>
