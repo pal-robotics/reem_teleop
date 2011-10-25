@@ -1,0 +1,14 @@
+<launch>
+
+  <include file="$(find reem_teleop_coordinator)/launch/tree_conector.launch" />
+
+  <!-- start reem in gazebo -->
+  <include file="$(find reem_teleop_coordinator)/launch/start_reem_gazebo.launch" />
+  
+  <!-- start teleop nodes -->
+  <include file="$(find reem_teleop_coordinator)/launch/start_teleop_nodes.launch" />
+  
+  <!-- start rviz -->
+  <include file="$(find reem_teleop_coordinator)/launch/start_rviz_launch_single.launch" />
+  
+</launch>    
