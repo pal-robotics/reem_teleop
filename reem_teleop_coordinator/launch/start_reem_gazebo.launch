@@ -1,6 +1,5 @@
 <launch>
 
-  <!-- start environment server (for self-collision checking)-->
   <!-- Load URDF in param server -->
   <include file="$(find reem_description)/robots/upload_reem.launch" />
 
@@ -10,13 +9,11 @@
 
   <!-- start reem without any defaut controllers -->
   <include file="$(find reem_gazebo)/launch/reem_no_controllers.launch" />
-  
+
   <!-- start environment server (for self-collision checking)-->
   <include file="$(find reem_3dnav)/launch/trajectory_validator.launch" />
-  <!-- Arm navigation -->
-  <!-- <include file="$(find reem_3dnav)/launch/upper_body_navigation.launch"/>-->
-  
+
   <!-- start the joint position controller (stopped) -->
   <include file="$(find reem_teleop_coordinator)/launch/start_joint_position_controller.launch" />
-  
+
 </launch>
