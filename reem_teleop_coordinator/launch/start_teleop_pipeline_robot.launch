@@ -1,5 +1,7 @@
 <launch>
-  <include file="$(find reem_teleop_coordinator)/launch/tree_conector.launch" />
+
+  <!-- static transform for connecting the tf trees of the openni tracker's skeleton and the robot model -->
+  <include file="$(find reem_teleop_coordinator)/launch/tree_connector.launch" />
 
   <!-- start kinect -->
   <include file="$(find reem_teleop_coordinator)/launch/start_kinect.launch" />
