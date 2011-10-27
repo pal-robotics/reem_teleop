@@ -304,8 +304,6 @@ int main(int argc, char** argv)
       ik_duration = ros::Time::now().toSec();
       if (tree_ik_srv_client.call(tree_ik_srv))
       {
-        ROS_DEBUG_THROTTLE(1.0, "get_tree_position_ik service call was successful.");
-        ROS_DEBUG_THROTTLE(1.0, "get_tree_position_ik service call response:");
         for(unsigned int i = 0; i < tree_ik_srv.response.solution.joint_state.name.size(); ++i)
         {
           ROS_DEBUG_THROTTLE(1.0, "desired position for joint[%d]('%s'): %f", i,
@@ -315,7 +313,7 @@ int main(int argc, char** argv)
       }
       else
       {
-        ROS_ERROR("get_tree_position_ik service call failed! Aborting loop ...");
+        ROS_ERROR_THROTTLE(1.0, "get_tree_position_ik service call failed! Aborting loop ...");
         continue;
       }
       ik_duration = ros::Time::now().toSec() - ik_duration;
@@ -335,7 +333,7 @@ int main(int argc, char** argv)
           no_self_collision = true;
         }
         else
-          ROS_WARN_THROTTLE(0.5, "Requested state is in collision. Error code: %d", state_val_res.error_code.val);
+          ROS_WARN_THROTTLE(1.0, "Requested state is in collision. Error code: %d", state_val_res.error_code.val);
       }
       else
       {
@@ -365,7 +363,7 @@ int main(int argc, char** argv)
         pub_joint_states_cmd.publish(joint_states_cmd);
       }
       
-
+      /* TODO, ARE THIS TF NEEDED ANY MORE?
       // For debug purpose: publish forward kinematics messages on tf
       cjp_duration = ros::Time::now().toSec();
        
@@ -412,6 +410,7 @@ int main(int argc, char** argv)
         
       cjp_duration = ros::Time::now().toSec() - cjp_duration;
       cjp_duration_median = ((cjp_duration_median * (loop_count - 1)) + cjp_duration) / loop_count; 
+	*/
     }
     
     ros::spinOnce();

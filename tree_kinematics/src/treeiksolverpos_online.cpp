@@ -151,7 +151,7 @@ double TreeIkSolverPos_Online::CartToJnt_it(const JntArray& q_in, const Frames& 
   assert(q_dot_old_.rows() == q_in.rows());
   assert(q_dot_new_.rows() == q_in.rows());
 
-  std::cout << "--- IK call started ---" << std::endl;
+
 
   q_out = q_in;
   SetToZero(q_dot_);
@@ -206,16 +206,8 @@ double TreeIkSolverPos_Online::CartToJnt_it(const JntArray& q_in, const Frames& 
       Frames::iterator f_des_vel_l_it = frames_vel_lim_.find(f_des_it->first);
       fksolver_.JntToCart(q_in, f_des_vel_l_it->second, f_des_it->first);
       twist_ = diff(f_des_vel_l_it->second, f_des_pos_l_it->second);      
-      std::cout << "desired twist.vel (x_d - x_c) " << sqrt( pow(twist_.vel.x(), 2)
-      + pow(twist_.vel.y(), 2) + pow(twist_.vel.z(), 2)) << std::endl;
-      std::cout << "desired twist.rot (x_d - x_c) " << sqrt( pow(twist_.rot.x(), 2)
-      + pow(twist_.rot.y(), 2) + pow(twist_.rot.z(), 2)) << std::endl;
-      enforceCartVelLimits();
       
-      std::cout << "limitted twist.vel (x_d - x_c) " << sqrt( pow(twist_.vel.x(), 2)
-      + pow(twist_.vel.y(), 2) + pow(twist_.vel.z(), 2)) << std::endl;
-      std::cout << "limitted twist.rot (x_d - x_c) " << sqrt( pow(twist_.rot.x(), 2)
-      + pow(twist_.rot.y(), 2) + pow(twist_.rot.z(), 2)) << std::endl;
+      
 
       f_des_vel_l_it->second = addDelta(f_des_vel_l_it->second, twist_);
       nr_of_endeffectors++;
@@ -224,9 +216,7 @@ double TreeIkSolverPos_Online::CartToJnt_it(const JntArray& q_in, const Frames& 
   if(nr_of_still_endeffectors_ == nr_of_endeffectors)
   {
     small_task_space_movement_ = true;
-    std::cout << "Task space movements of all endeffectors are small!" << std::endl;
-    std::cout << "Given low_pass_factor will be adjusted by ";
-    std::cout << low_pass_adj_factor_ << " (in total = " << low_pass_adj_factor_ * low_pass_factor_ << ")" << std::endl;
+    
   }
   else
     small_task_space_movement_ = false;
@@ -328,32 +318,16 @@ double TreeIkSolverPos_Online::CartToJnt_it(const JntArray& q_in, const Frames& 
   }
 
   Subtract(q_out, q_in, q_dot_);
-  for (unsigned int i = 0; i < q_dot_.rows(); ++i)
-  {
-    std::cout << "q_dot_(" << i << "): " << q_dot_(i) << std::endl;
-  }
-  if(enforceJointVelLimits())
-    std::cout << "q_dot_ got limitted!" << std::endl;
-  else
-    std::cout << "q_dot_ got not limitted!" << std::endl;    
-  for (unsigned int i = 0; i < q_dot_.rows(); ++i)
-  {
-    std::cout << "limitted q_dot_(" << i << "): " << q_dot_(i) << std::endl;
-  }
+  
   
   Add(q_in, q_dot_, q_out);
   filter(q_dot_, q_out, q_out_old_);
   
-  std::cout << "q_out:" << std::endl;    
-  for (unsigned int i = 0; i < q_out.rows(); ++i)
-  {
-    std::cout << "q_out(" << i << "): " << q_out(i) << std::endl;
-  }
+  
   
   q_out_old_ = q_out;
   p_in_old_ = p_in;
 
-  std::cout << "--- IK call ended ---" << std::endl;
 
   if (k <= maxiter_)
     return res;
@@ -382,8 +356,7 @@ bool TreeIkSolverPos_Online::enforceCartVelLimits()
     if(low_pass_adj_factor_ < max(trans_low_pass_factor, rot_low_pass_factor))
       low_pass_adj_factor_ = max(trans_low_pass_factor, rot_low_pass_factor);
 
-    std::cout << "Task space movement is small. Increasing number of still endeffectors." << std::endl;
-    std::cout << "Applied low_pass_factor would be = " << low_pass_adj_factor_ * low_pass_factor_ << std::endl;
+   
     nr_of_still_endeffectors_++;
   }
   
