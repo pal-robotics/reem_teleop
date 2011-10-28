@@ -57,7 +57,7 @@
 static const std::string FK_SERVICE = "/tree_kinematics_node/get_position_fk";
 static const std::string IK_SERVICE = "/tree_kinematics_node/get_position_ik";
 static const std::string CC_SERVICE = "/upper_body_environment_server/get_state_validity";
-static const std::string PUB_TOPIC_JOINT_STATES_CMD = "/joint_states_cmd";
+static const std::string PUB_TOPIC_JOINT_STATES_CMD = "/joint_states_raw";
 static const std::string SUB_TOPIC_JOINT_STATES = "/joint_states";
 
 bool joint_states_valid = false;
