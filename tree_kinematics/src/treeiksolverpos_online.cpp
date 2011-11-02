@@ -239,29 +239,13 @@ double TreeIkSolverPos_Online::CartToJnt_it(const JntArray& q_in, const Frames& 
       // Checks, if the current overall twist exceeds the maximum translational and/or rotational velocity.
       // If so, the velocities of the overall twist get scaled and a new current twist is calculated.
       delta_twists_it->second = diff(f_it->second, f_des_it->second);
-      /*
-      std::cout << "--- " << k << " ---" << std::endl;
-      std::cout << "current twist.vel (x_d - x_c) " << sqrt( pow(delta_twists_it->second.vel.x(), 2)
-      + pow(delta_twists_it->second.vel.y(), 2) + pow(delta_twists_it->second.vel.z(), 2)) << std::endl;
-      std::cout << "current twist.rot (x_d - x_c) " << sqrt( pow(delta_twists_it->second.rot.x(), 2)
-      + pow(delta_twists_it->second.rot.y(), 2) + pow(delta_twists_it->second.rot.z(), 2)) << std::endl;
+      
 
       old_twists_it->second = diff(f_0_it->second, f_it->second);
 
-      std::cout << "old twist.vel (x_c - x_old) " << sqrt( pow(old_twists_it->second.vel.x(), 2)
-      + pow(old_twists_it->second.vel.y(), 2) + pow(old_twists_it->second.vel.z(), 2)) << std::endl;
-      std::cout << "old twist.rot (x_c - x_old) " << sqrt( pow(old_twists_it->second.rot.x(), 2)
-      + pow(old_twists_it->second.rot.y(), 2) + pow(old_twists_it->second.rot.z(), 2)) << std::endl;
-
       enforceCartVelLimits_it(old_twists_it->second, delta_twists_it->second);
 
-      std::cout << "current limitted twist.vel (x_l - x_c) " << sqrt( pow(delta_twists_it->second.vel.x(), 2)
-      + pow(delta_twists_it->second.vel.y(), 2) + pow(delta_twists_it->second.vel.z(), 2)) << std::endl;
-      std::cout << "current limitted twist.rot (x_l - x_c) " << sqrt( pow(delta_twists_it->second.rot.x(), 2)
-      + pow(delta_twists_it->second.rot.y(), 2) + pow(delta_twists_it->second.rot.z(), 2)) << std::endl;
-
-      std::cout << "---------" << std::endl;
-      */
+      
     }
 
     res = iksolver_.CartToJnt(q_out, delta_twists_, q_dot_);
@@ -275,35 +259,15 @@ double TreeIkSolverPos_Online::CartToJnt_it(const JntArray& q_in, const Frames& 
     // Checks, if joint velocities (q_dot_) exceed their maximum velocities and scales them, if necessary
     //Subtract(q_out, q_in, q_dot_old_);
     //enforceJointVelLimits_it(q_dot_old_, q_dot_);
-    /*
+    
     Subtract(q_out, q_in, q_dot_old_);
 
-    for (unsigned int i = 0; i < q_dot_.rows(); ++i)
-    {
-      std::cout << "old q_dot(" << i << "): " << q_dot_old_(i) << std::endl;
-      std::cout << "current delta q_dot(" << i << "): " << q_dot_(i) << std::endl;
-    }
     Add(q_dot_old_, q_dot_, q_dot_);
-
-    for (unsigned int i = 0; i < q_dot_.rows(); ++i)
-    {
-      std::cout << "current overall q_dot(" << i << "): " << q_dot_(i) << std::endl;
-    }
 
     enforceJointVelLimits();
 
-    for (unsigned int i = 0; i < q_dot_.rows(); ++i)
-    {
-      std::cout << "overall q_dot limitted(" << i << "): " << q_dot_(i) << std::endl;
-    }
-
     Subtract(q_dot_, q_dot_old_, q_dot_);
-
-    for (unsigned int i = 0; i < q_dot_.rows(); ++i)
-    {
-      std::cout << "current limitted delta q_dot(" << i << "): " << q_dot_(i) << std::endl;
-    }
-    */
+   
     // Integrate
     Add(q_out, q_dot_, q_out);
 
