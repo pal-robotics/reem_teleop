@@ -52,15 +52,17 @@ bool MotionAdaption::setRefFrame()
     ROS_WARN("No further processing will be done!");    
     return false;
   } 
-   
-  tf_ref_frame_.setOrigin(tf_robot_ref_torso_.getOrigin());
-  quat_ = tf::Quaternion(tf_usr_torso_.getRotation());
+
+  tf_ref_frame_.setOrigin(tf_robot_ref_torso_.getOrigin()); // take the position of the robot _reference_ frame
+  quat_ = tf::Quaternion(tf_usr_torso_.getRotation()); // and the rotation of the user torso
+  // (manually) rotate it to align with the convention (i.e. D-H) of the robot's frames
   quat_adjust_.setRPY(ref_frame_rot_vec_[0], ref_frame_rot_vec_[1], ref_frame_rot_vec_[2]);
   quat_ = quat_adjust_ * quat_;  
   tf_ref_frame_.setRotation(quat_);
   tf_broadcaster_.sendTransform(tf::StampedTransform(tf_ref_frame_, ros::Time::now(),
   robot_base_str_, "/ref_frame"));  
 
+  // another reference frame without the operator's torso orientation, but with its convention
   quat_.setRPY(ref_frame_rot_vec_[0], ref_frame_rot_vec_[1], ref_frame_rot_vec_[2]);
   tf_ref_frame_.setRotation(quat_);
   tf_broadcaster_.sendTransform(tf::StampedTransform(tf_ref_frame_, ros::Time::now(),

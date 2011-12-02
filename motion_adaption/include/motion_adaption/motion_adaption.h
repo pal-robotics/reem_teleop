@@ -47,43 +47,77 @@
 #include <tf/transform_datatypes.h>
 #include <tf/transform_listener.h>
 
-
+/**
+ * \brief Motion adaption transforms and maps
+ *
+ */
 class MotionAdaption
 {
   public:
     MotionAdaption();
     ~MotionAdaption();
 
-    /// 
+    /*
+     * This method consists of a hierarchy of all private methods of this class. Each method gets called,
+     * if the previous method has finished successfully.
+     */
     void adapt();
 
   private:
 
-    ///
+    /*
+     * Retrieves transforms from the operator's torso to the upper body end points hands, elbows, shoulder, head
+     * and the transform from the torso's reference frame to the torso.
+     */
     bool getTransforms();
 
-    ///
+    /*
+     * Sets the reference frame on the robot needed for the adaption of the operator's transforms.
+     */
     bool setRefFrame();
 
-    ///
+    /*
+     * Contains the hierarchy of methods for adapting the end points of the upper body.
+     */
     bool adaptTransforms();
 
-    ///
+    /*
+     * Simple adaption of the operator's torso transformation, which only applies the orientation of the operator's
+     * torso to the goal transformation; the position is the same as the reference frame
+     */
     bool adaptTorso();
     
-    ///
+    /*
+     * Simple adaption of the operator's head transformation, which only applies the orientation of the operator's
+     * torso to the goal transformation; the position is a constant offset from the reference frame
+     */
     bool adaptHead();
     
-    ///
+    /*
+     * First part of the more complicated adaptions of the hands: This method scales the position of the hands and
+     * elbows using both the body proportions of the operator and the robot.
+     */
     bool scaleUserHandsAndElbows();
     
-    ///
+    /*
+     * A constant offset from the reference frame defines the position of the shoulders. Their orientation is
+     * calculated based on the position of the elbows and hands. Therefore arm planes are calculated for both arms,
+     * which contain the elbows and hands.
+     */
     bool adaptShoulders();
     
-    ///
+    /*
+     * The elbows are placed inside the arm planes at the intersection of the circles around the hands and elbows.
+     * Their radi are given by the upper and lower arm lengths. If arms are not completely strechted the normal vectors
+     * of the arm planes are used to chose among the two possible solutions. Further additions are made to handle small
+     * calculation errors, such as assuming stretched arms, when they are very close to stretched.
+     */
     bool adaptElbows();
 
-    ///
+    /*
+     * The hands are placed at their scaled positions. The orientation is added manually in the way that the hands are
+     * aligned along the elbow. The plane normals are also used to define their orientation.
+     */
     bool adaptHands();    
     
     ///
@@ -97,13 +131,13 @@ class MotionAdaption
     /// listens to the transforms from the openni_tracker
     tf::TransformListener tf_listener_;
 
-    /// publishs transforms for internal calculations and visualization
+    /// publishs transforms for internal calculations, visualization and the final results
     tf::TransformBroadcaster tf_broadcaster_;
     
     /// time to wait for tf transforms in seconds
     double wait_for_tf_;
     
-    /// publishers nad message for sending the pose commands for each endpoint
+    /// publishers and message for sending the pose commands for each endpoint
     ros::Publisher pub_torso_pose_;
     ros::Publisher pub_head_pose_;
     ros::Publisher pub_r_elbow_pose_;
@@ -112,7 +146,9 @@ class MotionAdaption
     ros::Publisher pub_l_hand_pose_;
     geometry_msgs::PoseStamped pose_;
     
-    /// strings for configuring the motion adaption process
+    /*
+     * strings for configuring the motion adaption process
+     */
     std::string world_ref_frame_str_;
     std::string user_torso_str_;
     std::string user_head_str_;
@@ -133,7 +169,9 @@ class MotionAdaption
     std::string robot_l_elbow_str_;
     std::string robot_l_hand_str_;          
     
-    /// vectors for defining rotations of orientations
+    /*
+     * vectors for defining rotations of orientations
+     */
     btVector3 ref_frame_rot_vec_;
     btVector3 torso_goal_rot_vec_;
     btVector3 head_goal_rot_vec_;
