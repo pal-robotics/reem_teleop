@@ -69,12 +69,15 @@ sensor_msgs::JointState old_joint_state; // old joint states
 sensor_msgs::JointState::ConstPtr joint_states_ptr; // pointer to the current joint states
 
 /*
- * Callback funtion for retrieving the current joint states;
+ * \brief Callback funtion for retrieving the current joint states
+ * Callback funtion for retrieving the current joint states
  * Note: The used joint states 'old_joints_states' get only updated one time. Later on the joint states of the
  * last loop are used for the IK service call. Using always the current joint states would introduce an unwanted
  * feedback.
+ *
+ * @param joint_states pointer to the joint states
  */
-void jointStatesCB(const sensor_msgs::JointState::ConstPtr &joint_states)
+void jointStatesCB(const sensor_msgs::JointState::ConstPtr& joint_states)
 {
   joint_states_ptr = joint_states;
   if(!joint_states_valid)
@@ -84,8 +87,16 @@ void jointStatesCB(const sensor_msgs::JointState::ConstPtr &joint_states)
 
 
 /*
+ * \brief Retrieving goal transformations and putting them into a geometry_msgs::PoseStamped message
  * A generic transform function for retrieving the desired transform for the goal frame
  * and putting it into a stamped pose message.
+ *
+ * @param tf_listener pointer to the utilized tf listener
+ * @param root_frame_name pointer to the root name of the tf tree
+ * @param goal_frame_name the name of the frame, which transform shall be retrieved
+ * @param pose pointer to the pose message, which will contain the transformation information
+ *
+ * @ returns true, if transformation could be retrieved, false if not
  */
 bool getGoalTransform(tf::TransformListener& tf_listener,
                       std::string& root_frame_name,

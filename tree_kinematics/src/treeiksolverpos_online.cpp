@@ -1,26 +1,31 @@
-// Copyright  (C)  2011  PAL Robotics S.L.  All rights reserved.
-// Copyright  (C)  2007-2008  Ruben Smits <ruben dot smits at mech dot kuleuven dot be>
-// Copyright  (C)  2008  Mikael Mayer
-// Copyright  (C)  2008  Julia Jesse
-
-// Version: 1.0
-// Author: Marcus Liebhardt
-// This class has been derived from the KDL::TreeIkSolverPos_NR_JL class
-// by Julia Jesse, Mikael Mayer and Ruben Smits
-
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2.1 of the License, or (at your option) any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+/*
+ * Software License Agreement (GNU Lesser General Public License)
+ *
+ * Copyright  (C)  2011  PAL Robotics S.L.  All rights reserved.
+ * Copyright  (C)  2007-2008  Ruben Smits <ruben dot smits at mech dot kuleuven dot be>
+ * Copyright  (C)  2008  Mikael Mayer
+ * Copyright  (C)  2008  Julia Jesse
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * \author: Marcus Liebhardt
+ *
+ * This class has been derived from the KDL::TreeIkSolverPos_NR_JL class
+ * by Julia Jesse, Mikael Mayer and Ruben Smits
+ *
+ */
 
 #include "tree_kinematics/treeiksolverpos_online.hpp"
 #include <algorithm>
@@ -30,7 +35,7 @@ namespace KDL {
 TreeIkSolverPos_Online::TreeIkSolverPos_Online(const double& nr_of_jnts,
                                                const std::vector<std::string>& endpoints,
                                                TreeFkSolverPos& fksolver,
-                                               TreeIkSolverVel& iksolver,                                               
+                                               TreeIkSolverVel& iksolver,
                                                const JntArray& q_min,
                                                const JntArray& q_max,
                                                const JntArray& q_dot_min,
@@ -59,34 +64,34 @@ TreeIkSolverPos_Online::TreeIkSolverPos_Online(const double& nr_of_jnts,
     assert(q_max.rows() == nr_of_jnts);
     assert(q_dot_max.rows() == nr_of_jnts);
     assert(q_out_old_.rows() == nr_of_jnts);
-    
+
     SetToZero(q_out_old_);
     q_min_ = q_min;
     q_max_ = q_max;
     q_dot_min_ = q_dot_min;
     q_dot_max_ = q_dot_max;
     x_dot_trans_max_ = x_dot_trans_max;
-    x_dot_rot_max_ = x_dot_rot_max;    
+    x_dot_rot_max_ = x_dot_rot_max;
     x_dot_trans_min_ = x_dot_trans_min;
     x_dot_rot_min_ = x_dot_rot_min;
     low_pass_factor_ = low_pass_factor;
     low_pass_adj_factor_ = 0.0;
     nr_of_still_endeffectors_ = 0;
     small_task_space_movement_ = false;
-    
+
     for (size_t i = 0; i < endpoints.size(); i++)
     {
-      
+
       frames_.insert(Frames::value_type(endpoints[i], Frame::Identity()));
       delta_twists_.insert(Twists::value_type(endpoints[i], Twist::Zero()));
       old_twists_.insert(Twists::value_type(endpoints[i], Twist::Zero()));
-      
+
       frames_pos_lim_.insert(Frames::value_type(endpoints[i], Frame::Identity()));
       frames_vel_lim_.insert(Frames::value_type(endpoints[i], Frame::Identity()));
       p_in_old_.insert(Frames::value_type(endpoints[i], Frame::Identity()));
-      
+
     }
-    
+
 }
 
 
@@ -146,7 +151,7 @@ double TreeIkSolverPos_Online::CartToJnt(const JntArray& q_in, const Frames& p_i
 double TreeIkSolverPos_Online::CartToJnt_it(const JntArray& q_in, const Frames& p_in, JntArray& q_out)
 {
   assert(q_out.rows() == q_in.rows());
-  assert(q_out_old_.rows() == q_in.rows());  
+  assert(q_out_old_.rows() == q_in.rows());
   assert(q_dot_.rows() == q_in.rows());
   assert(q_dot_old_.rows() == q_in.rows());
   assert(q_dot_new_.rows() == q_in.rows());
@@ -163,7 +168,7 @@ double TreeIkSolverPos_Online::CartToJnt_it(const JntArray& q_in, const Frames& 
   unsigned int nr_of_endeffectors = 0;
   nr_of_still_endeffectors_ = 0;
   low_pass_adj_factor_ = 0.0;
-  
+
   for(Frames::const_iterator f_des_it=p_in.begin();f_des_it!=p_in.end();++f_des_it)
   {
     if(frames_.find(f_des_it->first)==frames_.end())
@@ -191,27 +196,27 @@ double TreeIkSolverPos_Online::CartToJnt_it(const JntArray& q_in, const Frames& 
       }
       else
         f_des_pos_l_it->second.p = f_des_it->second.p;
-     
+
       if(sqrt(pow(twist_.rot.x(), 2) + pow(twist_.rot.y(), 2) + pow(twist_.rot.z(), 2)) < x_dot_rot_min_)
       {
         f_des_pos_l_it->second.M = addDelta(f_old_it->second.M, (0.1 * x_dot_rot_max_ * twist_.rot));
-        std::cout << "old orientation is used." << std::endl;        
+        std::cout << "old orientation is used." << std::endl;
       }
       else
         f_des_pos_l_it->second.M = f_des_it->second.M;
       */
       f_des_pos_l_it->second.p = f_des_it->second.p;
       f_des_pos_l_it->second.M = f_des_it->second.M;
-      
+
       Frames::iterator f_des_vel_l_it = frames_vel_lim_.find(f_des_it->first);
       fksolver_.JntToCart(q_in, f_des_vel_l_it->second, f_des_it->first);
-      twist_ = diff(f_des_vel_l_it->second, f_des_pos_l_it->second);      
+      twist_ = diff(f_des_vel_l_it->second, f_des_pos_l_it->second);
       std::cout << "desired twist.vel (x_d - x_c) " << sqrt( pow(twist_.vel.x(), 2)
       + pow(twist_.vel.y(), 2) + pow(twist_.vel.z(), 2)) << std::endl;
       std::cout << "desired twist.rot (x_d - x_c) " << sqrt( pow(twist_.rot.x(), 2)
       + pow(twist_.rot.y(), 2) + pow(twist_.rot.z(), 2)) << std::endl;
       enforceCartVelLimits();
-      
+
       std::cout << "limitted twist.vel (x_d - x_c) " << sqrt( pow(twist_.vel.x(), 2)
       + pow(twist_.vel.y(), 2) + pow(twist_.vel.z(), 2)) << std::endl;
       std::cout << "limitted twist.rot (x_d - x_c) " << sqrt( pow(twist_.rot.x(), 2)
@@ -335,21 +340,21 @@ double TreeIkSolverPos_Online::CartToJnt_it(const JntArray& q_in, const Frames& 
   if(enforceJointVelLimits())
     std::cout << "q_dot_ got limitted!" << std::endl;
   else
-    std::cout << "q_dot_ got not limitted!" << std::endl;    
+    std::cout << "q_dot_ got not limitted!" << std::endl;
   for (unsigned int i = 0; i < q_dot_.rows(); ++i)
   {
     std::cout << "limitted q_dot_(" << i << "): " << q_dot_(i) << std::endl;
   }
-  
+
   Add(q_in, q_dot_, q_out);
   filter(q_dot_, q_out, q_out_old_);
-  
-  std::cout << "q_out:" << std::endl;    
+
+  std::cout << "q_out:" << std::endl;
   for (unsigned int i = 0; i < q_out.rows(); ++i)
   {
     std::cout << "q_out(" << i << "): " << q_out(i) << std::endl;
   }
-  
+
   q_out_old_ = q_out;
   p_in_old_ = p_in;
 
@@ -373,7 +378,7 @@ bool TreeIkSolverPos_Online::enforceCartVelLimits()
   double x_dot_trans, x_dot_rot;
   x_dot_trans = sqrt( pow(twist_.vel.x(), 2) + pow(twist_.vel.y(), 2) + pow(twist_.vel.z(), 2));
   x_dot_rot = sqrt( pow(twist_.rot.x(), 2) + pow(twist_.rot.y(), 2) + pow(twist_.rot.z(), 2));
-  
+
   if (x_dot_trans <= x_dot_trans_min_ && x_dot_rot <= x_dot_rot_min_ && x_dot_trans_min_ != 0.0 && x_dot_rot_min_ != 0.0)
   {
     double trans_low_pass_factor = 0.1 + 0.9 * (x_dot_trans / x_dot_trans_min_);
@@ -386,7 +391,7 @@ bool TreeIkSolverPos_Online::enforceCartVelLimits()
     std::cout << "Applied low_pass_factor would be = " << low_pass_adj_factor_ * low_pass_factor_ << std::endl;
     nr_of_still_endeffectors_++;
   }
-  
+
   if ( x_dot_trans > x_dot_trans_max_ || x_dot_rot > x_dot_rot_max_ )
   {
     rel_os_trans = (x_dot_trans - x_dot_trans_max_) / x_dot_trans_max_;
@@ -554,11 +559,11 @@ void TreeIkSolverPos_Online::filter(JntArray& q_dot, JntArray& q_out, JntArray& 
     }
     else if (q_dot(i) > (q_dot_min_(i) * 0.3) || -q_dot(i) > (q_dot_min_(i) * 0.3))
     {q
-    
-      low_min_exceeded = true;      
+
+      low_min_exceeded = true;
     }
   }
- 
+
   if(!low_min_exceeded)
     low_pass_factor = 0.3 * low_pass_factor_;
   else if(!min_exceeded)
@@ -574,7 +579,7 @@ void TreeIkSolverPos_Online::filter(JntArray& q_dot, JntArray& q_out, JntArray& 
   }
   else
     low_pass_factor = low_pass_factor_;
-  
+
   for (unsigned int i = 0; i < q_dot.rows(); ++i)
   {
     q_out(i) = low_pass_factor * q_out(i) + (1.0 - low_pass_factor) * q_out_old(i);

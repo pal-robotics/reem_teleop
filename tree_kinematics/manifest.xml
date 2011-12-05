@@ -13,7 +13,6 @@
   <depend package="kdl_parser"/>
   <depend package="tf"/>
   <depend package="tf_conversions"/>
-  <!-- <depend package="reem_upper_body_controller"/> -->
   <depend package="urdf"/>
   <depend package="geometry_msgs"/>
   <depend package="kinematics_msgs"/>
