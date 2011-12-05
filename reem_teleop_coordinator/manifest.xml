@@ -17,7 +17,6 @@
   <depend package="sensor_msgs"/>
   <depend package="tf"/>
   <depend package="tf_conversions"/>
-  <!-- <depend package="joint_position_controller"/>  -->
   <depend package="tree_kinematics"/>
 </package>
 
