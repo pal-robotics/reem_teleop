@@ -30,13 +30,15 @@
  *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
- * Description: if new adjusted operator's motion has arrived, this node calculates the desired joint position using 
- * KDL's tree inverse kinematics solvers, afterwards the result gets checked for self-collision.
- * If there is no self-collision the desired joint positions get sent to the reem_joint_controller.
  */
 
 /** \author Marcus Liebhardt */
 
+/*
+ * \description If new adjusted operator's motion has arrived, this node calculates the desired joint position using
+ * KDL's tree inverse kinematics solvers, afterwards the result gets checked for self-collision.
+ * If there is no self-collision the desired joint positions get sent to the reem_joint_controller.
+ */
 
 #include <string>
 #include <map>
@@ -61,10 +63,8 @@ static const std::string PUB_TOPIC_JOINT_STATES_CMD = "/joint_states_cmd";
 static const std::string SUB_TOPIC_JOINT_STATES = "/joint_states";
 
 bool joint_states_valid = false;
-sensor_msgs::JointState old_joint_state;
-
-// pointer to the current joint states
-sensor_msgs::JointState::ConstPtr joint_states_ptr;
+sensor_msgs::JointState old_joint_state; // pointer to old joint states
+sensor_msgs::JointState::ConstPtr joint_states_ptr; // pointer to the current joint states
 
 
 void jointStatesCB(const sensor_msgs::JointState::ConstPtr &joint_states)
@@ -201,13 +201,6 @@ int main(int argc, char** argv)
   // publisher for joint states commands
   ros::Publisher pub_joint_states_cmd = nh.advertise<sensor_msgs::JointState>(PUB_TOPIC_JOINT_STATES_CMD, 1);
   sensor_msgs::JointState joint_states_cmd;
-  /*
-  sensor_msgs::JointState old_joint_state;
-  old_joint_state.name = std::vector<std::string>(24, "empty");
-  old_joint_state.position = std::vector<double>(24, 0.0);
-  old_joint_state.velocity = std::vector<double>(24, 0.0);
-  old_joint_state.effort = std::vector<double>(24, 0.0);    
-  */
   
   int loop_rate_value;
   nh_private.param("loop_rate", loop_rate_value, 10);
@@ -225,11 +218,9 @@ int main(int argc, char** argv)
   ros::service::waitForService(IK_SERVICE);
   ros::ServiceClient tree_ik_srv_client = nh.serviceClient<tree_kinematics::get_tree_position_ik>
   (IK_SERVICE, true);
-  
   ros::service::waitForService(FK_SERVICE);
   ros::ServiceClient tree_fk_srv_client = nh.serviceClient<kinematics_msgs::GetPositionFK>
   (FK_SERVICE, true);
-  
   ros::service::waitForService(CC_SERVICE);
   ros::ServiceClient check_state_validity_client = nh.serviceClient<planning_environment_msgs::GetStateValidity>
   (CC_SERVICE, true);
@@ -272,14 +263,13 @@ int main(int argc, char** argv)
 
       // feeding current joint positions into the request
       if (joint_states_ptr)
-        //tree_ik_srv.request.pos_ik_request[0].ik_seed_state.joint_state = *joint_states_ptr;
         tree_ik_srv.request.pos_ik_request[0].ik_seed_state.joint_state = old_joint_state;
       else
       {
         ROS_ERROR("joint_states_ptr invalid! Aborting loop ...");
         continue;
       }  
-      /*
+
       ROS_DEBUG("Following information has been gathered:");
       for(unsigned int i = 0; i < tree_ik_srv.request.pos_ik_request.size(); ++i)
       {
@@ -299,7 +289,6 @@ int main(int argc, char** argv)
         tree_ik_srv.request.pos_ik_request[i].pose_stamped.pose.position.y,
         tree_ik_srv.request.pos_ik_request[i].pose_stamped.pose.position.z);
       }
-      */
       
       ik_duration = ros::Time::now().toSec();
       if (tree_ik_srv_client.call(tree_ik_srv))
@@ -346,13 +335,11 @@ int main(int argc, char** argv)
       scc_duration = ros::Time::now().toSec() - scc_duration;
       scc_duration_median = ((scc_duration_median * (loop_count - 1)) + scc_duration) / loop_count;
       
-      // commanding joint positions
-      //no_self_collision = true;
+      // publishing goal joint positions
       if(no_self_collision == true)
       {
         joint_states_cmd = tree_ik_srv.response.solution.joint_state;
         joint_states_cmd.header.stamp = ros::Time::now();
-        pub_joint_states_cmd.publish(joint_states_cmd);
         old_joint_state = joint_states_cmd;
         no_self_collision = false;       
       }
@@ -362,11 +349,10 @@ int main(int argc, char** argv)
           old_joint_state.velocity[i] = 0.0;
         joint_states_cmd = old_joint_state;
         joint_states_cmd.header.stamp = ros::Time::now();
-        pub_joint_states_cmd.publish(joint_states_cmd);
       }
+      pub_joint_states_cmd.publish(joint_states_cmd);
       
-
-      // For debug purpose: publish forward kinematics messages on tf
+      // For debug and visualisation purpose: publish forward kinematics messages on tf
       cjp_duration = ros::Time::now().toSec();
        
       tree_fk_srv.request.header.stamp = ros::Time::now();
@@ -420,11 +406,11 @@ int main(int argc, char** argv)
     
     cycle_time_median = ((cycle_time_median * (loop_count - 1)) + loop_rate.cycleTime().toSec()) / loop_count;
 
-    ROS_INFO_THROTTLE(1.0, "reem_teleop: cycle time %f and median cycle time %f",
+    ROS_DEBUG_THROTTLE(1.0, "reem_teleop: cycle time %f and median cycle time %f",
     loop_rate.cycleTime().toSec(), cycle_time_median);
-    ROS_INFO_THROTTLE(1.0, "reem_teleop: IKC current duration %f and median %f", ik_duration, ik_duration_median);
-    ROS_INFO_THROTTLE(1.0, "reem_teleop: SCC current duration %f and median %f", scc_duration, scc_duration_median);
-    ROS_INFO_THROTTLE(1.0, "reem_teleop: FKC current duration %f and median %f", cjp_duration, cjp_duration_median);
+    ROS_DEBUG_THROTTLE(1.0, "reem_teleop: IKC current duration %f and median %f", ik_duration, ik_duration_median);
+    ROS_DEBUG_THROTTLE(1.0, "reem_teleop: SCC current duration %f and median %f", scc_duration, scc_duration_median);
+    ROS_DEBUG_THROTTLE(1.0, "reem_teleop: FKC current duration %f and median %f", cjp_duration, cjp_duration_median);
     
     loop_count ++;
   }
@@ -432,8 +418,6 @@ int main(int argc, char** argv)
   check_state_validity_client.shutdown();  
   pub_joint_states_cmd.shutdown();
   tree_fk_srv_client.shutdown();
-  
-  ROS_INFO("exiting ...");
   
   return 0;
 }

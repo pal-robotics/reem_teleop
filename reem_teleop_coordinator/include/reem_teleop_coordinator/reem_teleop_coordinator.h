@@ -51,11 +51,12 @@ class ReemTeleop
   public:
   ReemTeleop(ros::NodeHandle &nh, KDL::Tree &kdl_tree);
   ~ReemTeleop();
-  
-  
+
   ros::NodeHandle nh_;
       
-  // ROS subscribers listening for desired endpoints' poses
+  /*
+   * ROS subscribers listening for desired endpoints' poses
+   */
   ros::Subscriber sub_command_pose_torso_;
   ros::Subscriber sub_command_pose_shoulder_left_;
   ros::Subscriber sub_command_pose_elbow_left_;
@@ -65,6 +66,9 @@ class ReemTeleop
   ros::Subscriber sub_command_pose_hand_right_;
   ros::Subscriber sub_command_pose_head_;   
   
+  /*
+   *
+   */
   void commandPoseTorsoCB(const geometry_msgs::PoseStamped::ConstPtr &command);
   void commandPoseLeftShoulderCB(const geometry_msgs::PoseStamped::ConstPtr &command);
   void commandPoseLeftElbowCB(const geometry_msgs::PoseStamped::ConstPtr &command);
@@ -74,13 +78,19 @@ class ReemTeleop
   void commandPoseRightHandCB(const geometry_msgs::PoseStamped::ConstPtr &command);
   void commandPoseHeadCB(const geometry_msgs::PoseStamped::ConstPtr &command);
   
-  // tf for transforming geometry_msgs::PoseStamped to KDL::Frame  
+  /*
+   * tf for transforming geometry_msgs::PoseStamped to KDL::Frame
+   */
   tf::TransformListener tf_;
   
-  // The tree's root name for calculatiing transforms by tf
+  /*
+   * The tree's root name for calculating transforms using tf
+   */
   std::string tree_root_name_;
   
-  // Boolean flags indicating if new poses have arrived
+  /*
+   * Flags indicating if new poses have arrived
+   */
   bool new_x_desi_torso_;
   bool new_x_desi_l_shoulder_;
   bool new_x_desi_l_elbow_;
@@ -90,7 +100,9 @@ class ReemTeleop
   bool new_x_desi_r_hand_;
   bool new_x_desi_head_;
   
-  // KDL variables (which need to be pre-allocated).
+  /*
+   * KDL variables
+   */
   KDL::Tree         kdl_tree_;          
   
   KDL::JntArray     q_;                 // Joint positions
