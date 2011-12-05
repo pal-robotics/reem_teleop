@@ -108,7 +108,7 @@ class MotionAdaption
     
     /*
      * The elbows are placed inside the arm planes at the intersection of the circles around the hands and elbows.
-     * Their radi are given by the upper and lower arm lengths. If arms are not completely strechted the normal vectors
+     * Their radii are given by the upper and lower arm lengths. If arms are not completely stretched the normal vectors
      * of the arm planes are used to chose among the two possible solutions. Further additions are made to handle small
      * calculation errors, such as assuming stretched arms, when they are very close to stretched.
      */
@@ -120,24 +120,38 @@ class MotionAdaption
      */
     bool adaptHands();    
     
-    ///
+    /*
+     * In this last step of motion adaption all goal frames (hands, elbows, head and torso) are manually aligned with
+     * the robot's convention.
+     */
     void setGoals();
 
-    ///
+    /*
+     * Deprecated!
+     * Publishes the goal frames as messages. Not used anymore.
+     */
     void publishData();
 
     ros::NodeHandle nh_, nh_private_;
 
-    /// listens to the transforms from the openni_tracker
+    /*
+     * listens to the transforms from the openni_tracker
+     */
     tf::TransformListener tf_listener_;
 
-    /// publishs transforms for internal calculations, visualization and the final results
+    /*
+     * publishes transforms for internal calculations, visualization and the final results
+     */
     tf::TransformBroadcaster tf_broadcaster_;
     
-    /// time to wait for tf transforms in seconds
+    /*
+     * time to wait for tf transforms in seconds
+     */
     double wait_for_tf_;
     
-    /// publishers and message for sending the pose commands for each endpoint
+    /*
+     * publishers and message for sending the pose commands for each endpoint
+     */
     ros::Publisher pub_torso_pose_;
     ros::Publisher pub_head_pose_;
     ros::Publisher pub_r_elbow_pose_;
