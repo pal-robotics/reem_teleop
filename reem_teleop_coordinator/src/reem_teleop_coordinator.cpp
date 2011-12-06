@@ -35,7 +35,8 @@
 /** \author Marcus Liebhardt */
 
 /*
- * \description The teleoperation coordinator retrieves transforms for the specified goal frames and calculates
+ * \brief ...
+ * The teleoperation coordinator retrieves transforms for the specified goal frames and calculates
  * the desired joint position using to reach them with the specified end points/effectors using
  * KDL's tree inverse kinematics solvers. Afterwards the new joint positions are checked if the would lead to
  * self-collision. If there is no self-collision the new joint positions are published to the specified topic.
@@ -60,7 +61,7 @@
 static const std::string FK_SERVICE = "/tree_kinematics_node/get_position_fk";
 static const std::string IK_SERVICE = "/tree_kinematics_node/get_position_ik";
 static const std::string CC_SERVICE = "/upper_body_environment_server/get_state_validity";
-static const std::string PUB_TOPIC_JOINT_STATES_CMD = "/joint_states_cmd";
+static const std::string PUB_TOPIC_JOINT_STATES_CMD = "/joint_position_controller/joint_states_cmd";
 static const std::string SUB_TOPIC_JOINT_STATES = "/joint_states";
 
 
@@ -70,6 +71,7 @@ sensor_msgs::JointState::ConstPtr joint_states_ptr; // pointer to the current jo
 
 /*
  * \brief Callback funtion for retrieving the current joint states
+ *
  * Callback funtion for retrieving the current joint states
  * Note: The used joint states 'old_joints_states' get only updated one time. Later on the joint states of the
  * last loop are used for the IK service call. Using always the current joint states would introduce an unwanted
@@ -88,6 +90,7 @@ void jointStatesCB(const sensor_msgs::JointState::ConstPtr& joint_states)
 
 /*
  * \brief Retrieving goal transformations and putting them into a geometry_msgs::PoseStamped message
+ *
  * A generic transform function for retrieving the desired transform for the goal frame
  * and putting it into a stamped pose message.
  *

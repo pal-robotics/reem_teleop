@@ -52,9 +52,12 @@ namespace tree_kinematics
 {
 
 /*
- * \brief ...
- * ...
+ * \brief This class offers services for forward and inverse kinematics calculations for tree kinematic structures.
  *
+ * This class is basically a wrapper around KDL's solvers for forward and inverse kinematics specialised on
+ * tree kinematic structures. Once configured, services are offered for conveniently executing forward
+ * and inverse kinematics calculations. This class follows the structure of the pr2_arm_kinematics and
+ * the generic arm_kinematics package, which also offer similar services although for kinematic chains.
  */
 class TreeKinematics
 {
