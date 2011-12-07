@@ -2,7 +2,7 @@
 \mainpage
 \htmlinclude manifest.html
 
-\b tree_joint_controller is ... 
+\b joint_position_controller is ... 
 
 <!-- 
 Provide an overview of your package.

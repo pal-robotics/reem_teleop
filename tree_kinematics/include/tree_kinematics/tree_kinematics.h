@@ -26,26 +26,22 @@
 #include <vector>
 #include <string>
 #include <boost/scoped_ptr.hpp>
-
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
 #include <geometry_msgs/PoseStamped.h>
-#include <kdl_parser/kdl_parser.hpp>
-
 #include <kdl/tree.hpp>
 #include <kdl/frames.hpp>
 #include <kdl/jntarray.hpp>
-
 #include <kdl/treefksolver.hpp>
 #include <kdl/treeiksolver.hpp>
 #include <kdl/treefksolverpos_recursive.hpp>
 #include <kdl/treeiksolvervel_wdls.hpp>
-#include <tree_kinematics/treeiksolverpos_online.hpp>
-
+#include <kdl_parser/kdl_parser.hpp>
 #include <kinematics_msgs/KinematicSolverInfo.h>
 #include <kinematics_msgs/GetKinematicSolverInfo.h>
-#include <tree_kinematics/get_tree_position_ik.h>
 #include <kinematics_msgs/GetPositionFK.h>
+#include <tree_kinematics/treeiksolverpos_online.hpp>
+#include <tree_kinematics/get_tree_position_ik.h>
 
 
 namespace tree_kinematics

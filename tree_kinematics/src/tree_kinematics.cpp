@@ -21,7 +21,7 @@
  * \author: Marcus Liebhardt
  */
 
-#include <urdf/joint.h>
+#include <urdf_interface/joint.h>
 #include <urdf/model.h>
 #include <tf_conversions/tf_kdl.h>
 #include "tree_kinematics/tree_kinematics.h"

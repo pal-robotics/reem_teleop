@@ -50,7 +50,7 @@
 #include <geometry_msgs/PoseArray.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <kinematics_msgs/GetPositionFK.h>
-#include <planning_environment_msgs/GetStateValidity.h>
+#include <arm_navigation_msgs/GetStateValidity.h>
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
 #include <tf/transform_listener.h>
@@ -212,10 +212,10 @@ int main(int argc, char** argv)
   (IK_SERVICE, true);
 
   // service client for self-collision and joint limits checking
-  planning_environment_msgs::GetStateValidity::Request state_val_req;
-  planning_environment_msgs::GetStateValidity::Response state_val_res;
+  arm_navigation_msgs::GetStateValidity::Request state_val_req;
+  arm_navigation_msgs::GetStateValidity::Response state_val_res;
   ros::service::waitForService(CC_SERVICE);
-  ros::ServiceClient check_state_validity_client = nh.serviceClient<planning_environment_msgs::GetStateValidity>
+  ros::ServiceClient check_state_validity_client = nh.serviceClient<arm_navigation_msgs::GetStateValidity>
   (CC_SERVICE, true);
   bool no_self_collision = false;
   bool check_self_collision, check_joint_limits = true;

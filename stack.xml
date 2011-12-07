@@ -14,5 +14,4 @@
   <depend stack="orocos_kinematics_dynamics" /> <!-- orocos_kdl -->
   <depend stack="robot_model" /> <!-- urdf -->
   <depend stack="ros" /> <!-- roscpp -->
-
 </stack>
