@@ -42,7 +42,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
 
-/*
+/**
  * \brief A simple joint position controller, which controls each joint independently of each other
  * using a PD control scheme
  *
@@ -53,7 +53,7 @@
 class JointPositionController: public pr2_controller_interface::Controller
 {
   public:
-    /*
+    /**
      * \brief Initialises the controller and loads all necessary parameters
      *
      * Initialises the controller and loads all necessary parameters
@@ -65,7 +65,7 @@ class JointPositionController: public pr2_controller_interface::Controller
      */
     bool init(pr2_mechanism_model::RobotState* robot_state, ros::NodeHandle& nh);
 
-    /*
+    /**
      * \brief Starts the controller in real-time and resets the used data structures
      *
      * Starts the controller in real time and resets the used data structures;
@@ -73,7 +73,7 @@ class JointPositionController: public pr2_controller_interface::Controller
      */
     void starting();
 
-    /*
+    /**
      * \brief Update loop of the controller (in real-time)
      *
      * The update loop determines the current position error of each joints and calculates the joint efforts to
@@ -82,7 +82,7 @@ class JointPositionController: public pr2_controller_interface::Controller
      */
     void update();
 
-    /*
+    /**
      * \brief Stops the controller (in real-time)
      *
      * Stops the controller (in real-time)
@@ -113,7 +113,7 @@ class JointPositionController: public pr2_controller_interface::Controller
 
     ros::Subscriber sub_joint_states_cmd; // subscriber to joint states commands
 
-    /*
+    /**
      * \brief callback function for the subscriber, which receives the desired joint positions
      *
      * callback function for the subscriber, which receives the desired joint positions
