@@ -58,7 +58,7 @@ void JointPositionController::jointStatesCmdCB(const sensor_msgs::JointState::Co
 }
 
 
-// Controller initialization in non-realtime
+// Controller initialisation in non-realtime
 bool JointPositionController::init(pr2_mechanism_model::RobotState* robot, ros::NodeHandle& nh)
 {
   // Store the robot handle for later use
