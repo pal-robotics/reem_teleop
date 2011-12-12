@@ -2,7 +2,9 @@
 \mainpage
 \htmlinclude manifest.html
 
-\b reem_kinematics is ... 
+The tree_kinematics class offers services for forward and inverse kinematics calculations for tree kinematic structures.
+The package also includes an inverse kinematics position solver, which respects joint position, joint velocity and
+task space velocity limits. It also applies exponential smoothing, when all end points are considered standing still.
 
 <!-- 
 Provide an overview of your package.

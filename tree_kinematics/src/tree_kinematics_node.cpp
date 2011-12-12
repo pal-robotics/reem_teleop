@@ -17,14 +17,18 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * \author: Marcus Liebhardt
  */
+/**
+ * \author Marcus Liebhardt
+ * \copyright LPGL
+ */
+
 
 #include "tree_kinematics/tree_kinematics.h"
 
-/*
+/**
  * \brief Initialising the tree_kinematics class
+ *
  * This node initialises the tree_kinematics class in order to offer the inverse and forward kinematics services.
  *
  * @return -1 if tree_kinematics class could not be initialised and 0 if program was stopped manually.

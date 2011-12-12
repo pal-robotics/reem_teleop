@@ -1,7 +1,8 @@
 <package>
   <description brief="tree_kinematics">
 
-     tree_kinematics
+     This package consists of the tree_kinematic_node, which offers services for inverse 
+     and forward kinematics calculations for tree structures.
 
   </description>
   <author>Marcus Liebhardt</author>

@@ -19,12 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * \author: Marcus Liebhardt
- *
- * This class has been derived from the KDL::TreeIkSolverPos_NR_JL class
- * by Julia Jesse, Mikael Mayer and Ruben Smits
- *
+ */
+/**
+ * \author Marcus Liebhardt
+ * \author This class has been derived from the KDL::TreeIkSolverPos_NR_JL class
+ *         by Julia Jesse, Mikael Mayer and Ruben Smits.
+ * \copyright LPGL
  */
 
 #include "tree_kinematics/treeiksolverpos_online.hpp"

@@ -19,12 +19,12 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * \author: Marcus Liebhardt
- *
- * This class has been derived from the KDL::TreeIkSolverPos_NR_JL class
- * by Julia Jesse, Mikael Mayer and Ruben Smits
- *
+ */
+/**
+ * \author Marcus Liebhardt
+ * \author This class has been derived from the KDL::TreeIkSolverPos_NR_JL class
+ *         by Julia Jesse, Mikael Mayer and Ruben Smits.
+ * \copyright LPGL
  */
 
 #ifndef KDLTREEIKSOLVERPOS_ONLINE_HPP
@@ -39,7 +39,7 @@
 namespace KDL
 {
 
-/*
+/**
  * \brief An inverse position kinematics solver for tree structures, which additionally respects several constraints
  *
  * Implementation of a general inverse position kinematics algorithm to calculate the position transformation from
@@ -52,7 +52,7 @@ namespace KDL
 class TreeIkSolverPos_Online: public TreeIkSolverPos
 {
 public:
-    /*
+    /**
      * @param nr_of_jnts pointer to the number of joints of the tree to calculate the joint positions for
      * @param endpoints pointer to the list of end points you are interested in
      * @param fksolver pointer to a forward position kinematics solver
@@ -87,7 +87,7 @@ public:
 
     ~TreeIkSolverPos_Online();
 
-    /*
+    /**
      * \brief Calculates the joint positions to reach the specified end effector poses
      *
      * This method does the actual calculation. Inside the velocity IK solver is called, which is calculating the
@@ -105,7 +105,7 @@ public:
     double CartToJnt(const JntArray& q_in, const Frames& p_in, JntArray& q_out);
 
 private:
-  /*
+  /**
    * \brief Checks the velocities in Cartesian space and scales them, if they exceed their maximum value
    *
    * Scales translational and rotational velocity vectors of the class member KDL::Twist twist_,
@@ -116,8 +116,8 @@ private:
    */
   bool enforceCartVelLimits();
 
-  /*
-   *\brief Checks the joint velocities and scales them, if they exceed their maximum value
+  /**
+   * \brief Checks the joint velocities and scales them, if they exceed their maximum value
    *
    * Scales the class member KDL::JntArray q_dot_, if one (or more) joint velocity exceeds the maximum value.
    * Scaling is done proportional to the biggest overshoot among all joint velocities.
@@ -126,7 +126,7 @@ private:
    */
   bool enforceJointVelLimits();
 
-  /*
+  /**
    * \brief Filters the joint positions using exponential smoothing
    *
    * This method filters the new joint positions using exponential smoothing and based on the smoothing factor

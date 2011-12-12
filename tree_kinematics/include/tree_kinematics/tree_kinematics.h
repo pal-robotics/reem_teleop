@@ -17,10 +17,12 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * \author: Marcus Liebhardt
- *
- * This class has been inspired by Sachin Chitta's pr2_arm_kinematics and David Lu's gerneric arm_kinematics package.
+ */
+/**
+ * \author Marcus Liebhardt
+ * \author This class has been inspired by Sachin Chitta's pr2_arm_kinematics and David Lu's gerneric a
+ *         arm_kinematics package.
+ * \copyright LPGL
  */
 
 #include <vector>
@@ -51,7 +53,7 @@
 namespace tree_kinematics
 {
 
-/*
+/**
  * \brief This class offers services for forward and inverse kinematics calculations for tree kinematic structures.
  *
  * This class is basically a wrapper around KDL's solvers for forward and inverse kinematics specialised on
@@ -73,7 +75,7 @@ class TreeKinematics
 
     ~TreeKinematics(){};
 
-    /*
+    /**
      * \brief Configures the tree_kinematics class
      *
      * This methods loads a lot of parameters from the parameter server. Most of them have hard-coded default
@@ -86,9 +88,9 @@ class TreeKinematics
      */
     bool init();
 
-    /*
+    /**
      * \brief Uses the given joint positions to calculate the position(s) of the specified end point(s)
-     * in Cartesian coordinates
+     *        in Cartesian coordinates
      *
      * This method is basically a wrapper for KDL's FK solver to get the end point position in Cartesian coordinates
      * based on the given joint positions, which are retrieved from the model.
@@ -103,7 +105,7 @@ class TreeKinematics
     bool getPositionFk(kinematics_msgs::GetPositionFK::Request& request,
                        kinematics_msgs::GetPositionFK::Response& response);
 
-    /*
+    /**
      * \brief Uses the given end point position(s) in Cartesian coordinates to calculate new joint positions.
      *
      * This method is basically a wrapper for KDL's IK solver to calculated the necessary joint positions to reach
@@ -137,7 +139,8 @@ class TreeKinematics
     tf::TransformListener tf_listener_;
     kinematics_msgs::KinematicSolverInfo info_;
 
-    /* \brief Initialises the robot model and KDL::Tree and calls readJoints(...)
+    /**
+     * \brief Initialises the robot model and KDL::Tree and calls readJoints(...)
      *
      * This method initialises the robot model and KDL::Tree and calls readJoints(...).
      *
@@ -160,7 +163,8 @@ class TreeKinematics
                    KDL::JntArray& joint_max,
                    KDL::JntArray& joint_vel_max);
 
-    /* \brief Retrieves information about all joints in the given model
+    /**
+     * \brief Retrieves information about all joints in the given model
      *
      * Using the provided root a subtree is extracted. This subtree is then searched for the all joints and their
      * position and velocity limits.
@@ -184,7 +188,8 @@ class TreeKinematics
                     KDL::JntArray& joint_max,
                     KDL::JntArray& joint_vel_max);
 
-    /* \brief Returns the index of the joint
+    /**
+     * \brief Returns the index of the joint
      *
      * Returns the index of the joint; used by getPositionFk(...) and getPositionIk (...);
      *
