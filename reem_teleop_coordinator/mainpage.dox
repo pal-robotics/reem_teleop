@@ -2,7 +2,8 @@
 \mainpage
 \htmlinclude manifest.html
 
-\b reem_teleop_coordinator is ... 
+reem_teleop_coordinator controls the information flow between the target end point poses, IK calculations, 
+self-collision checking and the final output of joint positions.
 
 <!-- 
 Provide an overview of your package.

@@ -34,8 +34,10 @@
 
 /** \author Marcus Liebhardt */
 
-/*
- * \brief ...
+/**
+ * \brief Controls the information flow between the target end point poses, IK calculations,
+ *        self-collision checking and the final output of joint positions
+ *
  * The teleoperation coordinator retrieves transforms for the specified goal frames and calculates
  * the desired joint position using to reach them with the specified end points/effectors using
  * KDL's tree inverse kinematics solvers. Afterwards the new joint positions are checked if the would lead to
@@ -69,7 +71,7 @@ bool joint_states_valid = false; // flag to indicate, if there is valid informat
 sensor_msgs::JointState old_joint_state; // old joint states
 sensor_msgs::JointState::ConstPtr joint_states_ptr; // pointer to the current joint states
 
-/*
+/**
  * \brief Callback funtion for retrieving the current joint states
  *
  * Callback funtion for retrieving the current joint states
@@ -88,7 +90,7 @@ void jointStatesCB(const sensor_msgs::JointState::ConstPtr& joint_states)
 }
 
 
-/*
+/**
  * \brief Retrieving goal transformations and putting them into a geometry_msgs::PoseStamped message
  *
  * A generic transform function for retrieving the desired transform for the goal frame
@@ -99,7 +101,7 @@ void jointStatesCB(const sensor_msgs::JointState::ConstPtr& joint_states)
  * @param goal_frame_name the name of the frame, which transform shall be retrieved
  * @param pose pointer to the pose message, which will contain the transformation information
  *
- * @ returns true, if transformation could be retrieved, false if not
+ * @ returns true, if transformation could be retrieved
  */
 bool getGoalTransform(tf::TransformListener& tf_listener,
                       std::string& root_frame_name,
@@ -251,9 +253,7 @@ int main(int argc, char** argv)
   {
     ros::spinOnce();
 
-    /*
-     * Retrieve current transforms for the configured goal frames and put them into pose messages
-     */
+    // Retrieve current transforms for the configured goal frames and put them into pose messages
     std::map<std::string, geometry_msgs::PoseStamped>::iterator poses_it;
     geometry_msgs::PoseStamped pose;
     bool goal_transforms_valid = true;
@@ -269,17 +269,13 @@ int main(int argc, char** argv)
       }
     }
 
-    /*
-     * The main part
-     * If there are joint states and transforms for all goals are available, the IK service gets called for to get new
-     * joint states (positions), the self-collision-checking service gets called and if the new joint positions
-     * are self-collision free they get published on the specified topic.
-     */
+    // The main part
+    // If there are joint states and transforms for all goals are available, the IK service gets called for to get new
+    // joint states (positions), the self-collision-checking service gets called and if the new joint positions
+    // are self-collision free they get published on the specified topic.
     if (joint_states_valid && goal_transforms_valid)
     {
-      /*
-       *  IK calculations
-       */
+      //  IK calculations
       // feed pose messages for every endpoint into the request
       tree_ik_srv.request.pos_ik_request.clear();
       kinematics_msgs::PositionIKRequest pos_ik_request;
@@ -341,9 +337,7 @@ int main(int argc, char** argv)
       ik_duration = ros::Time::now().toSec() - ik_duration;
       ik_duration_median = ((ik_duration_median * (loop_count - 1)) + ik_duration) / loop_count;
 
-      /*
-       * self-collision checking
-       */
+      // Self-collision checking
       state_val_req.robot_state = tree_ik_srv.response.solution;
       state_val_req.check_collisions = check_self_collision;
       state_val_req.check_joint_limits = check_joint_limits;
@@ -368,9 +362,7 @@ int main(int argc, char** argv)
       scc_duration = ros::Time::now().toSec() - scc_duration;
       scc_duration_median = ((scc_duration_median * (loop_count - 1)) + scc_duration) / loop_count;
 
-      /*
-       * Publishing new joint positions, if they are self-collision free
-       */
+      // Publishing new joint positions, if they are self-collision free
       if(no_self_collision == true)
       {
         joint_states_cmd = tree_ik_srv.response.solution.joint_state;
@@ -387,9 +379,7 @@ int main(int argc, char** argv)
       }
       pub_joint_states_cmd.publish(joint_states_cmd);
 
-      /*
-       * For debug and visualisation purpose: publish forward kinematics messages on tf
-       */
+      // For debug and visualisation purpose: publish forward kinematics messages on tf
       cjp_duration = ros::Time::now().toSec();
 
       tree_fk_srv.request.header.stamp = ros::Time::now();
