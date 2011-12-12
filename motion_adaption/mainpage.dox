@@ -2,7 +2,8 @@
 \mainpage
 \htmlinclude manifest.html
 
-\b motion_adaption is ... 
+Motion adaption uses the transforms of the specified operator end points, scales them according to the robot's
+body proportions and maps them onto the robot. The orientation of each end point is mapped unchanged. 
 
 <!-- 
 Provide an overview of your package.
