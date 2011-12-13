@@ -422,11 +422,11 @@ bool MotionAdaption::adaptHands()
   }
   tf_r_hand_adjusted_.setIdentity();
   tf_r_hand_adjusted_.setOrigin(btVector3(robot_lower_arm_length_, 0.0, 0.0));
-  tf_broadcaster_.sendTransform(tf::StampedTransform(tf_r_hand_adjusted_, ros::Time::now(), "/r_elbow_adapted", "/r_hand_adapted"));
+ // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_r_hand_adjusted_, ros::Time::now(), "/r_elbow_adapted", "/r_hand_adapted"));
   internal_tf.setTransform(tf::StampedTransform(tf_r_hand_adjusted_, ros::Time::now(), "/r_elbow_adapted", "/r_hand_adapted"));
   tf_l_hand_goal_.setIdentity();
   tf_l_hand_goal_.setOrigin(btVector3(robot_lower_arm_length_, 0.0, 0.0));
-  tf_broadcaster_.sendTransform(tf::StampedTransform(tf_l_hand_goal_, ros::Time::now(), "/l_elbow_adapted", "/l_hand_adapted"));
+ // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_l_hand_goal_, ros::Time::now(), "/l_elbow_adapted", "/l_hand_adapted"));
   internal_tf.setTransform(tf::StampedTransform(tf_l_hand_goal_, ros::Time::now(), "/l_elbow_adapted", "/l_hand_adapted"));
   return true;
 }
