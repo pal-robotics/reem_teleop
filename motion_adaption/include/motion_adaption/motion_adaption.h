@@ -58,7 +58,8 @@ class MotionAdaption
     void adapt();
 
   private:
-
+    //internal tf library
+    tf::Transformer internal_tf;
     ///
     bool getTransforms();
 
