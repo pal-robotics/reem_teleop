@@ -54,7 +54,6 @@ void MotionAdaption::setGoals()
   tf_head_goal_.setRotation(quat_);
   internal_tf.setTransform(tf::StampedTransform(tf_head_goal_, ros::Time::now(), "/head_adapted", "/head_goal"));
   internal_tf.lookupTransform("/ref_frame", "/head_goal", ros::Time(0), out_tf);
-  ////// TEST REMAPING TF
   tf_broadcaster_.sendTransform(tf::StampedTransform(out_tf, ros::Time::now(),  "/ref_frame", "/head_goal"));
   
   // right elbow goal
@@ -63,9 +62,7 @@ void MotionAdaption::setGoals()
   quat_.setRPY(r_elbow_goal_rot_vec_[0], r_elbow_goal_rot_vec_[1], r_elbow_goal_rot_vec_[2]);
   tf_r_elbow_goal_.setRotation(quat_);
   internal_tf.setTransform(tf::StampedTransform(tf_r_elbow_goal_, ros::Time::now(), "/r_elbow_adapted", "/r_elbow_goal"));
-
   internal_tf.lookupTransform("/ref_frame", "/r_elbow_goal", ros::Time(0), out_tf);
-  ////// TEST REMAPING TF
   tf_broadcaster_.sendTransform(tf::StampedTransform(out_tf, ros::Time::now(),  "/ref_frame", "/r_elbow_goal"));
 
 
@@ -75,9 +72,7 @@ void MotionAdaption::setGoals()
   quat_.setRPY(l_elbow_goal_rot_vec_[0], l_elbow_goal_rot_vec_[1], l_elbow_goal_rot_vec_[2]);
   tf_l_elbow_goal_.setRotation(quat_);
   internal_tf.setTransform(tf::StampedTransform(tf_l_elbow_goal_, ros::Time::now(), "/l_elbow_adapted", "/l_elbow_goal"));
-  
   internal_tf.lookupTransform("/ref_frame", "/l_elbow_goal", ros::Time(0), out_tf);
-  ////// TEST REMAPING TF
   tf_broadcaster_.sendTransform(tf::StampedTransform(out_tf, ros::Time::now(),  "/ref_frame", "/l_elbow_goal"));
   
   // right hand goal
@@ -87,9 +82,7 @@ void MotionAdaption::setGoals()
   tf_r_hand_goal_.setRotation(quat_);
  // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_r_hand_goal_, ros::Time::now(), "/r_hand_adapted", "/r_hand_goal"));
   internal_tf.setTransform(tf::StampedTransform(tf_r_hand_goal_, ros::Time::now(),  "/r_hand_adapted", "/r_hand_goal"));
-
   internal_tf.lookupTransform("/ref_frame", "/r_hand_goal", ros::Time(0), out_tf);
-  ////// TEST REMAPING TF
   tf_broadcaster_.sendTransform(tf::StampedTransform(out_tf, ros::Time::now(),  "/ref_frame", "/r_hand_goal"));
 
   // left hand goal
@@ -99,10 +92,7 @@ void MotionAdaption::setGoals()
   tf_l_hand_goal_.setRotation(quat_);
   //tf_broadcaster_.sendTransform(tf::StampedTransform(tf_l_hand_goal_, ros::Time::now(),  "/l_hand_adapted", "/l_hand_goal"));
   internal_tf.setTransform(tf::StampedTransform(tf_l_hand_goal_, ros::Time::now(),  "/l_hand_adapted", "/l_hand_goal"));
-  
-
   internal_tf.lookupTransform("/ref_frame", "/l_hand_goal", ros::Time(0), out_tf);
-  ////// TEST REMAPING TF
   tf_broadcaster_.sendTransform(tf::StampedTransform(out_tf, ros::Time::now(),  "/ref_frame", "/l_hand_goal"));
   /* un-comment this part to published unscaled but aligned transforms
   
