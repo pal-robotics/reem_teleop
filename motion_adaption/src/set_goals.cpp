@@ -45,7 +45,7 @@ void MotionAdaption::setGoals()
   //quat_.setRPY(M_PI, M_PI/2, 0);
   quat_.setRPY(torso_goal_rot_vec_[0], torso_goal_rot_vec_[1], torso_goal_rot_vec_[2]);
   tf_torso_goal_.setRotation(quat_);
-  tf_broadcaster_.sendTransform(tf::StampedTransform(tf_torso_goal_, ros::Time::now(), "/torso_adapted", "/torso_goal"));
+  tf_broadcaster_.sendTransform(tf::StampedTransform(tf_torso_goal_, ros::Time::now(), "/ref_frame", "/torso_goal"));
   
   // head goal
   tf_head_goal_.setOrigin(tf::Vector3(0.0, 0.0, 0.0));

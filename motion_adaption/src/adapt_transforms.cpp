@@ -80,7 +80,7 @@ bool MotionAdaption::adaptTorso()
   // enter code here for setting a torso frame not centered at the robot's reference frame
   
   tf_torso_goal_.setIdentity();
-  tf_broadcaster_.sendTransform(tf::StampedTransform(tf_torso_goal_, ros::Time::now(), "/ref_frame", "/torso_adapted"));
+ // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_torso_goal_, ros::Time::now(), "/ref_frame", "/torso_adapted"));
   internal_tf.setTransform(tf::StampedTransform(tf_torso_goal_, ros::Time::now(), "/ref_frame", "/torso_adapted"));  
   
   return true;
