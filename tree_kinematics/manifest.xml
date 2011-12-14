@@ -1,9 +1,8 @@
 <package>
   <description brief="tree_kinematics">
-
-     This package consists of the tree_kinematic_node, which offers services for inverse 
-     and forward kinematics calculations for tree structures.
-
+    This package can be used to compute forward and inverse kinematics for tree kinematic structures. The package also 
+    includes an inverse kinematics position solver, which respects joint position, joint velocity and task space
+    velocity limits. It also applies exponential smoothing, when all end points are considered standing still.
   </description>
   <author>Marcus Liebhardt</author>
   <license>LGPL</license>

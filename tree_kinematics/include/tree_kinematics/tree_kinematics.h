@@ -22,6 +22,7 @@
  * \author Marcus Liebhardt
  * \author This class has been inspired by Sachin Chitta's pr2_arm_kinematics and David Lu's gerneric a
  *         arm_kinematics package.
+ *
  * \copyright LPGL
  */
 
