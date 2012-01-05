@@ -51,8 +51,8 @@ void MotionAdaption::setGoals()
   quat_.setRPY(torso_goal_rot_vec_[0], torso_goal_rot_vec_[1], torso_goal_rot_vec_[2]);
   tf_torso_goal_.setRotation(quat_);
   //tf_broadcaster_.sendTransform(tf::StampedTransform(tf_torso_goal_, ros::Time::now(), "/ref_frame", "/torso_goal"));
-   out_tf.stamp_ = publish_time;
    out_tf = tf_torso_goal_;
+   out_tf.stamp_ = publish_time;
    out_tf.frame_id_ = "/ref_frame"; 
    out_tf.child_frame_id_ = "/torso_goal";
    tf_transforms[0] = out_tf;
