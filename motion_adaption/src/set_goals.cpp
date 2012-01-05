@@ -39,61 +39,93 @@
 
 void MotionAdaption::setGoals()
 {
+
+  ros::Time publish_time = ros::Time::now();
+   std::vector<tf::StampedTransform> tf_transforms(6);
+ 
+
   tf::StampedTransform out_tf;
   // torso goal
   tf_torso_goal_.setOrigin(tf::Vector3(0.0, 0.0, 0.0));
   //quat_.setRPY(M_PI, M_PI/2, 0);
   quat_.setRPY(torso_goal_rot_vec_[0], torso_goal_rot_vec_[1], torso_goal_rot_vec_[2]);
   tf_torso_goal_.setRotation(quat_);
-  tf_broadcaster_.sendTransform(tf::StampedTransform(tf_torso_goal_, ros::Time::now(), "/ref_frame", "/torso_goal"));
+  //tf_broadcaster_.sendTransform(tf::StampedTransform(tf_torso_goal_, ros::Time::now(), "/ref_frame", "/torso_goal"));
+   out_tf.stamp_ = publish_time;
+   out_tf = tf_torso_goal_;
+   out_tf.frame_id_ = "/ref_frame"; 
+   out_tf.child_frame_id_ = "/torso_goal";
+   tf_transforms[0] = out_tf;
   
   // head goal
   tf_head_goal_.setOrigin(tf::Vector3(0.0, 0.0, 0.0));
   //quat_.setRPY(M_PI, M_PI/2, 0);
   quat_.setRPY(head_goal_rot_vec_[0], head_goal_rot_vec_[1], head_goal_rot_vec_[2]);
   tf_head_goal_.setRotation(quat_);
-  internal_tf.setTransform(tf::StampedTransform(tf_head_goal_, ros::Time::now(), "/head_adapted", "/head_goal"));
+  internal_tf.setTransform(tf::StampedTransform(tf_head_goal_, calc_time, "/head_adapted", "/head_goal"));
   internal_tf.lookupTransform("/ref_frame", "/head_goal", ros::Time(0), out_tf);
-  tf_broadcaster_.sendTransform(tf::StampedTransform(out_tf, ros::Time::now(),  "/ref_frame", "/head_goal"));
+  //tf_broadcaster_.sendTransform(tf::StampedTransform(out_tf, ros::Time::now(),  "/ref_frame", "/head_goal"));
+   out_tf.stamp_ = publish_time;
+   out_tf.frame_id_ = "/ref_frame"; 
+   out_tf.child_frame_id_ = "/head_goal";
+   tf_transforms[1] = out_tf;
   
   // right elbow goal
   tf_r_elbow_goal_.setOrigin(btVector3(0.0, 0.0, 0.0));
   //quat_.setRPY(M_PI, 0.0, M_PI);
   quat_.setRPY(r_elbow_goal_rot_vec_[0], r_elbow_goal_rot_vec_[1], r_elbow_goal_rot_vec_[2]);
   tf_r_elbow_goal_.setRotation(quat_);
-  internal_tf.setTransform(tf::StampedTransform(tf_r_elbow_goal_, ros::Time::now(), "/r_elbow_adapted", "/r_elbow_goal"));
+  internal_tf.setTransform(tf::StampedTransform(tf_r_elbow_goal_, calc_time, "/r_elbow_adapted", "/r_elbow_goal"));
   internal_tf.lookupTransform("/ref_frame", "/r_elbow_goal", ros::Time(0), out_tf);
-  tf_broadcaster_.sendTransform(tf::StampedTransform(out_tf, ros::Time::now(),  "/ref_frame", "/r_elbow_goal"));
-
+ // tf_broadcaster_.sendTransform(tf::StampedTransform(out_tf, ros::Time::now(),  "/ref_frame", "/r_elbow_goal"));
+   out_tf.stamp_ = publish_time;
+   out_tf.frame_id_ = "/ref_frame"; 
+   out_tf.child_frame_id_ = "/r_elbow_goal";
+   tf_transforms[2] = out_tf;
 
   // left elbow goal  
   tf_l_elbow_goal_.setOrigin(btVector3(0.0, 0.0, 0.0));
   //quat_.setRPY(0.0, M_PI, 0.0);
   quat_.setRPY(l_elbow_goal_rot_vec_[0], l_elbow_goal_rot_vec_[1], l_elbow_goal_rot_vec_[2]);
   tf_l_elbow_goal_.setRotation(quat_);
-  internal_tf.setTransform(tf::StampedTransform(tf_l_elbow_goal_, ros::Time::now(), "/l_elbow_adapted", "/l_elbow_goal"));
+  internal_tf.setTransform(tf::StampedTransform(tf_l_elbow_goal_, calc_time, "/l_elbow_adapted", "/l_elbow_goal"));
   internal_tf.lookupTransform("/ref_frame", "/l_elbow_goal", ros::Time(0), out_tf);
-  tf_broadcaster_.sendTransform(tf::StampedTransform(out_tf, ros::Time::now(),  "/ref_frame", "/l_elbow_goal"));
-  
+  //tf_broadcaster_.sendTransform(tf::StampedTransform(out_tf, ros::Time::now(),  "/ref_frame", "/l_elbow_goal"));
+   out_tf.stamp_ = publish_time;
+   out_tf.frame_id_ = "/ref_frame"; 
+   out_tf.child_frame_id_ = "/l_elbow_goal";
+   tf_transforms[3] = out_tf;  
+
   // right hand goal
   tf_r_hand_goal_.setOrigin(btVector3(0.0, 0.0, 0.0));
   //quat_.setRPY(0.0, M_PI/2, 0.0);
   quat_.setRPY(r_hand_goal_rot_vec_[0], r_hand_goal_rot_vec_[1], r_hand_goal_rot_vec_[2]);
   tf_r_hand_goal_.setRotation(quat_);
  // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_r_hand_goal_, ros::Time::now(), "/r_hand_adapted", "/r_hand_goal"));
-  internal_tf.setTransform(tf::StampedTransform(tf_r_hand_goal_, ros::Time::now(),  "/r_hand_adapted", "/r_hand_goal"));
+  internal_tf.setTransform(tf::StampedTransform(tf_r_hand_goal_, calc_time,  "/r_hand_adapted", "/r_hand_goal"));
   internal_tf.lookupTransform("/ref_frame", "/r_hand_goal", ros::Time(0), out_tf);
-  tf_broadcaster_.sendTransform(tf::StampedTransform(out_tf, ros::Time::now(),  "/ref_frame", "/r_hand_goal"));
+  //tf_broadcaster_.sendTransform(tf::StampedTransform(out_tf, ros::Time::now(),  "/ref_frame", "/r_hand_goal"));
+   out_tf.stamp_ = publish_time;
+   out_tf.frame_id_ = "/ref_frame"; 
+   out_tf.child_frame_id_ = "/r_hand_goal";
+   tf_transforms[4] = out_tf;
 
-  // left hand goal
+   // left hand goal
   tf_l_hand_goal_.setOrigin(btVector3(0.0, 0.0, 0.0));
   //quat_.setRPY(0.0, -M_PI/2, 0.0);
   quat_.setRPY(l_hand_goal_rot_vec_[0], l_hand_goal_rot_vec_[1], l_hand_goal_rot_vec_[2]);
   tf_l_hand_goal_.setRotation(quat_);
   //tf_broadcaster_.sendTransform(tf::StampedTransform(tf_l_hand_goal_, ros::Time::now(),  "/l_hand_adapted", "/l_hand_goal"));
-  internal_tf.setTransform(tf::StampedTransform(tf_l_hand_goal_, ros::Time::now(),  "/l_hand_adapted", "/l_hand_goal"));
+  internal_tf.setTransform(tf::StampedTransform(tf_l_hand_goal_, calc_time,  "/l_hand_adapted", "/l_hand_goal"));
   internal_tf.lookupTransform("/ref_frame", "/l_hand_goal", ros::Time(0), out_tf);
-  tf_broadcaster_.sendTransform(tf::StampedTransform(out_tf, ros::Time::now(),  "/ref_frame", "/l_hand_goal"));
+  // tf_broadcaster_.sendTransform(tf::StampedTransform(out_tf, ros::Time::now(),  "/ref_frame", "/l_hand_goal"));
+   out_tf.stamp_ = publish_time;
+   out_tf.frame_id_ = "/ref_frame"; 
+   out_tf.child_frame_id_ = "/l_hand_goal";
+   tf_transforms[5] = out_tf;  
+
+
+   tf_broadcaster_.sendTransform(tf_transforms);
   /* un-comment this part to published unscaled but aligned transforms
   
   /* un-comment this part to published unscaled but aligned transforms

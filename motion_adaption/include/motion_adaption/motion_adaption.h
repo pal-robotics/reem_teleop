@@ -60,6 +60,7 @@ class MotionAdaption
   private:
     //internal tf library
     tf::Transformer internal_tf;
+    ros::Time calc_time;
     ///
     bool getTransforms();
 

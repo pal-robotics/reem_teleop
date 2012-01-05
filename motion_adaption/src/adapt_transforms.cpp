@@ -81,7 +81,7 @@ bool MotionAdaption::adaptTorso()
   
   tf_torso_goal_.setIdentity();
  // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_torso_goal_, ros::Time::now(), "/ref_frame", "/torso_adapted"));
-  internal_tf.setTransform(tf::StampedTransform(tf_torso_goal_, ros::Time::now(), "/ref_frame", "/torso_adapted"));  
+  internal_tf.setTransform(tf::StampedTransform(tf_torso_goal_, calc_time, "/ref_frame", "/torso_adapted"));  
   
   return true;
 }
@@ -110,7 +110,7 @@ bool MotionAdaption::adaptHead()
   tf_head_goal_.setRotation(quat_);
   */
  // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_head_goal_, ros::Time::now(),"/ref_frame", "/head_adapted"));
-  internal_tf.setTransform(tf::StampedTransform(tf_head_goal_, ros::Time::now(),"/ref_frame", "/head_adapted"));
+  internal_tf.setTransform(tf::StampedTransform(tf_head_goal_, calc_time,"/ref_frame", "/head_adapted"));
   
   return true;
 }
@@ -158,13 +158,13 @@ bool MotionAdaption::scaleUserHandsAndElbows()
     tf_l_elbow_scaled_.setOrigin(tf::Vector3(x_adapt_, y_adapt_, z_adapt_));
     
  //  tf_broadcaster_.sendTransform(tf::StampedTransform(tf_r_elbow_scaled_, ros::Time::now(), "/ref_frame", "/r_elbow_scaled"));  
-    internal_tf.setTransform(tf::StampedTransform(tf_r_elbow_scaled_, ros::Time::now(), "/ref_frame", "/r_elbow_scaled"));  
+    internal_tf.setTransform(tf::StampedTransform(tf_r_elbow_scaled_, calc_time, "/ref_frame", "/r_elbow_scaled"));  
  //   tf_broadcaster_.sendTransform(tf::StampedTransform(tf_r_hand_scaled_, ros::Time::now(), "/ref_frame", "/r_hand_scaled"));
-    internal_tf.setTransform(tf::StampedTransform(tf_r_hand_scaled_, ros::Time::now(), "/ref_frame", "/r_hand_scaled"));
+    internal_tf.setTransform(tf::StampedTransform(tf_r_hand_scaled_, calc_time, "/ref_frame", "/r_hand_scaled"));
   //  tf_broadcaster_.sendTransform(tf::StampedTransform(tf_l_elbow_scaled_, ros::Time::now(), "/ref_frame", "/l_elbow_scaled"));  
-    internal_tf.setTransform(tf::StampedTransform(tf_l_elbow_scaled_, ros::Time::now(), "/ref_frame", "/l_elbow_scaled"));  
+    internal_tf.setTransform(tf::StampedTransform(tf_l_elbow_scaled_, calc_time, "/ref_frame", "/l_elbow_scaled"));  
    // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_l_hand_scaled_, ros::Time::now(), "/ref_frame", "/l_hand_scaled"));
-    internal_tf.setTransform(tf::StampedTransform(tf_l_hand_scaled_, ros::Time::now(), "/ref_frame", "/l_hand_scaled"));
+    internal_tf.setTransform(tf::StampedTransform(tf_l_hand_scaled_, calc_time, "/ref_frame", "/l_hand_scaled"));
   }
   else
   {
@@ -218,9 +218,9 @@ bool MotionAdaption::adaptShoulders()
   tf_r_shoulder_scaled_.setOrigin(tf_robot_torso_r_shoulder_.getOrigin());
   tf_l_shoulder_scaled_.setOrigin(tf_robot_torso_l_shoulder_.getOrigin());
 //  tf_broadcaster_.sendTransform(tf::StampedTransform(tf_r_shoulder_scaled_, ros::Time::now(),"/ref_frame", "/r_robot_shoulder"));
-  internal_tf.setTransform(tf::StampedTransform(tf_r_shoulder_scaled_, ros::Time::now(),"/ref_frame", "/r_robot_shoulder"));
+  internal_tf.setTransform(tf::StampedTransform(tf_r_shoulder_scaled_, calc_time,"/ref_frame", "/r_robot_shoulder"));
 // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_l_shoulder_scaled_, ros::Time::now(),"/ref_frame", "/l_robot_shoulder"));
-  internal_tf.setTransform(tf::StampedTransform(tf_l_shoulder_scaled_, ros::Time::now(),"/ref_frame", "/l_robot_shoulder"));
+  internal_tf.setTransform(tf::StampedTransform(tf_l_shoulder_scaled_, calc_time,"/ref_frame", "/l_robot_shoulder"));
   /*
   tf_r_shoulder_scaled_.setOrigin(tf::Vector3(robot_shoulder_width_*0;.5, robot_shoulder_heigth_,    
   robot_shoulder_x_offset_));
@@ -277,7 +277,7 @@ bool MotionAdaption::adaptShoulders()
                             vec_shoulder_hand_.z(), vec_helper_.z(), vec_normal_.z());  
   tf_r_shoulder_goal_.setBasis(mat_orientation_);  
  // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_r_shoulder_goal_, ros::Time::now(), "/r_robot_shoulder", "/r_shoulder_adapted"));
-  internal_tf.setTransform(tf::StampedTransform(tf_r_shoulder_goal_, ros::Time::now(), "/r_robot_shoulder", "/r_shoulder_adapted"));
+  internal_tf.setTransform(tf::StampedTransform(tf_r_shoulder_goal_, calc_time, "/r_robot_shoulder", "/r_shoulder_adapted"));
   
   // left shoulder  
   vec_shoulder_elbow_ = tf_l_shoulder_elbow_.getOrigin();
@@ -304,7 +304,7 @@ bool MotionAdaption::adaptShoulders()
                             vec_shoulder_hand_.z(), vec_helper_.z(), vec_normal_.z());  
   tf_l_shoulder_goal_.setBasis(mat_orientation_);
 //  tf_broadcaster_.sendTransform(tf::StampedTransform(tf_l_shoulder_goal_, ros::Time::now(), "/l_robot_shoulder", "/l_shoulder_adapted"));
-  internal_tf.setTransform(tf::StampedTransform(tf_l_shoulder_goal_, ros::Time::now(), "/l_robot_shoulder", "/l_shoulder_adapted"));
+  internal_tf.setTransform(tf::StampedTransform(tf_l_shoulder_goal_, calc_time, "/l_robot_shoulder", "/l_shoulder_adapted"));
   return true;
 }
 
@@ -331,7 +331,7 @@ bool MotionAdaption::adaptElbows()
   }  
   tf_r_elbow_pos_.setOrigin(tf::Vector3(elbow_x_, elbow_y_, 0.0));
   //tf_broadcaster_.sendTransform(tf::StampedTransform(tf_r_elbow_pos_, ros::Time::now(), "/r_shoulder_adapted", "/r_elbow_pos"));  
-  internal_tf.setTransform(tf::StampedTransform(tf_r_elbow_pos_, ros::Time::now(), "/r_shoulder_adapted", "/r_elbow_pos"));  
+  internal_tf.setTransform(tf::StampedTransform(tf_r_elbow_pos_, calc_time, "/r_shoulder_adapted", "/r_elbow_pos"));  
   
   limb_length_ = tf_l_shoulder_hand_.getOrigin().length();
   if (limb_length_ >= robot_arm_length_ || l_elbow_extended_)
@@ -352,7 +352,7 @@ bool MotionAdaption::adaptElbows()
   }
   tf_l_elbow_pos_.setOrigin(tf::Vector3(elbow_x_, elbow_y_, 0.0));
 //  tf_broadcaster_.sendTransform(tf::StampedTransform(tf_l_elbow_pos_, ros::Time::now(), "/l_shoulder_adapted", "/l_elbow_pos"));  
-  internal_tf.setTransform(tf::StampedTransform(tf_l_elbow_pos_, ros::Time::now(), "/l_shoulder_adapted", "/l_elbow_pos"));  
+  internal_tf.setTransform(tf::StampedTransform(tf_l_elbow_pos_, calc_time, "/l_shoulder_adapted", "/l_elbow_pos"));  
   
   // orientations
   try
@@ -386,7 +386,7 @@ bool MotionAdaption::adaptElbows()
   tf_r_elbow_goal_.setBasis(mat_orientation_);
   
  // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_r_elbow_goal_, ros::Time::now(), "/r_shoulder_adapted", "/r_elbow_adapted"));    
-  internal_tf.setTransform(tf::StampedTransform(tf_r_elbow_goal_, ros::Time::now(), "/r_shoulder_adapted", "/r_elbow_adapted"));    
+  internal_tf.setTransform(tf::StampedTransform(tf_r_elbow_goal_, calc_time, "/r_shoulder_adapted", "/r_elbow_adapted"));    
   vec_elbow_hand_ = tf_l_elbow_hand_.getOrigin();
   vec_normal_ = btVector3(0.0, 0.0, 1.0);  
   vec_helper_ = vec_normal_.cross(vec_elbow_hand_);  
@@ -399,7 +399,7 @@ bool MotionAdaption::adaptElbows()
   tf_l_elbow_goal_.setOrigin(tf_l_elbow_pos_.getOrigin());                          
   tf_l_elbow_goal_.setBasis(mat_orientation_);
  // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_l_elbow_goal_, ros::Time::now(), "/l_shoulder_adapted", "/l_elbow_adapted"));  
-  internal_tf.setTransform(tf::StampedTransform(tf_l_elbow_goal_, ros::Time::now(), "/l_shoulder_adapted", "/l_elbow_adapted"));  
+  internal_tf.setTransform(tf::StampedTransform(tf_l_elbow_goal_, calc_time, "/l_shoulder_adapted", "/l_elbow_adapted"));  
   return true;
 }
 
@@ -423,11 +423,11 @@ bool MotionAdaption::adaptHands()
   tf_r_hand_adjusted_.setIdentity();
   tf_r_hand_adjusted_.setOrigin(btVector3(robot_lower_arm_length_, 0.0, 0.0));
  // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_r_hand_adjusted_, ros::Time::now(), "/r_elbow_adapted", "/r_hand_adapted"));
-  internal_tf.setTransform(tf::StampedTransform(tf_r_hand_adjusted_, ros::Time::now(), "/r_elbow_adapted", "/r_hand_adapted"));
+  internal_tf.setTransform(tf::StampedTransform(tf_r_hand_adjusted_, calc_time, "/r_elbow_adapted", "/r_hand_adapted"));
   tf_l_hand_goal_.setIdentity();
   tf_l_hand_goal_.setOrigin(btVector3(robot_lower_arm_length_, 0.0, 0.0));
  // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_l_hand_goal_, ros::Time::now(), "/l_elbow_adapted", "/l_hand_adapted"));
-  internal_tf.setTransform(tf::StampedTransform(tf_l_hand_goal_, ros::Time::now(), "/l_elbow_adapted", "/l_hand_adapted"));
+  internal_tf.setTransform(tf::StampedTransform(tf_l_hand_goal_, calc_time, "/l_elbow_adapted", "/l_hand_adapted"));
   return true;
 }
 

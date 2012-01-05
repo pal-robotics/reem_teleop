@@ -54,7 +54,7 @@ int main(int argc, char** argv)
   double cycle_time_median = 0.0;
   
   MotionAdaption motion_adaption;
-
+  
   while (nh.ok())
   {
     motion_adaption.adapt();

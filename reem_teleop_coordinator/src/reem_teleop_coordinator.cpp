@@ -223,21 +223,19 @@ int main(int argc, char** argv)
   double cjp_duration_median = 0.0;
   
   ros::service::waitForService(IK_SERVICE);
-  ros::ServiceClient tree_ik_srv_client = nh.serviceClient<tree_kinematics::get_tree_position_ik>
-  (IK_SERVICE, true);
+  ros::ServiceClient tree_ik_srv_client = nh.serviceClient<tree_kinematics::get_tree_position_ik> (IK_SERVICE, true);
   
   ros::service::waitForService(FK_SERVICE);
-  ros::ServiceClient tree_fk_srv_client = nh.serviceClient<kinematics_msgs::GetPositionFK>
-  (FK_SERVICE, true);
+  ros::ServiceClient tree_fk_srv_client = nh.serviceClient<kinematics_msgs::GetPositionFK> (FK_SERVICE, true);
   
   ros::service::waitForService(CC_SERVICE);
-  ros::ServiceClient check_state_validity_client = nh.serviceClient<planning_environment_msgs::GetStateValidity>
-  (CC_SERVICE, true);
+  ros::ServiceClient check_state_validity_client = nh.serviceClient<planning_environment_msgs::GetStateValidity> (CC_SERVICE, true);
   
   while (nh.ok())
   {
     ros::spinOnce();
     
+    ROS_ERROR("In teleoperation loop...");
     // transform goal frames into pose messages      
     std::map<std::string, geometry_msgs::PoseStamped>::iterator poses_it;
     geometry_msgs::PoseStamped pose;
