@@ -1,0 +1,20 @@
+<launch>
+
+  <!-- static transform for connecting the tf trees of the openni tracker's skeleton and the robot model -->
+  <include file="$(find reem_teleop_coordinator)/launch/tree_connector.launch" />
+
+  <!-- start reem motion planning pipeline -->
+  <include file="$(find reem_bringup)/launch/reem.launch" />
+  <include file="$(find reem_3dnav)/launch/trajectory_validator.launch" />
+  
+  <!-- start kinect -->
+  <include file="$(find reem_teleop_coordinator)/launch/start_kinect.launch" />
+  
+  <!-- start teleop nodes -->
+  <include file="$(find reem_teleop_coordinator)/launch/start_teleop_nodes.launch" />
+  
+  <!-- start rviz -->
+  <include file="$(find reem_teleop_coordinator)/launch/start_rviz_launch_single.launch" />
+  
+</launch>    
+
