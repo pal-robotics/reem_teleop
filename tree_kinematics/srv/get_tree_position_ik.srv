@@ -8,6 +8,6 @@ kinematics_msgs/PositionIKRequest[] pos_ik_request
 
 # The returned solution 
 # (in the same order as the list of joints specified in the IKRequest message)
-motion_planning_msgs/RobotState solution
+arm_navigation_msgs/RobotState solution
 
-motion_planning_msgs/ArmNavigationErrorCodes error_code
+arm_navigation_msgs/ArmNavigationErrorCodes error_code
