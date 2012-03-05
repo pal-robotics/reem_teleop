@@ -234,8 +234,7 @@ int main(int argc, char** argv)
   while (nh.ok())
   {
     ros::spinOnce();
-    
-    ROS_ERROR("In teleoperation loop...");
+
     // transform goal frames into pose messages      
     std::map<std::string, geometry_msgs::PoseStamped>::iterator poses_it;
     geometry_msgs::PoseStamped pose;
