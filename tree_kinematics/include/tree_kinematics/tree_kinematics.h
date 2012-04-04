@@ -48,7 +48,7 @@
 
 // for self-collision checking
 #include <boost/scoped_ptr.hpp>
-//#include <planning_environment_msgs/GetStateValidity.h>
+//#include <arm_navigation_msgs/GetStateValidity.h>
 
 // messages
 #include <kinematics_msgs/KinematicSolverInfo.h>

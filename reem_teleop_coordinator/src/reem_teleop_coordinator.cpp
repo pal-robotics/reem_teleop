@@ -46,17 +46,23 @@
 #include <geometry_msgs/PoseArray.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <kinematics_msgs/GetPositionFK.h>
-#include <planning_environment_msgs/GetStateValidity.h>
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
 #include <tf/transform_listener.h>
 #include <tf/transform_broadcaster.h>
 #include <tree_kinematics/get_tree_position_ik.h>
+#include <arm_navigation_msgs/GetPlanningScene.h>
+#include <planning_environment/models/collision_models.h>
+
+#include <trajectory_msgs/JointTrajectory.h>
+
+
+
 
 
 static const std::string FK_SERVICE = "/tree_kinematics_node/get_position_fk";
 static const std::string IK_SERVICE = "/tree_kinematics_node/get_position_ik";
-static const std::string CC_SERVICE = "/upper_body_environment_server/get_state_validity";
+static const std::string SET_PLANNING_SCENE_DIFF_NAME = "/environment_server/set_planning_scene_diff";
 static const std::string PUB_TOPIC_JOINT_STATES_CMD = "/joint_states_cmd";
 static const std::string SUB_TOPIC_JOINT_STATES = "/joint_states";
 
@@ -105,9 +111,11 @@ bool getGoalTransform(tf::TransformListener& tf_listener,
   return true;  
 }
 
-  
+
 int main(int argc, char** argv)
 {
+  using namespace arm_navigation_msgs;
+
   ros::init(argc, argv, "reem_teleop_coordinator_node");
   ros::NodeHandle nh, nh_private("~");
 
@@ -136,6 +144,8 @@ int main(int argc, char** argv)
     }
   }
   
+  std::vector<std::string> comand_names;
+
   geometry_msgs::PoseStamped pose;
   std::map<std::string, geometry_msgs::PoseStamped> poses;
   std::map<std::string, std::string> rel_endpoints_goals; 
@@ -187,10 +197,6 @@ int main(int argc, char** argv)
   //(FK_SERVICE, true);
   
   // service client for self-collision and joint limits checking
-  planning_environment_msgs::GetStateValidity::Request state_val_req;
-  planning_environment_msgs::GetStateValidity::Response state_val_res;  
-  //ros::ServiceClient check_state_validity_client = nh.serviceClient<planning_environment_msgs::GetStateValidity>
-  //(CC_SERVICE, true);
   bool no_self_collision = false;
   bool check_self_collision, check_joint_limits = true;
   nh_private.param("check_self_collision", check_self_collision, true);
@@ -200,6 +206,9 @@ int main(int argc, char** argv)
   
   // publisher for joint states commands
   ros::Publisher pub_joint_states_cmd = nh.advertise<sensor_msgs::JointState>(PUB_TOPIC_JOINT_STATES_CMD, 1);
+
+  ros::Publisher traj_publisher_ = nh.advertise<trajectory_msgs::JointTrajectory>("/upper_body_controller/command", 1);
+
   sensor_msgs::JointState joint_states_cmd;
   /*
   sensor_msgs::JointState old_joint_state;
@@ -228,9 +237,11 @@ int main(int argc, char** argv)
   ros::service::waitForService(FK_SERVICE);
   ros::ServiceClient tree_fk_srv_client = nh.serviceClient<kinematics_msgs::GetPositionFK> (FK_SERVICE, true);
   
-  ros::service::waitForService(CC_SERVICE);
-  ros::ServiceClient check_state_validity_client = nh.serviceClient<planning_environment_msgs::GetStateValidity> (CC_SERVICE, true);
-  
+  ros::service::waitForService(SET_PLANNING_SCENE_DIFF_NAME);
+  ros::ServiceClient get_planning_scene_client = nh.serviceClient<GetPlanningScene>(SET_PLANNING_SCENE_DIFF_NAME, true);
+  planning_environment::CollisionModels collision_models("robot_description");
+  collision_models.disableCollisionsForNonUpdatedLinks("upper_body");
+  std::vector<std::string> joint_names = collision_models.getKinematicModel()->getModelGroup("upper_body")->getJointModelNames();
   while (nh.ok())
   {
     ros::spinOnce();
@@ -317,27 +328,34 @@ int main(int argc, char** argv)
       ik_duration_median = ((ik_duration_median * (loop_count - 1)) + ik_duration) / loop_count;
       
       // self-collision checking
-      state_val_req.robot_state = tree_ik_srv.response.solution;
-      state_val_req.check_collisions = check_self_collision;
-      state_val_req.check_joint_limits = check_joint_limits;
-      
-      scc_duration = ros::Time::now().toSec();
-      if(check_state_validity_client.call(state_val_req, state_val_res))
+      GetPlanningScene::Request planning_scene_req;
+      GetPlanningScene::Response planning_scene_res;
+      if(!get_planning_scene_client.call(planning_scene_req, planning_scene_res))
       {
-        if(state_val_res.error_code.val == state_val_res.error_code.SUCCESS)
-        {
-          ROS_DEBUG_THROTTLE(1.0, "Requested state is not in collision");
-          no_self_collision = true;
-        }
-        else
-          ROS_WARN_THROTTLE(1.0, "Requested state is in collision. Error code: %d", state_val_res.error_code.val);
+        ROS_WARN("Can't get planning scene");
+        continue;
+      }
+      planning_models::KinematicState* state = collision_models.setPlanningScene(planning_scene_res.planning_scene);
+      
+      std::map<std::string, double> nvalues;
+      const sensor_msgs::JointState& sol_state = tree_ik_srv.response.solution.joint_state;
+      for (size_t ith_joint = 0; ith_joint < sol_state.name.size(); ++ith_joint)
+      {
+        nvalues[sol_state.name[ith_joint]] = sol_state.position[ith_joint];
+      }
+      state->setKinematicState(nvalues);
+      if (!state->areJointsWithinBounds(joint_names) || collision_models.isKinematicStateInCollision(*state))
+      {
+        ROS_WARN_THROTTLE(1.0, "Requested state is in collision, or violates joint limits.");
       }
       else
       {
-        ROS_ERROR("Service call to check state validity failed ('%s')! Aborting loop ...", 
-        check_state_validity_client.getService().c_str());
-        continue;
+        ROS_DEBUG_THROTTLE(1.0, "Requested state is valid.");
+        no_self_collision = true;
       }
+      collision_models.revertPlanningScene(state);
+
+      scc_duration = ros::Time::now().toSec();
       scc_duration = ros::Time::now().toSec() - scc_duration;
       scc_duration_median = ((scc_duration_median * (loop_count - 1)) + scc_duration) / loop_count;
       
@@ -348,8 +366,20 @@ int main(int argc, char** argv)
         joint_states_cmd = tree_ik_srv.response.solution.joint_state;
         joint_states_cmd.header.stamp = ros::Time::now();
         pub_joint_states_cmd.publish(joint_states_cmd);
+       
+        trajectory_msgs::JointTrajectory   traj_;
+        traj_.header.stamp = ros::Time::now();
+
+        traj_.joint_names = joint_states_cmd.name;
+        traj_.points.resize(1);
+        traj_.points[0].positions = joint_states_cmd.position;
+        traj_.points[0].velocities = joint_states_cmd.velocity;
+        traj_.points[0].time_from_start = ros::Duration(0.001);
+        traj_publisher_.publish(traj_);
+
         old_joint_state = joint_states_cmd;
         no_self_collision = false;       
+
       }
       else
       {
@@ -358,6 +388,22 @@ int main(int argc, char** argv)
         joint_states_cmd = old_joint_state;
         joint_states_cmd.header.stamp = ros::Time::now();
         pub_joint_states_cmd.publish(joint_states_cmd);
+
+        trajectory_msgs::JointTrajectory   traj_;
+        traj_.header.stamp = ros::Time::now();
+        traj_.points.resize(1);
+
+        for(int k=0; k<joint_states_cmd.name.size(); ++k){
+
+          if(std::find(comand_names.begin(), comand_names.end(),joint_states_cmd.name[k] ) != comand_names.end()){
+            traj_.joint_names.push_back(joint_states_cmd.name[k]);
+            traj_.points[0].positions.push_back(joint_states_cmd.position[k]);
+            traj_.points[0].velocities.push_back(joint_states_cmd.velocity[k]);
+          }
+        }
+        traj_.points[0].time_from_start = ros::Duration(0.001);
+        traj_publisher_.publish(traj_);
+        
       }
       
       /* TODO, ARE THIS TF NEEDED ANY MORE?
@@ -425,7 +471,7 @@ int main(int argc, char** argv)
     loop_count ++;
   }
   tree_ik_srv_client.shutdown();
-  check_state_validity_client.shutdown();  
+  get_planning_scene_client.shutdown();
   pub_joint_states_cmd.shutdown();
   tree_fk_srv_client.shutdown();
   

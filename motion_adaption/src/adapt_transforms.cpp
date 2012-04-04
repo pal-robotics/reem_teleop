@@ -103,12 +103,12 @@ bool MotionAdaption::adaptHead()
   }
   tf_head_goal_.setIdentity();
   tf_head_goal_.setOrigin(tf_robot_torso_head_.getOrigin());
-  /*
+  
   quat_ = tf_usr_head_.getRotation();
-  quat_adjust_ = tf_robot_torso_head_.getRotation();
-  quat_ = quat_ * quat_adjust_;
+//   quat_adjust_ = tf_robot_torso_head_.getRotation();
+//   quat_ = quat_ * quat_adjust_;
   tf_head_goal_.setRotation(quat_);
-  */
+ 
  // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_head_goal_, ros::Time::now(),"/ref_frame", "/head_adapted"));
   internal_tf.setTransform(tf::StampedTransform(tf_head_goal_, calc_time,"/ref_frame", "/head_adapted"));
   
