@@ -45,9 +45,9 @@ tree_kinematics_node:
   endpoint_0:           torso_2_link
   endpoint_1:           head_2_link
   endpoint_2:           arm_right_4_link
-  endpoint_3:           hand_right_link
+  endpoint_3:           arm_right_7_link
   endpoint_4:           arm_left_4_link
-  endpoint_5:           hand_left_link
+  endpoint_5:           arm_left_7_link
 
   # frequency of the service calls for IK calculations in hz
   # used to calculate velocities and to adapt the maximum velocties specified below
@@ -149,9 +149,9 @@ reem_teleop_coordinator_node:
   endpoint_0:           torso_2_link
   endpoint_1:           head_2_link
   endpoint_2:           arm_right_4_link
-  endpoint_3:           hand_right_link
+  endpoint_3:           arm_right_7_link
   endpoint_4:           arm_left_4_link
-  endpoint_5:           hand_left_link
+  endpoint_5:           arm_left_7_link
   endpoint_0_goal:      torso_goal
   endpoint_1_goal:      head_goal
   endpoint_2_goal:      r_elbow_goal
