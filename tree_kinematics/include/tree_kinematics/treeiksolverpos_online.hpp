@@ -60,13 +60,13 @@ public:
     TreeIkSolverPos_Online(const double& nr_of_jnts,
                            const std::vector<std::string>& endpoints,
                            TreeFkSolverPos& fksolver,
-                           TreeIkSolverVel& iksolver,                           
+                           TreeIkSolverVel& iksolver,
                            const JntArray& q_min,
                            const JntArray& q_max,
                            const JntArray& q_dot_min,
                            const JntArray& q_dot_max,
                            const double x_dot_trans_max,
-                           const double x_dot_rot_max,                           
+                           const double x_dot_rot_max,
                            const double x_dot_trans_min = 0.0,
                            const double x_dot_rot_min = 0.0,
                            const double low_pass_factor = 0.0,
@@ -76,19 +76,19 @@ public:
     ~TreeIkSolverPos_Online();
 
     virtual double CartToJnt(const JntArray& q_in, const Frames& p_in, JntArray& q_out);
-    
+
     /**
      * \brief calculates the joint positions to reach the specfied endeffector poses
-     * This method does the actual calculation. Inside the velocity IK solver is called, which is calculating the 
+     * This method does the actual calculation. Inside the velocity IK solver is called, which is calculating the
      * necessary joint velocities. The velocities are then integrated. Task space and joint space velocity clamping,
      * as well as joint position clamping is applied.
-     * 
+     *
      * @param q_in the current joint positions
      * @param p_in the desired poses of the endpoints
      * @param q_out the calculated joint positions and velocities
-     * 
+     *
      * @return returns ...
-     */    
+     */
     double CartToJnt_it(const JntArray& q_in, const Frames& p_in, JntArray& q_out);
 
 private:
@@ -100,7 +100,7 @@ private:
    * Returns true, if one (or more) velocity reaches its limit.
    */
   bool enforceCartVelLimits();
-  
+
   void enforceCartVelLimits_it(Twist& old_twist, Twist& current_twist);
 
   /**
@@ -110,7 +110,7 @@ private:
    * Returns true, if one (or more) joint reaches its limit.
    */
   bool enforceJointVelLimits();
-  
+
   void enforceJointVelLimits_it(JntArray& q_dot_old, JntArray& q_dot_current);
 
   void filter(JntArray& q_dot, JntArray& q_out, JntArray& q_out_old);
@@ -122,24 +122,24 @@ private:
   JntArray q_dot_min_;
   JntArray q_dot_max_;
   double x_dot_trans_max_;
-  double x_dot_rot_max_;  
+  double x_dot_rot_max_;
   double x_dot_trans_min_;
   double x_dot_rot_min_;
   double low_pass_factor_;
   unsigned int maxiter_;
   double eps_;
-  
+
   JntArray q_dot_;
   Twist twist_;
   Frames frames_;
   Twists delta_twists_;
   Twists old_twists_;
   Frames frames_pos_lim_;
-  Frames frames_vel_lim_;  
+  Frames frames_vel_lim_;
   JntArray q_dot_old_;
   JntArray q_dot_new_;
-  Frames p_in_old_; 
-  JntArray q_out_old_;   
+  Frames p_in_old_;
+  JntArray q_out_old_;
   double low_pass_adj_factor_;
   unsigned int nr_of_still_endeffectors_;
   bool small_task_space_movement_;

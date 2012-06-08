@@ -1,42 +1,53 @@
 /*
- * Filename: tree_kinematics_node.cpp
- * Author: Marcus Liebhardt
- * Created: 18.03.2011
- * Description:
+ * Software License Agreement (GNU Lesser General Public License)
+ *
+ * Copyright (c) 2011, PAL Robotics, S.L.
+ * All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+/**
+ * \author Marcus Liebhardt
+ * \copyright LPGL
  */
 
-// This library is free software; you can redistribute it and/or
-// modify it under the terms of the GNU Lesser General Public
-// License as published by the Free Software Foundation; either
-// version 2.1 of the License, or (at your option) any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// Lesser General Public License for more details.
-
-// You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, write to the Free Software
-// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "tree_kinematics/tree_kinematics.h"
 
+/**
+ * \brief Initialising the tree_kinematics class
+ *
+ * This node initialises the tree_kinematics class in order to offer the inverse and forward kinematics services.
+ *
+ * @return -1 if tree_kinematics class could not be initialised and 0 if program was stopped manually.
+ */
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "tree_kinematics_node");
   ros::NodeHandle nh;
   tree_kinematics::TreeKinematics tree_kinematics;
-  
+
   if(!tree_kinematics.init())
   {
-    ROS_ERROR("Could not initialize tree kinematics node!");
+    ROS_FATAL("Could not initialise tree kinematics node! Aborting ...");
     return -1;
   }
   else
   {
-    ROS_INFO("Tree kinematics node initialized.");
+    ROS_INFO("Tree kinematics node initialised.");
     ros::spin();
   }
   return 0;
 }
-
