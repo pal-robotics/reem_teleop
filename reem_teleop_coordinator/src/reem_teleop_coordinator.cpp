@@ -30,13 +30,19 @@
  *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
- * Description: if new adjusted operator's motion has arrived, this node calculates the desired joint position using 
- * KDL's tree inverse kinematics solvers, afterwards the result gets checked for self-collision.
- * If there is no self-collision the desired joint positions get sent to the reem_joint_controller.
  */
 
 /** \author Marcus Liebhardt */
 
+/**
+ * \brief Controls the information flow between the target end point poses, IK calculations,
+ *        self-collision checking and the final output of joint positions
+ *
+ * The teleoperation coordinator retrieves transforms for the specified goal frames and calculates
+ * the desired joint position using to reach them with the specified end points/effectors using
+ * KDL's tree inverse kinematics solvers. Afterwards the new joint positions are checked if the would lead to
+ * self-collision. If there is no self-collision the new joint positions are published to the specified topic.
+ */
 
 #include <string>
 #include <map>
@@ -72,15 +78,38 @@ sensor_msgs::JointState old_joint_state;
 // pointer to the current joint states
 sensor_msgs::JointState::ConstPtr joint_states_ptr;
 
-
-void jointStatesCB(const sensor_msgs::JointState::ConstPtr &joint_states)
-{  
+/**
+ * \brief Callback funtion for retrieving the current joint states
+ *
+ * Callback funtion for retrieving the current joint states
+ * Note: The used joint states 'old_joints_states' get only updated one time. Later on the joint states of the
+ * last loop are used for the IK service call. Using always the current joint states would introduce an unwanted
+ * feedback.
+ *
+ * @param joint_states pointer to the joint states
+ */
+void jointStatesCB(const sensor_msgs::JointState::ConstPtr& joint_states)
+{
   joint_states_ptr = joint_states;
   if(!joint_states_valid)
     old_joint_state = *joint_states;
   joint_states_valid = true;
 }
 
+
+/**
+ * \brief Retrieving goal transformations and putting them into a geometry_msgs::PoseStamped message
+ *
+ * A generic transform function for retrieving the desired transform for the goal frame
+ * and putting it into a stamped pose message.
+ *
+ * @param tf_listener pointer to the utilized tf listener
+ * @param root_frame_name pointer to the root name of the tf tree
+ * @param goal_frame_name the name of the frame, which transform shall be retrieved
+ * @param pose pointer to the pose message, which will contain the transformation information
+ *
+ * @ returns true, if transformation could be retrieved
+ */
 bool getGoalTransform(tf::TransformListener& tf_listener,
                       std::string& root_frame_name,
                       std::string goal_frame_name,
@@ -344,9 +373,13 @@ int main(int argc, char** argv)
         nvalues[sol_state.name[ith_joint]] = sol_state.position[ith_joint];
       }
       state->setKinematicState(nvalues);
-      if (!state->areJointsWithinBounds(joint_names) || collision_models.isKinematicStateInCollision(*state))
+      if (check_joint_limits && !state->areJointsWithinBounds(joint_names))
       {
-        ROS_WARN_THROTTLE(1.0, "Requested state is in collision, or violates joint limits.");
+        ROS_WARN_THROTTLE(1.0, "Requested state violates joint limits.");
+      }
+      else if (check_self_collision && collision_models.isKinematicStateInCollision(*state))
+      {
+        ROS_WARN_THROTTLE(1.0, "Requested state is in collision.");
       }
       else
       {
@@ -462,21 +495,19 @@ int main(int argc, char** argv)
     
     cycle_time_median = ((cycle_time_median * (loop_count - 1)) + loop_rate.cycleTime().toSec()) / loop_count;
 
-    ROS_INFO_THROTTLE(1.0, "reem_teleop: cycle time %f and median cycle time %f",
+    ROS_DEBUG_THROTTLE(1.0, "reem_teleop: cycle time %f and median cycle time %f",
     loop_rate.cycleTime().toSec(), cycle_time_median);
-    ROS_INFO_THROTTLE(1.0, "reem_teleop: IKC current duration %f and median %f", ik_duration, ik_duration_median);
-    ROS_INFO_THROTTLE(1.0, "reem_teleop: SCC current duration %f and median %f", scc_duration, scc_duration_median);
-    ROS_INFO_THROTTLE(1.0, "reem_teleop: FKC current duration %f and median %f", cjp_duration, cjp_duration_median);
-    
+    ROS_DEBUG_THROTTLE(1.0, "reem_teleop: IKC current duration %f and median %f", ik_duration, ik_duration_median);
+    ROS_DEBUG_THROTTLE(1.0, "reem_teleop: SCC current duration %f and median %f", scc_duration, scc_duration_median);
+    ROS_DEBUG_THROTTLE(1.0, "reem_teleop: FKC current duration %f and median %f", cjp_duration, cjp_duration_median);
+
     loop_count ++;
   }
   tree_ik_srv_client.shutdown();
   get_planning_scene_client.shutdown();
   pub_joint_states_cmd.shutdown();
   tree_fk_srv_client.shutdown();
-  
-  ROS_INFO("exiting ...");
-  
+
   return 0;
 }
 
