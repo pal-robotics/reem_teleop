@@ -32,6 +32,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
+/** \author Marcus Liebhardt */
+
 #include <LinearMath/btVector3.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <ros/ros.h>
@@ -45,8 +47,6 @@
  * The adaptions uses the transforms of the specified operator end points, scales them according to the robot's
  * body proportions and maps them onto the robot. The orientation of each end point is mapped unchanged.
  *
- * \author Marcus Liebhardt
- * \copyright modified BSD license
  */
 class MotionAdaption
 {
@@ -61,6 +61,9 @@ class MotionAdaption
     void adapt();
 
   private:
+    //internal tf library
+    tf::Transformer internal_tf;
+    ros::Time calc_time;
 
     /**
      * Retrieves transforms from the operator's torso to the upper body end points hands, elbows, shoulder, head

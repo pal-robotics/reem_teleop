@@ -30,3 +30,4 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #target_link_libraries(example ${PROJECT_NAME})
 
 rosbuild_add_executable(reem_teleop_coordinator_node src/reem_teleop_coordinator.cpp)
+rosbuild_add_executable(reem_traj_publisher src/reem_traj_publisher.cpp)

@@ -45,6 +45,9 @@
 #include <kdl/treeiksolvervel_wdls.hpp>
 #include <tree_kinematics/treeiksolverpos_online.hpp>
 
+// for self-collision checking
+#include <boost/scoped_ptr.hpp>
+
 #include <kinematics_msgs/KinematicSolverInfo.h>
 #include <kinematics_msgs/GetKinematicSolverInfo.h>
 #include <tree_kinematics/get_tree_position_ik.h>

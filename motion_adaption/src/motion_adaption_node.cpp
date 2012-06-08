@@ -56,6 +56,7 @@ int main(int argc, char** argv)
   unsigned int loop_count = 1;
   double cycle_time_median = 0.0;
   MotionAdaption motion_adaption;
+
   while (nh.ok())
   {
     motion_adaption.adapt();
