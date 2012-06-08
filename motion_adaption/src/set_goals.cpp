@@ -126,9 +126,8 @@ void MotionAdaption::setGoals()
 
 
    tf_broadcaster_.sendTransform(tf_transforms);
-  /* un-comment this part to published unscaled but aligned transforms
-  
-  /* un-comment this part to published unscaled but aligned transforms
+
+   /* un-comment this part to published unscaled but aligned transforms
   
   tf_broadcaster_.sendTransform(tf::StampedTransform(tf_torso_aligned_, ros::Time::now(),
   "/ref_frame", "/torso_aligned"));
