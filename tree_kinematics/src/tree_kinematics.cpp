@@ -17,11 +17,14 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * \author: Marcus Liebhardt
+ */
+/**
+ * \author Marcus Liebhardt
+ * \copyright LPGL
  */
 
-#include <urdf_interface/joint.h>
+
+#include <urdf/joint.h>
 #include <urdf/model.h>
 #include <tf_conversions/tf_kdl.h>
 #include "tree_kinematics/tree_kinematics.h"
@@ -458,7 +461,7 @@ bool TreeKinematics::getPositionIk(tree_kinematics::get_tree_position_ik::Reques
 
   // use the solver to compute desired joint positions
   ik_duration_ = ros::Time::now().toSec();
-  int ik_ret = ik_pos_solver_->CartToJnt(q, desired_poses, q_desi);
+  int ik_ret = ik_pos_solver_->CartToJnt_it(q, desired_poses, q_desi); // NOTE: Before it was CartToJnt (without the _it). What's the difference?
   ik_duration_ = ros::Time::now().toSec() - ik_duration_;
   ik_duration_median_ = ((ik_duration_median_ * (loop_count_ - 1)) + ik_duration_) / loop_count_;
 

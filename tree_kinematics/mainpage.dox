@@ -2,12 +2,13 @@
 \mainpage
 \htmlinclude manifest.html
 
-\b reem_kinematics is ... 
+This package can be used to compute forward and inverse kinematics for tree kinematic structures. The package also 
+includes an inverse kinematics position solver, which respects joint position, joint velocity and
+task space velocity limits. It also applies exponential smoothing, when all end points are considered standing still.
 
 <!-- 
 Provide an overview of your package.
 -->
-
 
 \section codeapi Code API
 
@@ -21,6 +22,4 @@ If your codebase is fairly large or has different sets of APIs, you
 should use the doxygen 'group' tag to keep these APIs together. For
 example, the roscpp documentation has 'libros' group.
 -->
-
-
 */

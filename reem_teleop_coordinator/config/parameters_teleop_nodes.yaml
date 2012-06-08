@@ -49,34 +49,35 @@ tree_kinematics_node:
   endpoint_0:           torso_2_link
   endpoint_1:           head_2_link
   endpoint_2:           arm_right_4_link
-  endpoint_3:           hand_right_link
+  endpoint_3:           arm_right_7_link
   endpoint_4:           arm_left_4_link
-  endpoint_5:           hand_left_link
+  endpoint_5:           arm_left_7_link
 
   # frequency of the service calls for IK calculations in hz
-  # used to calculate velocities and to adapt the maximum velocities specified below
-  srv_call_frequency: 10
-  
+  # used to calculate velocities and to adapt the maximum velocties specified below
+  srv_call_frequency: 2
+
+
   # the precision of the end effectors position the IK solver tries to reach
   epsilon: 0.010
-  
+
   # the maximum number of iterations the IK solver will execute
   max_iterations: 10
 
   # Factor applied to the maximum velocities specified in the urdf model of the robot in rad/sec
   q_dot_max_factor: 1.0
   q_dot_min_factor: 0.3
-  
+
   # Actually it is a smoothing factor, which is used by the IK solver for exponential smoothing.
   # This is only applied, if the all end effectors are considered as keeping still 
   low_pass_factor:  1.0
 
-  # minimum and maximum translational and rotational velocities of the end effectors in m/sec
-  x_dot_trans_min: 1.0
-  x_dot_trans_max: 1.0
-  x_dot_rot_min: 3.14
-  x_dot_rot_max: 3.14
-    
+  # minimum and maximum translational and rotational velocities of the endeffectors in m/sec
+  x_dot_trans_min: 0.2
+  x_dot_trans_max: 0.2
+  x_dot_rot_min: 0.628
+  x_dot_rot_max: 0.682
+
   # factor to prevent running through kinematic singularities
   lambda: 0.01
 
@@ -161,6 +162,15 @@ reem_teleop_coordinator_node:
 
   # number of the retargeted end points
   nr_of_endpoints:      6
+
+  # name of the robot's frames
+  endpoint_0:           torso_2_link
+  endpoint_1:           head_2_link
+  endpoint_2:           arm_right_4_link
+  endpoint_3:           arm_right_7_link
+  endpoint_4:           arm_left_4_link
+  endpoint_5:           arm_left_7_link
+
   # name of the frames coming from motion adaption
   endpoint_0_goal:      torso_goal
   endpoint_1_goal:      head_goal
@@ -168,23 +178,17 @@ reem_teleop_coordinator_node:
   endpoint_3_goal:      r_hand_goal
   endpoint_4_goal:      l_elbow_goal
   endpoint_5_goal:      l_hand_goal
-  # name of the robot's frames
-  endpoint_0:           torso_2_link
-  endpoint_1:           head_2_link
-  endpoint_2:           arm_right_4_link
-  endpoint_3:           hand_right_link
-  endpoint_4:           arm_left_4_link
-  endpoint_5:           hand_left_link
+
   # name of the common reference frame
   root_frame_name:      ref_frame
-  
+
   # true if the calculated joint commands shall be checked for self-collision 
   check_self_collision: true
+
   # true if the calculated joint commands shall be checked if they respect joint limits
   # NOTE: usually false, because the joint limit checking by the environment server seems to be more rigid,
   # than what is applied by the IK solver
   check_joint_limits:   false  
 
   # loop rate, which determines the frequency of calculating new joint position commands
-  loop_rate: 10
-
+  loop_rate: 2

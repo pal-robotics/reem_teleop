@@ -180,7 +180,8 @@ MotionAdaption::~MotionAdaption()
 }
 
 void MotionAdaption::adapt()
-{
+{  
+  calc_time = ros::Time::now();
   if(getTransforms())
   {
     if(setRefFrame())

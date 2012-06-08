@@ -1,8 +1,8 @@
 <package>
   <description brief="tree_kinematics">
-
-     tree_kinematics
-
+    This package can be used to compute forward and inverse kinematics for tree kinematic structures. The package also 
+    includes an inverse kinematics position solver, which respects joint position, joint velocity and task space
+    velocity limits. It also applies exponential smoothing, when all end points are considered standing still.
   </description>
   <author>Marcus Liebhardt</author>
   <license>LGPL</license>
@@ -14,7 +14,6 @@
   <depend package="tf"/>
   <depend package="tf_conversions"/>
   <depend package="urdf"/>
-  <depend package="urdf_interface"/>
   <depend package="geometry_msgs"/>
   <depend package="kinematics_msgs"/>
   <depend package="arm_navigation_msgs"/>

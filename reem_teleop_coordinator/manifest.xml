@@ -1,8 +1,7 @@
 <package>
   <description brief="reem_teleop_coordinator">
-
-     reem_teleop_coordinator
-
+    The reem_teleop_coordinator_node controls the information flow between the target end point poses, IK calculations, 
+    self-collision checking and the final output of target joint positions.
   </description>
   <author>Marcus Liebhardt</author>
   <license>Modified BSD</license>
@@ -18,6 +17,7 @@
   <depend package="tf"/>
   <depend package="tf_conversions"/>
   <depend package="tree_kinematics"/>
+  <depend package="planning_environment"/>
 </package>
 
 

@@ -11,7 +11,7 @@
   <include file="$(find reem_gazebo)/launch/reem_no_controllers.launch" />
 
   <!-- start environment server (for self-collision checking)-->
-  <include file="$(find reem_3dnav)/launch/trajectory_validator.launch" />
+  <include file="$(find reem_arm_navigation)/launch/trajectory_validator.launch" />
 
   <!-- start the joint position controller -->
   <include file="$(find reem_teleop_coordinator)/launch/start_joint_position_controller.launch" />

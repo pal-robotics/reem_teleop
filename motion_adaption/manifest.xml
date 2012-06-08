@@ -1,8 +1,8 @@
 <package>
   <description brief="motion_adaption">
-
-     motion_adaption
-
+    The motion_adaption_node uses the transforms of the tracked end points of the operator, first normalises and then
+    scales them according to the operator's and robot's body proportions and finally maps them onto the robot. The
+    orientation of each end point is mapped unchanged.
   </description>
   <author>Marcus Liebhardt</author>
   <license>Modified BSD</license>
