@@ -1,13 +1,13 @@
 <package>
   <description brief="joint_position_controller">
-
-     joint_position_controller
-
+    This package contains a simple joint position controller. The controller follows PR2's controller structure and 
+    can be used in combination with the pr2_controller_manager. It creates a KDL::Tree based on the robot's URDF model.
+    All joints inside this tree are then controlled independently of each other using a PD control scheme.
   </description>
   <author>Marcus Liebhardt</author>
   <license>Modified BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/tree_joint_controller</url>
+  <url>http://ros.org/wiki/joint_position_controller</url>
   <depend package="geometry_msgs"/>
   <depend package="sensor_msgs"/>
   <depend package="orocos_kdl"/>

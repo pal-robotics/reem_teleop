@@ -2,8 +2,11 @@
 \mainpage
 \htmlinclude manifest.html
 
-\b tree_joint_controller is ... 
+\b joint_position_controller is ... 
+a simple joint position controller, which controls each joint independently of each other using a PD control scheme.
 
+This controller is supposed to be used together with the pr2_controller_manager. It listens to a topic for the target joint positions.
+ 
 <!-- 
 Provide an overview of your package.
 -->
