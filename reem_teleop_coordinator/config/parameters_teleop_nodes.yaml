@@ -2,17 +2,17 @@ motion_adaption_node:
 
   wait_for_tf_in_sec:             0.5
   # define the reference frame for the tracked end points of the operator's body
-  world_ref_frame_name:           /openni_depth_frame
+  world_ref_frame_name:           /new_frame
   # define the tracked end points of the operator's body
   user:
-    torso_frame_name:             /torso
-    head_frame_name:              /head
-    right_shoulder_frame_name:    /right_shoulder
-    right_elbow_frame_name:       /right_elbow
-    right_hand_frame_name:        /right_hand
-    left_shoulder_frame_name:     /left_shoulder
-    left_elbow_frame_name:        /left_elbow
-    left_hand_frame_name:         /left_hand
+    torso_frame_name:             /torso_1
+    head_frame_name:              /head_1
+    right_shoulder_frame_name:    /left_shoulder_1
+    right_elbow_frame_name:       /left_elbow_1
+    right_hand_frame_name:        /left_hand_1
+    left_shoulder_frame_name:     /right_shoulder_1
+    left_elbow_frame_name:        /right_elbow_1
+    left_hand_frame_name:         /right_hand_1
   # define the robot's frames
   robot:
     base_frame_name:              /base_link
