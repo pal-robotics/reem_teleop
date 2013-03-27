@@ -17,7 +17,7 @@
   <depend package="roscpp"/>
   <export>
     <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -ljoint_position_controller -Wl,-rpath,${prefix}"/>    
-    <pr2_controller_interface plugin="${prefix}/joint_position_controller_plugin.xml"/>
+    <pr2_controller_interface plugin="${prefix}/plugins/joint_position_controller_plugin.xml"/>
   </export>
 </package>
 

@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<package>
+  <name>tree_kinematics</name>
+  <version>0.0.1</version>
+  <description>
+    This package can be used to compute forward and inverse kinematics for tree kinematic structures. The package also 
+    includes an inverse kinematics position solver, which respects joint position, joint velocity and task space
+    velocity limits. It also applies exponential smoothing, when all end points are considered standing still.
+  </description>
+  <maintainer email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</maintainer>
+  <license>LPGLv2.1</license>
+  <url type="website">http://ros.org/wiki/tree_kinematics</url>
+  <author email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <build_depend>roscpp</build_depend>
+  <build_depend>orocos_kdl</build_depend>
+  <build_depend>kdl_parser</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>tf_conversions</build_depend>
+  <build_depend>urdf</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>kinematics_msgs</build_depend>
+  <build_depend>arm_navigation_msgs</build_depend>
+    
+  <run_depend>roscpp</run_depend>
+  <run_depend>orocos_kdl</run_depend>
+  <run_depend>kdl_parser</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>tf_conversions</run_depend>
+  <run_depend>urdf</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>kinematics_msgs</run_depend>
+  <run_depend>arm_navigation_msgs</run_depend>
+</package>

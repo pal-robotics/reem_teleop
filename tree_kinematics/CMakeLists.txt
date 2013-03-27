@@ -1,37 +1,49 @@
-cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+cmake_minimum_required(VERSION 2.8.3)
+project(tree_kinematics)
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+find_package(catkin REQUIRED COMPONENTS roscpp
+                                        orocos_kdl
+                                        kdl_parser
+                                        tf
+                                        tf_conversions
+                                        urdf
+                                        geometry_msgs
+                                        kinematics_msgs
+                                        arm_navigation_msgs
+                                        message_generation)
 
-rosbuild_init()
+add_service_files(FILES get_tree_position_ik.srv)
 
-#set the default path for built executables to the "bin" directory
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+generate_messages(DEPENDENCIES kinematics_msgs
+                               arm_navigation_msgs)
 
-#uncomment if you have defined messages
-#rosbuild_genmsg()
-#uncomment if you have defined services
-rosbuild_gensrv()
+# extend this if we want to make the library available outside the package
+catkin_package(CATKIN_DEPENDS message_runtime kinematics_msgs arm_navigation_msgs)
 
-#common commands for building c++ executables and libraries
-#rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
-#target_link_libraries(${PROJECT_NAME} another_library)
-#rosbuild_add_boost_directories()
-#rosbuild_link_boost(${PROJECT_NAME} thread)
-#rosbuild_add_executable(example examples/example.cpp)
-#target_link_libraries(example ${PROJECT_NAME})
+include_directories(include/tree_kinematics ${catkin_INCLUDE_DIRS})
 
-rosbuild_add_library(tree_kinematics  src/tree_kinematics.cpp
-                                      src/treeiksolverpos_online.cpp)
+add_library(tree_kinematics src/tree_kinematics.cpp
+                            src/treeiksolverpos_online.cpp)
 
-rosbuild_add_executable(tree_kinematics_node src/tree_kinematics_node.cpp)
-
+add_executable(tree_kinematics_node src/tree_kinematics_node.cpp)
 target_link_libraries(tree_kinematics_node tree_kinematics)
+
+target_link_libraries(tree_kinematics_node ${catkin_LIBRARIES})
+
+install(TARGETS tree_kinematics tree_kinematics_node
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+#############
+## Testing ##
+#############
+
+## Add gtest based cpp test target and link libraries
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_reem_teleop.cpp)
+# if(TARGET ${PROJECT_NAME}-test)
+#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
+# endif()
+
+## Add folders to be run by python nosetests
+# catkin_add_nosetests(test)

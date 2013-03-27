@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<package>
+  <name>reem_teleop_coordinator</name>
+  <version>0.0.1</version>
+  <description>
+    The reem_teleop_coordinator_node controls the information flow between the target end point poses, IK calculations,
+    self-collision checking and the final output of target joint positions.
+  </description>
+  <maintainer email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</maintainer>
+  <maintainer email="adolfo.rodriguez@pal-robotics.com">Adolfo Rodríguez Tsouroukdissian</maintainer>
+  <license>BSD</license>
+  <url type="website">http://ros.org/wiki/reem_teleop_coordinator</url>
+  <author email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</author>
+  <author email="adolfo.rodriguez@pal-robotics.com">Adolfo Rodríguez Tsouroukdissian</author>
+  <author email="hilario.tome@pal-robotics.com">Hilario Tome</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <build_depend>roscpp</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>tf_conversions</build_depend>
+  <build_depend>orocos_kdl</build_depend>
+  <build_depend>kdl_parser</build_depend>
+  <build_depend>planning_environment</build_depend>
+  <build_depend>arm_navigation_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>kinematics_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>tree_kinematics</build_depend>
+  
+  <run_depend>roscpp</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>tf_conversions</run_depend>
+  <run_depend>orocos_kdl</run_depend>
+  <run_depend>kdl_parser</run_depend>
+  <run_depend>planning_environment</run_depend>
+  <run_depend>arm_navigation_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>kinematics_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>tree_kinematics</run_depend>
+</package>

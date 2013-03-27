@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package>
+  <name>reem_teleop</name>
+  <version>0.0.1</version>
+  <description>Catkin metapackage for reem_teleop</description>
+  <maintainer email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</maintainer>
+  <maintainer email="adolfo.rodriguez@pal-robotics.com">Adolfo Rodríguez Tsouroukdissian</maintainer>
+  <license>BSD</license>
+  <license>LPGLv2.1</license>
+  <url type="website">http://ros.org/wiki/reem_teleop</url>
+  <author email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</author>
+  <author email="adolfo.rodriguez@pal-robotics.com">Adolfo Rodríguez Tsouroukdissian</author>
+  <author email="hilario.tome@pal-robotics.com">Hilario Tome</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <run_depend>joint_position_controller</run_depend>
+  <run_depend>motion_adaption</run_depend>
+  <run_depend>reem_teleop_coordinator</run_depend>
+  <run_depend>tree_kinematics</run_depend>
+  
+  <export>
+    <metapackage/>
+  </export>
+</package>
