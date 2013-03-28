@@ -35,8 +35,6 @@
 /** \author Marcus Liebhardt */
 
 
-#include <LinearMath/btMatrix3x3.h>
-#include <LinearMath/btVector3.h>
 #include <tf_conversions/tf_eigen.h>
 #include "motion_adaption/motion_adaption.h"
 
@@ -371,10 +369,10 @@ bool MotionAdaption::adaptElbows()
   }
   
   if(l_elbow_extended_ == true)
-    tf_l_elbow_hand_.setOrigin(btVector3(robot_lower_arm_length_, 0.0, 0.0));  
+    tf_l_elbow_hand_.setOrigin(tf::Vector3(robot_lower_arm_length_, 0.0, 0.0));  
   
   vec_elbow_hand_ = tf_r_elbow_hand_.getOrigin();
-  vec_normal_ = btVector3(0.0, 0.0, 1.0);  
+  vec_normal_ = tf::Vector3(0.0, 0.0, 1.0);  
   vec_helper_ = vec_normal_.cross(vec_elbow_hand_);  
   vec_elbow_hand_.normalize();
   vec_normal_.normalize(); 
@@ -388,7 +386,7 @@ bool MotionAdaption::adaptElbows()
  // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_r_elbow_goal_, ros::Time::now(), "/r_shoulder_adapted", "/r_elbow_adapted"));    
   internal_tf.setTransform(tf::StampedTransform(tf_r_elbow_goal_, calc_time, "/r_shoulder_adapted", "/r_elbow_adapted"));    
   vec_elbow_hand_ = tf_l_elbow_hand_.getOrigin();
-  vec_normal_ = btVector3(0.0, 0.0, 1.0);  
+  vec_normal_ = tf::Vector3(0.0, 0.0, 1.0);  
   vec_helper_ = vec_normal_.cross(vec_elbow_hand_);  
   vec_elbow_hand_.normalize();
   vec_normal_.normalize(); 
@@ -421,11 +419,11 @@ bool MotionAdaption::adaptHands()
     return false;
   }
   tf_r_hand_adjusted_.setIdentity();
-  tf_r_hand_adjusted_.setOrigin(btVector3(robot_lower_arm_length_, 0.0, 0.0));
+  tf_r_hand_adjusted_.setOrigin(tf::Vector3(robot_lower_arm_length_, 0.0, 0.0));
  // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_r_hand_adjusted_, ros::Time::now(), "/r_elbow_adapted", "/r_hand_adapted"));
   internal_tf.setTransform(tf::StampedTransform(tf_r_hand_adjusted_, calc_time, "/r_elbow_adapted", "/r_hand_adapted"));
   tf_l_hand_goal_.setIdentity();
-  tf_l_hand_goal_.setOrigin(btVector3(robot_lower_arm_length_, 0.0, 0.0));
+  tf_l_hand_goal_.setOrigin(tf::Vector3(robot_lower_arm_length_, 0.0, 0.0));
  // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_l_hand_goal_, ros::Time::now(), "/l_elbow_adapted", "/l_hand_adapted"));
   internal_tf.setTransform(tf::StampedTransform(tf_l_hand_goal_, calc_time, "/l_elbow_adapted", "/l_hand_adapted"));
   return true;

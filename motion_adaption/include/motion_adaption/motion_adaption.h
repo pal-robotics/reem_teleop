@@ -34,12 +34,13 @@
 
 /** \author Marcus Liebhardt */
 
-#include <LinearMath/btVector3.h>
-#include <geometry_msgs/PoseStamped.h>
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_datatypes.h>
 #include <tf/transform_listener.h>
+#include <tf/LinearMath/Vector3.h>
+#include <tf/LinearMath/Matrix3x3.h>
+#include <geometry_msgs/PoseStamped.h>
 
 /**
  * \brief Adapts the tracked end points of the operator to the robot's body proportions
@@ -192,13 +193,13 @@ class MotionAdaption
     std::string robot_l_hand_str_;
 
     // vectors for defining rotations of orientations
-    btVector3 ref_frame_rot_vec_;
-    btVector3 torso_goal_rot_vec_;
-    btVector3 head_goal_rot_vec_;
-    btVector3 r_elbow_goal_rot_vec_;
-    btVector3 r_hand_goal_rot_vec_;
-    btVector3 l_elbow_goal_rot_vec_;
-    btVector3 l_hand_goal_rot_vec_;
+    tf::Vector3 ref_frame_rot_vec_;
+    tf::Vector3 torso_goal_rot_vec_;
+    tf::Vector3 head_goal_rot_vec_;
+    tf::Vector3 r_elbow_goal_rot_vec_;
+    tf::Vector3 r_hand_goal_rot_vec_;
+    tf::Vector3 l_elbow_goal_rot_vec_;
+    tf::Vector3 l_hand_goal_rot_vec_;
 
     tf::StampedTransform tf_usr_torso_;
     tf::StampedTransform tf_usr_head_;
@@ -258,9 +259,9 @@ class MotionAdaption
     double user_shoulder_width_, user_shoulder_height_, user_upper_arm_length_, user_arm_length_;
     double x_norm_, y_norm_, z_norm_, x_adapt_, y_adapt_, z_adapt_, elbow_x_, elbow_y_, limb_length_;
 
-    btVector3 vec_shoulder_elbow_, vec_shoulder_hand_, vec_elbow_hand_, vec_normal_, vec_helper_;
-    btVector3 vec_r_shoulder_elbow_valid_, vec_l_shoulder_elbow_valid_;
-    btVector3 vec_r_elbow_hand_valid_, vec_l_elbow_hand_valid_;
+    tf::Vector3 vec_shoulder_elbow_, vec_shoulder_hand_, vec_elbow_hand_, vec_normal_, vec_helper_;
+    tf::Vector3 vec_r_shoulder_elbow_valid_, vec_l_shoulder_elbow_valid_;
+    tf::Vector3 vec_r_elbow_hand_valid_, vec_l_elbow_hand_valid_;
     bool r_elbow_extended_, l_elbow_extended_;
-    btMatrix3x3 mat_orientation_;
+    tf::Matrix3x3 mat_orientation_;
 };

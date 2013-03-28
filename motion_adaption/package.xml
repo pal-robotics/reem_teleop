@@ -1,24 +1,29 @@
 <?xml version="1.0"?>
 <package>
-  <name>reem_teleop</name>
+  <name>motion_adaption</name>
   <version>0.0.1</version>
-  <description>Catkin metapackage for reem_teleop</description>
+  <description>
+    The motion_adaption_node uses the transforms of the tracked end points of the operator, first normalises and then
+    scales them according to the operator's and robot's body proportions and finally maps them onto the robot. The
+    orientation of each end point is mapped unchanged.
+  </description>
   <maintainer email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</maintainer>
-  <maintainer email="adolfo.rodriguez@pal-robotics.com">Adolfo Rodríguez Tsouroukdissian</maintainer>
   <license>BSD</license>
-  <license>LPGLv2.1</license>
-  <url type="website">http://ros.org/wiki/reem_teleop</url>
+  <url type="website">http://ros.org/wiki/motion_adaption</url>
   <author email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</author>
-  <author email="adolfo.rodriguez@pal-robotics.com">Adolfo Rodríguez Tsouroukdissian</author>
-  <author email="hilario.tome@pal-robotics.com">Hilario Tome</author>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <run_depend>joint_position_controller</run_depend>
-  <run_depend>motion_adaption</run_depend>
-  <run_depend>reem_teleop_coordinator</run_depend>
-  <run_depend>tree_kinematics</run_depend>
   
-  <export>
-    <metapackage/>
-  </export>
+<!--   <build_depend>bullet</build_depend> -->
+  <build_depend>eigen</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>tf_conversions</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  
+  <run_depend>eigen</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>tf_conversions</run_depend>
+  <run_depend>geometry_msgs</run_depend>
 </package>

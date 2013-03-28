@@ -71,7 +71,7 @@ void MotionAdaption::setGoals()
    tf_transforms[1] = out_tf;
   
   // right elbow goal
-  tf_r_elbow_goal_.setOrigin(btVector3(0.0, 0.0, 0.0));
+  tf_r_elbow_goal_.setOrigin(tf::Vector3(0.0, 0.0, 0.0));
   //quat_.setRPY(M_PI, 0.0, M_PI);
   quat_.setRPY(r_elbow_goal_rot_vec_[0], r_elbow_goal_rot_vec_[1], r_elbow_goal_rot_vec_[2]);
   tf_r_elbow_goal_.setRotation(quat_);
@@ -84,7 +84,7 @@ void MotionAdaption::setGoals()
    tf_transforms[2] = out_tf;
 
   // left elbow goal  
-  tf_l_elbow_goal_.setOrigin(btVector3(0.0, 0.0, 0.0));
+  tf_l_elbow_goal_.setOrigin(tf::Vector3(0.0, 0.0, 0.0));
   //quat_.setRPY(0.0, M_PI, 0.0);
   quat_.setRPY(l_elbow_goal_rot_vec_[0], l_elbow_goal_rot_vec_[1], l_elbow_goal_rot_vec_[2]);
   tf_l_elbow_goal_.setRotation(quat_);
@@ -97,7 +97,7 @@ void MotionAdaption::setGoals()
    tf_transforms[3] = out_tf;  
 
   // right hand goal
-  tf_r_hand_goal_.setOrigin(btVector3(0.0, 0.0, 0.0));
+  tf_r_hand_goal_.setOrigin(tf::Vector3(0.0, 0.0, 0.0));
   //quat_.setRPY(0.0, M_PI/2, 0.0);
   quat_.setRPY(r_hand_goal_rot_vec_[0], r_hand_goal_rot_vec_[1], r_hand_goal_rot_vec_[2]);
   tf_r_hand_goal_.setRotation(quat_);
@@ -111,7 +111,7 @@ void MotionAdaption::setGoals()
    tf_transforms[4] = out_tf;
 
    // left hand goal
-  tf_l_hand_goal_.setOrigin(btVector3(0.0, 0.0, 0.0));
+  tf_l_hand_goal_.setOrigin(tf::Vector3(0.0, 0.0, 0.0));
   //quat_.setRPY(0.0, -M_PI/2, 0.0);
   quat_.setRPY(l_hand_goal_rot_vec_[0], l_hand_goal_rot_vec_[1], l_hand_goal_rot_vec_[2]);
   tf_l_hand_goal_.setRotation(quat_);

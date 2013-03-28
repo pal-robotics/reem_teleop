@@ -1,41 +1,52 @@
-cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+cmake_minimum_required(VERSION 2.8.3)
+project(motion_adaption)
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+find_package(eigen REQUIRED)
+find_package(catkin REQUIRED COMPONENTS roscpp
+                                        tf
+                                        tf_conversions
+                                        geometry_msgs)
 
-rosbuild_init()
+# extend this if we want to make the library available outside the package
+catkin_package(INCLUDE_DIRS include
+               LIBRARIES ${PROJECT_NAME}
+               CATKIN_DEPENDS roscpp
+                              tf
+                              tf_conversions
+                              geometry_msgs
+               DEPENDS eigen)
 
-#set the default path for built executables to the "bin" directory
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+include_directories(include ${catkin_INCLUDE_DIRS})
 
-#uncomment if you have defined messages
-#rosbuild_genmsg()
-#uncomment if you have defined services
-#rosbuild_gensrv()
+add_library(motion_adaption src/motion_adaption.cpp
+                            src/get_transforms.cpp
+                            src/set_ref_frame.cpp
+                            src/adapt_transforms.cpp
+                            src/set_goals.cpp
+                            src/publish_msgs.cpp)
 
-#common commands for building c++ executables and libraries
-#rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
-#target_link_libraries(${PROJECT_NAME} another_library)
-#rosbuild_add_boost_directories()
-#rosbuild_link_boost(${PROJECT_NAME} thread)
-#rosbuild_add_executable(example examples/example.cpp)
-#target_link_libraries(example ${PROJECT_NAME})
-
-rosbuild_add_library(motion_adaption src/motion_adaption.cpp
-                                     src/get_transforms.cpp
-                                     src/set_ref_frame.cpp
-                                     src/adapt_transforms.cpp
-                                     src/set_goals.cpp
-                                     src/publish_msgs.cpp)
-
-rosbuild_add_executable(motion_adaption_node src/motion_adaption_node.cpp)
-
+add_executable(motion_adaption_node src/motion_adaption_node.cpp)
 target_link_libraries(motion_adaption_node motion_adaption)
+
+target_link_libraries(motion_adaption_node ${catkin_LIBRARIES})
+
+install(TARGETS motion_adaption
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+        
+install(TARGETS motion_adaption_node
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+#############
+## Testing ##
+#############
+
+## Add gtest based cpp test target and link libraries
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_reem_teleop.cpp)
+# if(TARGET ${PROJECT_NAME}-test)
+#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
+# endif()
+
+## Add folders to be run by python nosetests
+# catkin_add_nosetests(test)
