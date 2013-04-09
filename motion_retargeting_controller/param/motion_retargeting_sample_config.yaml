@@ -1,0 +1,67 @@
+general_config:
+  # retargets per sec 
+  retargeting_freq: 10
+  # how long to wait for receiving a tf transform; keep in relation with frequency, e.g. 1/retargeting_freq
+  wait_for_tf_in_sec: 0.1
+  # the precision of the end effectors position the IK solver tries to reach
+  epsilon: 0.010
+  # the maximum number of iterations the IK solver will execute
+  max_iterations: 10
+  # Factor applied to the maximum velocities specified in the urdf model of the robot in rad/sec
+  q_dot_max_factor: 1.0
+  q_dot_min_factor: 0.3
+  # Smooting factor applied when all end effectors are considered resting 
+  low_pass_factor:  1.0
+  # minimum and maximum translational and rotational velocities of the end effectors in m/sec
+  x_dot_trans_min: 1.0
+  x_dot_trans_max: 1.0
+  x_dot_rot_min: 3.14
+  x_dot_rot_max: 3.14
+  # factor to prevent running through kinematic singularities
+  lambda: 0.01
+  # robot model description parameter name
+  robot_model_urdf:       robot_description
+  
+### NOT RE-IMPLEMENTED YET - WAITING FOR MOVEIT RELEASE
+  # set true for self-collision checking by the environment server 
+#  check_self_collision: false
+  # set true for additional joint limit checking by the environment server
+#  check_joint_limits:   false
+
+retargets:
+  head_retargeting:
+    # retargeting type
+    type: trans_rot_retargeting
+    # parameters for motion adaption
+    motion_adaption:
+       # name of the referance frame of the input motion
+      input_ref_frame:      /torso
+      # name of the tracked frame the motion is retargeted _from_
+      input_endpt_1:  /head
+      # name of the referance frame for output motion
+      output_ref_frame:     /turret_link
+      # name of the tracked frame the motion is retargeted _to_
+      output_endpt_1:    /lcd
+      # define rotation to applied in case the input and output frame's conventions done match
+      input_correction:
+        pitch: 1.5707963267948966
+        roll:  3.1415926535897931
+        yaw:   0.0
+    # parameters for IK
+    ik:
+      # define weights for each DOF of each retargeted endpoint
+      # (0.0: ignored, 1.0: full error taken into account)
+      task_space_weights:
+        endpt_1:
+          px: 0.0 # we don't care about the heads position
+          py: 0.0
+          pz: 0.0
+          rx: 0.0 # we only care about the heads rotation around the y and z axis
+          ry: 1.0
+          rz: 1.0
+      # set weights for all joints involved in this retargeting type
+      # In case multiple retargetings are done in parallel, be aw
+      joint_space_weights:
+        # retargeting the head on Robosem involves the turret and lcd joint
+			  js_w_matr/j2:  1.0 # turret
+			  js_w_matr/j7:  1.0 # lcd

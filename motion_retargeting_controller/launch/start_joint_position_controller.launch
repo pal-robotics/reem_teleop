@@ -1,0 +1,9 @@
+<launch>
+
+  <!-- load parameters for the controller onto the parameter server -->
+  <rosparam command="load" file="$(find reem_teleop_coordinator)/config/parameters_joint_position_controller.yaml" />
+
+  <!-- load the controller -->
+  <node pkg="pr2_controller_manager" type="spawner" args="joint_position_controller" name="pr2_controller_manger" />
+
+</launch>

@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (Modified BSD License)
  *
- *  Copyright (c) 2011, PAL Robotics, S.L.
+ *  Copyright (c) 2013, Yujin Robot
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -14,7 +14,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of PAL Robotics, S.L. nor the names of its
+ *   * Neither the name of Yujin Robot nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
@@ -34,32 +34,42 @@
 
 /** \author Marcus Liebhardt */
 
-#include "motion_adaption/motion_adaption.h"
-#include "motion_adaption/types/trans_rot_adaption.h"
+#include "motion_retargeting_controller/motion_retargeting.h"
+#include "motion_retargeting_controller/motion_retargeting_configuration.h"
 
-namespace motion_adaption
+namespace motion_retargeting
 {
 
-MotionAdaption::MotionAdaption(std::vector<MotionAdaptionParameters>& adaption_parameters)
-{
-  for (unsigned int param; param < adaption_parameters.size(); ++param)
-  {
-    if (adaption_parameters[param].adaption_type == MotionAdaptionParameters::TransRotAdaption)
-    {
-      adaptions_.push_back(AdaptionTypePtr(new TransRotAdaption()));
-    }
-  }
-};
+//typedef std::vector<MotionRetargetingParameters> MoRetParams;
+//typedef GeneralParameters GeneralParams;
 
-MotionAdaption::~MotionAdaption(){};
-
-void MotionAdaption::adapt()
+MotionRetargeting::MotionRetargeting(MotionRetargetingConfiguration& retargeting_config)
 {
-  for (unsigned int adaption; adaption < adaptions_.size(); ++adaption)
-  {
-    adaptions_[adaption]->adapt();
-  }
+  // general configuration
+//  MotionRetargetingParameters ret_params = retargeting_config.getParameters();
+  // motion adaption configuration
+//  std::vector<MotionAdaptionParameters> adaption_parameters
+//  unsigned int nr_of_adaptions = retargeting_config.getParameters().motion_adaption_parameters.size();
+//  for (unsigned int adaption; adaption <<  nr_of_adaptions; ++adaption)
+//  {
+//
+//  }
+  motion_adaption_ = new motion_adaption::MotionAdaption(retargeting_config.getParameters().motion_adaption_parameter);
+  // initialise tree kinematics with the specified parameters
+//  tree_kinematics_ = new TreeKinematics(retargeting_config.getIkConfig());
 }
 
-} // namespace motion_adaption
+MotionRetargeting::~MotionRetargeting()
+{
+  delete motion_adaption_;
+//  delete tree_kinematics_;
+}
 
+bool MotionRetargeting::retarget(/*trajectory_msgs::JointTrajectoryPoint& output_joint_states*/)
+{
+  motion_adaption_->adapt(/*adapted_poses*/);
+//  tree_kinematics_->doIk(adapted_poses, output_joint_states);
+  return true;
+}
+
+} // namespace motion_retargeting
