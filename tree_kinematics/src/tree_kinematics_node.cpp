@@ -38,25 +38,28 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "tree_kinematics_node");
   ros::NodeHandle nh;
-//  tree_kinematics::TreeKinematicsPtr tree_kinematics = tree_kinematics::TreeKinematicsPtr(new tree_kinematics::TreeKinematics());
-  tree_kinematics::TreeKinematics tree_kinematics;
+  tree_kinematics::TreeKinematicsPtr tree_kinematics;
+  tree_kinematics::KinematicsParameters parameters;
   ros::ServiceServer fk_service, ik_service;
-
-  if(!tree_kinematics.init())
+  try
+  {
+    tree_kinematics = tree_kinematics::TreeKinematicsPtr(new tree_kinematics::TreeKinematics(parameters, nh));
+  }
+  catch (...)
   {
     ROS_FATAL("Could not initialise tree kinematics! Aborting ...");
     return -1;
   }
-  else
-  {
-    fk_service = nh.advertiseService("get_position_fk",
-                                     &tree_kinematics::TreeKinematics::getPositionFk,
-                                     &tree_kinematics);
-    ik_service = nh.advertiseService("get_position_ik",
-                                     &tree_kinematics::TreeKinematics::getPositionIk,
-                                     &tree_kinematics);
-    ROS_INFO("Tree kinematics services initialised.");
-    ros::spin();
-  }
+
+  fk_service = nh.advertiseService("get_position_fk",
+                                   &tree_kinematics::TreeKinematics::getPositionFk,
+                                   tree_kinematics);
+  ik_service = nh.advertiseService("get_position_ik",
+                                   &tree_kinematics::TreeKinematics::getPositionIk,
+                                   tree_kinematics);
+  ROS_INFO_STREAM("Tree kinematics services initialised.");
+
+  ros::spin();
+
   return 0;
 }

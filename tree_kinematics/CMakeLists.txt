@@ -41,7 +41,7 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 add_library(tree_kinematics src/tree_kinematics.cpp
                             src/treeiksolverpos_online.cpp)
-target_link_libraries(tree_kinematics ${catkin_LIBRARIES} ${Boost_INCLUDE_DIRS})
+target_link_libraries(tree_kinematics ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 add_dependencies(tree_kinematics tree_kinematics_gencpp)
 
 add_executable(tree_kinematics_node src/tree_kinematics_node.cpp)

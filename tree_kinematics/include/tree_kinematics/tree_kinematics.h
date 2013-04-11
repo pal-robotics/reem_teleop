@@ -26,6 +26,17 @@
  * \copyright LPGL
  */
 
+/*****************************************************************************
+** Ifdefs
+*****************************************************************************/
+
+#ifndef TREE_KINEMATICS_H_
+#define TREE_KINEMATICS_H_
+
+/*****************************************************************************
+** Includes
+*****************************************************************************/
+
 #include <vector>
 #include <string>
 #include <boost/scoped_ptr.hpp>
@@ -45,6 +56,7 @@
 #include <kdl/treefksolverpos_recursive.hpp>
 #include <kdl/treeiksolvervel_wdls.hpp>
 
+#include "tree_kinematics/kinematics_parameters.h"
 #include "tree_kinematics/treeiksolverpos_online.hpp"
 #include "tree_kinematics/GetTreePositionIK.h"
 #include "tree_kinematics/GetPositionFK.h"
@@ -64,17 +76,6 @@ namespace tree_kinematics
 class TreeKinematics
 {
 public:
-  TreeKinematics() : nh_private_("~")
-  {
-    loop_count_ = 1;
-    ik_srv_duration_ = 0.0;
-    ik_srv_duration_median_ = 0.0;
-    ik_duration_ = 0.0;
-    ik_duration_median_ = 0.0;
-  };
-
-  ~TreeKinematics(){};
-
   /**
    * \brief Configures the tree_kinematics class
    *
@@ -82,11 +83,9 @@ public:
    * parameters. These are used, when the specific parameter could be found on the parameter server.
    * Furthermore services get registered, the robot model is created and its parameters read
    * (i.e. joint position limits) to configure the utilized kinematics solver.
-   * Note: The other methods will not work properly, if this function has not been called first!
-   *
-   * @ return false, if critical parameters could not be found, true otherwise
    */
-  bool init();
+  TreeKinematics(const KinematicsParameters& parameters, const ros::NodeHandle& nh);
+  ~TreeKinematics(){};
 
   /**
    * \brief Uses the given joint positions to calculate the position(s) of the specified end point(s)
@@ -121,21 +120,54 @@ public:
                        GetTreePositionIK::Response &response);
 
 private:
-  ros::NodeHandle nh_, nh_private_;
-  KDL::Tree kdl_tree_; // KDL representation of a tree
-  std::string tree_root_name_; // The name of the tree's root
-  unsigned int nr_of_jnts_; // number of joints in the KDL::Tree
-  int srv_call_frequency_; // how often the service is called per second
-  KDL::MatrixXd js_w_matr_; // matrix of joint weights for the IK velocity solver
-  KDL::MatrixXd ts_w_matr_; // matrix for task space weights for the IK velocity solver
-  double lambda_; // damping factor for the IK velocity solver
-  unsigned int loop_count_;
-  double ik_srv_duration_, ik_srv_duration_median_, ik_duration_, ik_duration_median_; // for time measurements
-  tf::TransformListener tf_listener_;
-  tree_kinematics::KinematicSolverInfo info_;
+  /**
+   * The FK position solver
+   */
   boost::scoped_ptr<KDL::TreeFkSolverPos> fk_solver_;
-  boost::scoped_ptr<KDL::TreeIkSolverVel_wdls> ik_vel_solver_;
+  /**
+   * The IK position solver
+   */
   boost::scoped_ptr<KDL::TreeIkSolverPos_Online> ik_pos_solver_;
+  /**
+   * The IK velocity solver - used by the IK position solver
+   */
+  boost::scoped_ptr<KDL::TreeIkSolverVel_wdls> ik_vel_solver_;
+  /**
+   * Some information about the kinematics solver
+   */
+  tree_kinematics::KinematicSolverInfo info_;
+  /**
+   * Parameters for configuring tree kinematics
+   */
+  KinematicsParameters parameters_;
+  /**
+   * Node handles for ? TODO
+   */
+  ros::NodeHandle nh_, nh_private_;
+  /**
+   * KDL representation of kinematics with tree structures
+   */
+  KDL::Tree kdl_tree_;
+  /**
+   * The name of the kinematics tree's root
+   */
+  std::string tree_root_name_;
+  /**
+   * Number of joints in the KDL::Tree
+   */
+  unsigned int nr_of_jnts_;
+  /**
+   * TF listener for retrieving tf transforms
+   */
+  tf::TransformListener tf_listener_;
+  /**
+   * Used for time measurements
+   */
+  double ik_srv_duration_, ik_srv_duration_median_, ik_duration_, ik_duration_median_;
+  /**
+   * Used for time measurements
+   */
+  unsigned int loop_count_;
 
   /**
    * \brief Initialises the robot model and KDL::Tree and calls readJoints(...)
@@ -153,13 +185,13 @@ private:
    * @return false, if the robot model or KDL::Tree could not be initialised or readJoint(...) returned false,
    * true otherwise
    */
-  bool loadModel(const std::string xml,
-                   KDL::Tree& kdl_tree,
-                   std::string& tree_root_name,
-                   unsigned int& nr_of_jnts,
-                   KDL::JntArray& joint_min,
-                   KDL::JntArray& joint_max,
-                   KDL::JntArray& joint_vel_max);
+  bool parseModelDescription(const std::string xml,
+                                KDL::Tree& kdl_tree,
+                                std::string& tree_root_name,
+                                unsigned int& nr_of_jnts,
+                                KDL::JntArray& joint_min,
+                                KDL::JntArray& joint_max,
+                                KDL::JntArray& joint_vel_max);
 
   /**
    * \brief Retrieves information about all joints in the given model
@@ -198,7 +230,11 @@ private:
   int getJointIndex(const std::string& name);
 };
 
+/**
+ * Convenience typedef for a boost shared pointer to the TreeKinematics class
+ */
 typedef boost::shared_ptr<TreeKinematics> TreeKinematicsPtr;
 
 } // namespace
 
+#endif /* TREE_KINEMATICS_H_ */
