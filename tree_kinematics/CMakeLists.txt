@@ -1,34 +1,40 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(tree_kinematics)
 
+find_package(Boost REQUIRED)
 find_package(catkin REQUIRED COMPONENTS roscpp
                                         orocos_kdl
                                         kdl_parser
                                         tf
-                                        tf_conversions
+                                        kdl_conversions
                                         urdf
+                                        std_msgs
                                         geometry_msgs
-                                        kinematics_msgs
-                                        arm_navigation_msgs
                                         message_generation)
 
-add_service_files(FILES get_tree_position_ik.srv)
+add_message_files(FILES JointLimits.msg
+                        KinematicSolverInfo.msg)
 
-generate_messages(DEPENDENCIES kinematics_msgs
-                               arm_navigation_msgs)
+add_service_files(FILES GetTreePositionIK.srv)
 
-# extend this if we want to make the library available outside the package
-catkin_package(CATKIN_DEPENDS message_runtime kinematics_msgs arm_navigation_msgs)
+generate_messages(DEPENDENCIES std_msgs
+                               sensor_msgs)
 
-include_directories(include/tree_kinematics ${catkin_INCLUDE_DIRS})
+catkin_package(INCLUDE_DIRS include
+               LIBRARIES ${PROJECT_NAME}
+               CATKIN_DEPENDS message_runtime
+                              std_msgs
+                              sensor_msgs
+               DEPENDS Boost)
+
+include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 add_library(tree_kinematics src/tree_kinematics.cpp
                             src/treeiksolverpos_online.cpp)
 
 add_executable(tree_kinematics_node src/tree_kinematics_node.cpp)
 target_link_libraries(tree_kinematics_node tree_kinematics)
-
-target_link_libraries(tree_kinematics_node ${catkin_LIBRARIES})
+target_link_libraries(tree_kinematics_node ${catkin_LIBRARIES} ${Boost_INCLUDE_DIRS})
 
 install(TARGETS tree_kinematics tree_kinematics_node
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

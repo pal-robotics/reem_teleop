@@ -1,0 +1,26 @@
+# A service call to carry out an inverse kinematics computation for tree structured kinematics
+# Modified version of kinematics_msgs/PositionIKRequest
+
+# End point names
+string[] endpt_names
+
+# End point poses 
+geometry_msgs/PoseStamped[] endpt_poses
+
+# A RobotState consisting of hint/seed positions for the IK computation. 
+# These may be used to seed the IK search. 
+# The seed state MUST contain state for all joints to be used by the IK solver
+# to compute IK. The list of joints that the IK solver deals with can be found using
+sensor_msgs/JointState ik_seed_state
+
+# Additional state information can be provided here to specify the starting positions 
+# of other joints/links on the robot.
+#sensor_msgs/JointState robot_state # not used yet
+
+---
+
+# The returned solution 
+# (in the same order as the list of joints specified in the IKRequest message)
+sensor_msgs/JointState solution
+
+#arm_navigation_msgs/ArmNavigationErrorCodes error_code # replace with own error codes

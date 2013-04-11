@@ -24,13 +24,9 @@
  */
 
 
-#include <urdf/joint.h>
-#include <urdf/model.h>
-#include <tf_conversions/tf_kdl.h>
+#include <urdf_model/joint.h>
+#include <kdl_conversions/kdl_msg.h>
 #include "tree_kinematics/tree_kinematics.h"
-
-static const std::string FK_SERVICE = "get_position_fk";
-static const std::string IK_SERVICE = "get_position_ik";
 
 
 namespace tree_kinematics
@@ -192,8 +188,8 @@ bool TreeKinematics::init()
   ROS_DEBUG("lambda = %f", lambda_);
   ik_vel_solver_->setLambda(lambda_);
 
-  fk_service_ = nh_private_.advertiseService(FK_SERVICE, &TreeKinematics::getPositionFk, this);
-  ik_service_ = nh_private_.advertiseService(IK_SERVICE, &TreeKinematics::getPositionIk, this);
+//  fk_service_ = nh_private_.advertiseService("get_position_fk", &TreeKinematics::getPositionFk, this);
+  ik_service_ = nh_private_.advertiseService("get_position_ik", &TreeKinematics::getPositionIk, this);
 
   return true;
 }
@@ -338,95 +334,98 @@ int TreeKinematics::getJointIndex(const std::string &name)
 }
 
 
-bool TreeKinematics::getPositionFk(kinematics_msgs::GetPositionFK::Request& request,
-                                   kinematics_msgs::GetPositionFK::Response& response)
-{
-  ROS_DEBUG("getPositionFK method invoked.");
-  KDL::JntArray q_in;
-  double nr_of_jnts = request.robot_state.joint_state.name.size();
-  q_in.resize(nr_of_jnts);
+//bool TreeKinematics::getPositionFk(kinematics_msgs::GetPositionFK::Request& request,
+//                                   kinematics_msgs::GetPositionFK::Response& response)
+//{
+//  ROS_DEBUG("getPositionFK method invoked.");
+//  KDL::JntArray q_in;
+//  double nr_of_jnts = request.robot_state.name.size();
+//  q_in.resize(nr_of_jnts);
+//
+//  for (unsigned int i=0; i < nr_of_jnts; ++i)
+//  {
+//    int tmp_index = getJointIndex(request.robot_state.name[i]);
+//    if (tmp_index >=0)
+//    {
+//      q_in(tmp_index) = request.robot_state.position[i];
+//      ROS_DEBUG("joint '%s' is now number '%d'", request.robot_state.name[i].c_str(), tmp_index);
+//    }
+//    else
+//    {
+//      ROS_FATAL("i: %d, No joint index for %s!", i, request.robot_state.name[i].c_str());
+//      ROS_FATAL("Service call aborted.");
+//      return false;
+//    }
+//  }
+//
+//  response.pose_stamped.resize(request.fk_link_names.size());
+//  response.fk_link_names.resize(request.fk_link_names.size());
+//  KDL::Frame p_out;
+//  geometry_msgs::PoseStamped pose;
+//  tf::Stamped<tf::Pose> tf_pose;
+//  for (unsigned int i=0; i < request.fk_link_names.size(); i++)
+//  {
+//    ROS_DEBUG("End effector name: %s",request.fk_link_names[i].c_str());
+//    int fk_ret = fk_solver_->JntToCart(q_in, p_out, request.fk_link_names[i]);
+//    if (fk_ret >= 0)
+//    {
+//      tf_pose.frame_id_ = tree_root_name_;
+//      tf_pose.stamp_ = ros::Time::now();
+//      tf::PoseKDLToTF(p_out, tf_pose);
+//      try
+//      {
+//        tf_listener_.transformPose(request.header.frame_id, tf_pose, tf_pose);
+//      }
+//      catch (tf::TransformException const &ex)
+//      {
+//        ROS_FATAL("Could not transform FK pose to frame: %s",request.header.frame_id.c_str());
+//        response.error_code.val = response.error_code.FRAME_TRANSFORM_FAILURE;
+//        return false;
+//      }
+//      tf::poseStampedTFToMsg(tf_pose, pose);
+//      response.pose_stamped[i] = pose;
+//      response.fk_link_names[i] = request.fk_link_names[i];
+//      response.error_code.val = response.error_code.SUCCESS;
+//    }
+//    else
+//    {
+//      ROS_WARN("A FK solution could not be found for %s (error code = %d)",
+//      request.fk_link_names[i].c_str(), fk_ret);
+//      response.error_code.val = response.error_code.NO_FK_SOLUTION;
+//    }
+//  }
+//
+//  return true;
+//}
 
-  for (unsigned int i=0; i < nr_of_jnts; ++i)
-  {
-    int tmp_index = getJointIndex(request.robot_state.joint_state.name[i]);
-    if (tmp_index >=0)
-    {
-      q_in(tmp_index) = request.robot_state.joint_state.position[i];
-      ROS_DEBUG("joint '%s' is now number '%d'", request.robot_state.joint_state.name[i].c_str(), tmp_index);
-    }
-    else
-    {
-      ROS_FATAL("i: %d, No joint index for %s!", i, request.robot_state.joint_state.name[i].c_str());
-      ROS_FATAL("Service call aborted.");
-      return false;
-    }
-  }
 
-  response.pose_stamped.resize(request.fk_link_names.size());
-  response.fk_link_names.resize(request.fk_link_names.size());
-  KDL::Frame p_out;
-  geometry_msgs::PoseStamped pose;
-  tf::Stamped<tf::Pose> tf_pose;
-  for (unsigned int i=0; i < request.fk_link_names.size(); i++)
-  {
-    ROS_DEBUG("End effector name: %s",request.fk_link_names[i].c_str());
-    int fk_ret = fk_solver_->JntToCart(q_in, p_out, request.fk_link_names[i]);
-    if (fk_ret >= 0)
-    {
-      tf_pose.frame_id_ = tree_root_name_;
-      tf_pose.stamp_ = ros::Time::now();
-      tf::PoseKDLToTF(p_out, tf_pose);
-      try
-      {
-        tf_listener_.transformPose(request.header.frame_id, tf_pose, tf_pose);
-      }
-      catch (tf::TransformException const &ex)
-      {
-        ROS_FATAL("Could not transform FK pose to frame: %s",request.header.frame_id.c_str());
-        response.error_code.val = response.error_code.FRAME_TRANSFORM_FAILURE;
-        return false;
-      }
-      tf::poseStampedTFToMsg(tf_pose, pose);
-      response.pose_stamped[i] = pose;
-      response.fk_link_names[i] = request.fk_link_names[i];
-      response.error_code.val = response.error_code.SUCCESS;
-    }
-    else
-    {
-      ROS_WARN("A FK solution could not be found for %s (error code = %d)",
-      request.fk_link_names[i].c_str(), fk_ret);
-      response.error_code.val = response.error_code.NO_FK_SOLUTION;
-    }
-  }
-
-  return true;
-}
-
-
-bool TreeKinematics::getPositionIk(tree_kinematics::get_tree_position_ik::Request &request,
-                                   tree_kinematics::get_tree_position_ik::Response &response)
+bool TreeKinematics::getPositionIk(tree_kinematics::GetTreePositionIK::Request &request,
+                                       tree_kinematics::GetTreePositionIK::Response &response)
 {
   ik_srv_duration_ = ros::Time::now().toSec();
   ROS_DEBUG("getPositionIK method invoked.");
+  if (request.endpt_names.size() != request.endpt_poses.size())
+  {
+    ROS_ERROR_STREAM("Number of end point names and poses don't match! Aborting service call.");
+    return false;
+  }
 
   // extract current joint positions from the request
   KDL::JntArray q, q_desi;
-  double nr_of_jnts = request.pos_ik_request[0].ik_seed_state.joint_state.name.size();
+  double nr_of_jnts = request.ik_seed_state.name.size();
   q.resize(nr_of_jnts);
   q_desi.resize(nr_of_jnts);
   for (unsigned int i=0; i < nr_of_jnts; ++i)
   {
-    int tmp_index = getJointIndex(request.pos_ik_request[0].ik_seed_state.joint_state.name[i]);
+    int tmp_index = getJointIndex(request.ik_seed_state.name[i]);
     if (tmp_index >=0)
     {
-      q(tmp_index) = request.pos_ik_request[0].ik_seed_state.joint_state.position[i];
-      ROS_DEBUG("joint '%s' is now number '%d'", request.pos_ik_request[0].ik_seed_state.joint_state.name[i].c_str(),
-                                                tmp_index);
+      q(tmp_index) = request.ik_seed_state.position[i];
+      ROS_DEBUG_STREAM("Joint '" << request.ik_seed_state.name[i] << "' is now number '" << tmp_index << "'.");
     }
     else
     {
-      ROS_FATAL("i: %d, No joint index for %s!",i,request.pos_ik_request[0].ik_seed_state.joint_state.name[i].c_str());
-      ROS_FATAL("Service call aborted.");
+      ROS_ERROR_STREAM(i << ": No index for joint '" << request.ik_seed_state.name[i] << "'! Aborting service call.");
       return false;
     }
   }
@@ -438,9 +437,9 @@ bool TreeKinematics::getPositionIk(tree_kinematics::get_tree_position_ik::Reques
   tf::Stamped<tf::Pose> transform_root;
   KDL::Frames desired_poses;
   KDL::Frame desired_pose;
-  for(unsigned int i = 0; i < request.pos_ik_request.size(); ++i)
+  for(unsigned int i = 0; i < request.endpt_names.size(); ++i)
   {
-    pose_msg_in = request.pos_ik_request[i].pose_stamped;
+    pose_msg_in = request.endpt_poses[i];
     try
     {
       tf_listener_.waitForTransform(tree_root_name_, pose_msg_in.header.frame_id, pose_msg_in.header.stamp,
@@ -449,14 +448,14 @@ bool TreeKinematics::getPositionIk(tree_kinematics::get_tree_position_ik::Reques
     }
     catch (tf::TransformException const &ex)
     {
-      ROS_FATAL("%s",ex.what());
-      ROS_FATAL("Could not transform IK pose from '%s' to frame '%s'", tree_root_name_.c_str(),
-      pose_msg_in.header.frame_id.c_str());
-      response.error_code.val = response.error_code.FRAME_TRANSFORM_FAILURE;
+      ROS_ERROR_STREAM("Could not transform IK pose from '" << tree_root_name_ << "' to frame '"
+                       << pose_msg_in.header.frame_id <<  "!");
+      ROS_DEBUG_STREAM(ex.what());
+//      response.error_code.val = response.error_code.FRAME_TRANSFORM_FAILURE;
       return false;
     }
-    tf::PoseMsgToKDL(pose_msg_transformed.pose, desired_pose);
-    desired_poses[request.pos_ik_request[i].ik_link_name] = desired_pose;
+    tf::poseMsgToKDL(pose_msg_transformed.pose, desired_pose);
+    desired_poses[request.endpt_names[i]] = desired_pose;
   }
 
   // use the solver to compute desired joint positions
@@ -468,43 +467,43 @@ bool TreeKinematics::getPositionIk(tree_kinematics::get_tree_position_ik::Reques
   // insert the solver's result into the service response
   if (ik_ret >= 0 || ik_ret == -3)
   {
-    response.solution.joint_state.name = info_.joint_names;
-    response.solution.joint_state.position.resize(nr_of_jnts_);
-    response.solution.joint_state.velocity.resize(nr_of_jnts_);
+    response.solution.name = info_.joint_names;
+    response.solution.position.resize(nr_of_jnts_);
+    response.solution.velocity.resize(nr_of_jnts_);
     for (unsigned int i=0; i < nr_of_jnts_; ++i)
     {
-      response.solution.joint_state.position[i] = q_desi(i);
-      response.solution.joint_state.velocity[i] = (q_desi(i) - q(i)) * srv_call_frequency_;
-      ROS_DEBUG("IK Solution: %s %d: pos = %f, vel = %f",response.solution.joint_state.name[i].c_str(), i,
-      response.solution.joint_state.position[i], response.solution.joint_state.velocity[i]);
+      response.solution.position[i] = q_desi(i);
+      response.solution.velocity[i] = (q_desi(i) - q(i)) * srv_call_frequency_;
+      ROS_DEBUG_STREAM("IK Solution: " << response.solution.name[i] << " " << i << ": pos = "
+                       << response.solution.position[i] << ", vel = " << response.solution.velocity[i]);
     }
-    response.error_code.val = response.error_code.SUCCESS;
+//    response.error_code.val = response.error_code.SUCCESS;
 
     ik_srv_duration_ = ros::Time::now().toSec() - ik_srv_duration_;
     ik_srv_duration_median_ = ((ik_srv_duration_median_ * (loop_count_ - 1)) + ik_srv_duration_) / loop_count_;
     loop_count_++;
-
-    ROS_INFO_THROTTLE(1.0, "tree_kinematics: ik_srv_duration %f and median %f", ik_srv_duration_,
-    ik_srv_duration_median_);
-    ROS_INFO_THROTTLE(1.0, "tree_kinematics: ik_duration %f and median %f", ik_duration_, ik_duration_median_);
+    ROS_INFO_STREAM_THROTTLE(1.0, "tree_kinematics: current/median IK duration: " << ik_duration_
+                             << "s/" << ik_duration_median_ << "s.");
+    ROS_INFO_STREAM_THROTTLE(1.0, "tree_kinematics: current/median IK service duration: " << ik_srv_duration_
+                             << "s/" << ik_srv_duration_median_ << "s.");
 
     if (ik_ret == -3)
     {
-      ROS_WARN_THROTTLE(1.0, "Maximum iterations reached! (error code = %d)", ik_ret);
+      ROS_WARN_STREAM("Maximum iterations reached! (error code = " << ik_ret << ")");
     }
   }
   else
   {
-    ROS_WARN("An IK solution could not be found (error code = %d)", ik_ret);
-    response.error_code.val = response.error_code.NO_IK_SOLUTION;
+    ROS_WARN_STREAM("An IK solution could not be found (error code = " << ik_ret << ")");
+//    response.error_code.val = response.error_code.NO_IK_SOLUTION;
 
     ik_srv_duration_ = ros::Time::now().toSec() - ik_srv_duration_;
     ik_srv_duration_median_ = ((ik_srv_duration_median_ * (loop_count_ - 1)) + ik_srv_duration_) / loop_count_;
     loop_count_++;
-
-    ROS_INFO_THROTTLE(1.0, "tree_kinematics: ik_srv_duration %f and median %f", ik_srv_duration_,
-    ik_srv_duration_median_);
-    ROS_INFO_THROTTLE(1.0, "tree_kinematics: ik_duration %f and median %f", ik_duration_, ik_duration_median_);
+    ROS_DEBUG_STREAM_THROTTLE(1.0, "tree_kinematics: current/median IK duration: " << ik_duration_
+                             << "s/" << ik_duration_median_ << "s.");
+    ROS_DEBUG_STREAM_THROTTLE(1.0, "tree_kinematics: current/median IK service duration: " << ik_srv_duration_
+                             << "s/" << ik_srv_duration_median_ << "s.");
   }
   return true;
 }

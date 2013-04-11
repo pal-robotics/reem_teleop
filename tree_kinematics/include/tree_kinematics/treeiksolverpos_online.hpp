@@ -27,9 +27,9 @@
 
 #include <vector>
 #include <string>
-#include "kdl/treeiksolver.hpp"
-#include "kdl/treefksolver.hpp"
-#include "kdl/jntarrayvel.hpp"
+#include <kdl/treeiksolver.hpp>
+#include <kdl/treefksolver.hpp>
+#include <kdl/jntarrayvel.hpp>
 
 namespace KDL {
 
