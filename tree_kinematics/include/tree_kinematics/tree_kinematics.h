@@ -45,9 +45,10 @@
 #include <kdl/treefksolverpos_recursive.hpp>
 #include <kdl/treeiksolvervel_wdls.hpp>
 
-#include <tree_kinematics/treeiksolverpos_online.hpp>
-#include <tree_kinematics/GetTreePositionIK.h>
-#include <tree_kinematics/KinematicSolverInfo.h>
+#include "tree_kinematics/treeiksolverpos_online.hpp"
+#include "tree_kinematics/GetTreePositionIK.h"
+#include "tree_kinematics/GetPositionFK.h"
+#include "tree_kinematics/KinematicSolverInfo.h"
 
 namespace tree_kinematics
 {
@@ -101,8 +102,8 @@ public:
    * @ return false, if no index could be found for a given joint name or if the transformation from
    * pose message to KDL::Frame threw a exception; true otherwise
    */
-//    bool getPositionFk(kinematics_msgs::GetPositionFK::Request& request,
-//                         kinematics_msgs::GetPositionFK::Response& response);
+  bool getPositionFk(GetPositionFK::Request& request,
+                       GetPositionFK::Response& response);
   /**
    * \brief Uses the given end point position(s) in Cartesian coordinates to calculate new joint positions.
    *
@@ -116,8 +117,8 @@ public:
    * @ return false, if no index could be found for a given joint name or if the transformation from
    * pose message to KDL::Frame threw a exception; true otherwise
    */
-  bool getPositionIk(tree_kinematics::GetTreePositionIK::Request &request,
-                     tree_kinematics::GetTreePositionIK::Response &response);
+  bool getPositionIk(GetTreePositionIK::Request &request,
+                       GetTreePositionIK::Response &response);
 
 private:
   ros::NodeHandle nh_, nh_private_;
@@ -128,14 +129,13 @@ private:
   KDL::MatrixXd js_w_matr_; // matrix of joint weights for the IK velocity solver
   KDL::MatrixXd ts_w_matr_; // matrix for task space weights for the IK velocity solver
   double lambda_; // damping factor for the IK velocity solver
-
+  unsigned int loop_count_;
+  double ik_srv_duration_, ik_srv_duration_median_, ik_duration_, ik_duration_median_; // for time measurements
+  tf::TransformListener tf_listener_;
+  tree_kinematics::KinematicSolverInfo info_;
   boost::scoped_ptr<KDL::TreeFkSolverPos> fk_solver_;
   boost::scoped_ptr<KDL::TreeIkSolverVel_wdls> ik_vel_solver_;
   boost::scoped_ptr<KDL::TreeIkSolverPos_Online> ik_pos_solver_;
-
-  ros::ServiceServer fk_service_, ik_service_;
-  tf::TransformListener tf_listener_;
-  tree_kinematics::KinematicSolverInfo info_;
 
   /**
    * \brief Initialises the robot model and KDL::Tree and calls readJoints(...)
@@ -196,9 +196,6 @@ private:
    * @return the index of the joint; -1, if joint could not be found
    */
   int getJointIndex(const std::string& name);
-
-  unsigned int loop_count_;
-  double ik_srv_duration_, ik_srv_duration_median_, ik_duration_, ik_duration_median_;
 };
 
 typedef boost::shared_ptr<TreeKinematics> TreeKinematicsPtr;

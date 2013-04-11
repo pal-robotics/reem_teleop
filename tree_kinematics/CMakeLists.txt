@@ -10,20 +10,24 @@ find_package(catkin REQUIRED COMPONENTS roscpp
                                         urdf
                                         std_msgs
                                         geometry_msgs
+                                        sensor_msgs
                                         message_generation)
 
 add_message_files(FILES JointLimits.msg
                         KinematicSolverInfo.msg)
 
-add_service_files(FILES GetTreePositionIK.srv)
+add_service_files(FILES GetTreePositionIK.srv
+                        GetPositionFK.srv)
 
 generate_messages(DEPENDENCIES std_msgs
+                               geometry_msgs
                                sensor_msgs)
 
 catkin_package(INCLUDE_DIRS include
                LIBRARIES ${PROJECT_NAME}
                CATKIN_DEPENDS message_runtime
                               std_msgs
+                              geometry_msgs
                               sensor_msgs
                DEPENDS Boost)
 
