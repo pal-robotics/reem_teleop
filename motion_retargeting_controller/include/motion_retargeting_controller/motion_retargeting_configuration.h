@@ -1,7 +1,20 @@
+/*****************************************************************************
+** Ifdefs
+*****************************************************************************/
+
+#ifndef MOTION_RETARGETING_CONFIGURATION_H_
+#define MOTION_RETARGETING_CONFIGURATION_H_
+
+/*****************************************************************************
+** Includes
+*****************************************************************************/
+
 #include <string>
 #include <vector>
+#include <boost/shared_ptr.hpp>
 
 #include <motion_adaption/types/adaption_type.h>
+#include <tree_kinematics/kinematics_parameters.h>
 
 namespace motion_retargeting
 {
@@ -17,21 +30,12 @@ struct MotionRetargetingParameters
   {
     std::string retargeting_type_name;
     double retargeting_freq;
-    double wait_for_tf;
-    double epsilon;
-    double max_iterations;
-    double q_dot_max_factor;
-    double q_dot_min_factor;
-    double low_pass_factor;
-    double x_dot_trans_min;
-    double x_dot_trans_max;
-    double x_dot_rot_min;
-    double x_dot_rot_max;
-    double lambda;
+    double wait_for_tf; // who is using that? only motion_adaption, then move it
     std::string robot_model_name;
     bool check_self_collision;
     bool check_joint_limits;
   };
+  GeneralParameters general_parameters;
   /**
    * Motion adaption parameters
    */
@@ -39,12 +43,7 @@ struct MotionRetargetingParameters
   /**
    * IK parameters
    */
-  struct IkParameters
-  {
-    std::vector< std::vector<double> > task_space_weights;
-    std::vector<double> joint_space_weights;
-  };
-  std::vector<IkParameters> ik_parameters;
+  tree_kinematics::KinematicsParameters kinematics_parameters;
 };
 
 class MotionRetargetingConfiguration
@@ -53,16 +52,19 @@ public:
   /**
    * Initialise the configuration
    */
-  MotionRetargetingConfiguration(MotionRetargetingParameters motion_retargeting_parameters);
+  MotionRetargetingConfiguration(MotionRetargetingParameters& motion_retargeting_parameters)
+  {
+    parameters_ = motion_retargeting_parameters;
+  };
   /**
    * Clean up
    */
-  ~MotionRetargetingConfiguration();
+  ~MotionRetargetingConfiguration(){};
   /**
    * Get a read-only reference to the configuration parameters
    * @return configuration_ constant reference to the configuration parameters
    */
-  MotionRetargetingParameters getParameters() // const
+  const MotionRetargetingParameters& getParameters() const
   {
     return parameters_;
   }
@@ -71,4 +73,8 @@ private:
   MotionRetargetingParameters parameters_;
 };
 
+typedef boost::shared_ptr<MotionRetargetingConfiguration> MotionRetargetingConfigurationPtr;
+
 } // namespace motion_retargeting
+
+#endif /* MOTION_RETARGETING_CONFIGURATION_H_ */

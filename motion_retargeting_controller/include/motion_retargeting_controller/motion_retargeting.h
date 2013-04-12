@@ -1,12 +1,27 @@
+/*****************************************************************************
+** Ifdefs
+*****************************************************************************/
+
+#ifndef MOTION_RETARGETING_H_
+#define MOTION_RETARGETING_H_
+
+/*****************************************************************************
+** Includes
+*****************************************************************************/
+
 #include <string>
 #include <vector>
+#include <boost/shared_ptr.hpp>
 
 #include <ros/ros.h>
-//#include <tf/StampedTransform.h>
+#include <tf/transform_datatypes.h>
+#include <geometry_msgs/TransformStamped.h>
+#include <sensor_msgs/JointState.h>
 #include <trajectory_msgs/JointTrajectoryPoint.h>
 
 #include <motion_adaption/motion_adaption.h>
-//#include <tree_kinematics/tree_kinematics.h>
+#include <tree_kinematics/tree_kinematics.h>
+#include <tree_kinematics/GetTreePositionIK.h>
 
 #include "motion_retargeting_configuration.h"
 
@@ -19,7 +34,8 @@ public:
   /**
    * Initialies motion retargeting by configures motion adaption and tree kinematics
    */
-  MotionRetargeting(MotionRetargetingConfiguration& retargeting_config);
+  MotionRetargeting(const MotionRetargetingConfiguration& retargeting_config,
+                      const ros::NodeHandle& nh);
   /**
    * Throws out the trash
    */
@@ -37,12 +53,36 @@ public:
    *     * Cons: need to checking of correct input and output each time -> takes time
    *   * Current output is fixed as well. Should we make it more generic? If yes, how?
    */
-  bool MotionRetargeting::retarget(/*trajectory_msgs::JointTrajectoryPoint& output_joint_states*/);
+  bool retarget(/*trajectory_msgs::JointTrajectoryPoint& output_joint_states*/);
 
 private:
   ros::NodeHandle nh_;
-  motion_adaption::MotionAdaption* motion_adaption_; // input: target pose from motion tracking devices, output: adapted pose
-//  TreeKinematics* tree_kinematics_; // input: adapted poses from motion adaption, output: target joint positions and velocities
+  // input: target pose from motion tracking devices, output: adapted pose
+  motion_adaption::MotionAdaptionPtr motion_adaption_;
+  std::vector<geometry_msgs::PoseStamped> adapted_entpt_poses_;
+  // input: adapted poses from motion adaption, output: target joint positions and velocities
+  tree_kinematics::TreeKinematicsPtr tree_kinematics_;
+  // Tree IK service
+  tree_kinematics::GetTreePositionIK::Request tree_ik_request_;
+  tree_kinematics::GetTreePositionIK::Response tree_ik_response_;
+  sensor_msgs::JointState current_joint_states_, goal_joint_states_;
+  /**
+   * Flag for joint state initialisation. It is set to true, once first joint states have been received.
+   */
+  bool joint_states_initialised_;
+  /**
+   * Subscriber for retrieving the current joint states, which are used as seed state for the IK calculations
+   */
+  ros::Subscriber joint_states_subscriber;
+
+  /**
+   * callback funtion for the joint states subscriber
+   */
+  void jointStatesCallback(const sensor_msgs::JointState::ConstPtr& msg);
 };
 
+typedef boost::shared_ptr<MotionRetargeting> MotionRetargetingPtr;
+
 } // namespace motion_retargeting
+
+#endif /* MOTION_RETARGETING_H_ */
