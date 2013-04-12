@@ -38,17 +38,17 @@ TreeKinematics::TreeKinematics(const KinematicsParameters& parameters, const ros
    * Debug output for incoming parameters
    */
   ROS_DEBUG_STREAM("Kinematics parameters:");
-  ROS_DEBUG_STREAM("ik_call_frequency = " << parameters_.ik_call_frequency);
+  ROS_DEBUG_STREAM("ik_call_frequency  = " << parameters_.ik_call_frequency);
   ROS_DEBUG_STREAM("maximum iterations = " << parameters_.max_iterations);
-  ROS_DEBUG_STREAM("epsilon = " << parameters_.epsilon);
-  ROS_DEBUG_STREAM("lambda = " << parameters_.lambda);
-  ROS_DEBUG_STREAM("x_dot_trans_max = " << parameters_.x_dot_trans_max_factor
-                   << ", x_dot_rot_max = " << parameters_.x_dot_trans_max_factor);
-  ROS_DEBUG_STREAM("x_dot_trans_min = " << parameters_.x_dot_trans_min_factor
-                   << ", x_dot_rot_min = " << parameters_.x_dot_rot_min_factor);
-  ROS_DEBUG_STREAM("q_dot_max_factor = " << parameters_.q_dot_max_factor);
-  ROS_DEBUG_STREAM("q_dot_min_factor  = " << parameters_.q_dot_min_factor);
-  ROS_DEBUG_STREAM("low_pass_factor  = " << parameters_.low_pass_factor);
+  ROS_DEBUG_STREAM("epsilon            = " << parameters_.epsilon);
+  ROS_DEBUG_STREAM("lambda             = " << parameters_.lambda);
+  ROS_DEBUG_STREAM("x_dot_trans_max    = " << parameters_.x_dot_trans_max_factor);
+  ROS_DEBUG_STREAM("x_dot_trans_min    = " << parameters_.x_dot_trans_min_factor);
+  ROS_DEBUG_STREAM("x_dot_rot_max      = " << parameters_.x_dot_rot_max_factor);
+  ROS_DEBUG_STREAM("x_dot_rot_min      = " << parameters_.x_dot_rot_min_factor);
+  ROS_DEBUG_STREAM("q_dot_max_factor   = " << parameters_.q_dot_max_factor);
+  ROS_DEBUG_STREAM("q_dot_min_factor   = " << parameters_.q_dot_min_factor);
+  ROS_DEBUG_STREAM("low_pass_factor    = " << parameters_.low_pass_factor);
 
   /*
    * Create the tree kinematics representation
@@ -141,7 +141,7 @@ TreeKinematics::TreeKinematics(const KinematicsParameters& parameters, const ros
     for (unsigned int weight = 0 ; weight < 6; ++weight)
     {
       ts_w_matr( endpt * 6 + weight, endpt * 6 + weight ) = parameters_.task_space_weights[endpt][weight];
-      ROS_DEBUG_STREAM("ts_w_matr_(" << (endpt * 6 + weight) << ", " << (endpt * 6 + weight) << ": "
+      ROS_DEBUG_STREAM("ts_w_matr_(" << (endpt * 6 + weight) << ", " << (endpt * 6 + weight) << "): "
                        << ts_w_matr( endpt * 6 + weight, endpt * 6 + weight ));
     }
   }
@@ -320,7 +320,7 @@ int TreeKinematics::getJointIndex(const std::string &name)
 bool TreeKinematics::getPositionFk(GetPositionFK::Request& request,
                                        GetPositionFK::Response& response)
 {
-  ROS_DEBUG_STREAM("getPositionFK method invoked.");
+  ROS_DEBUG_STREAM("tree_kinematics: getPositionFK method invoked.");
   KDL::JntArray q_in;
   double nr_of_jnts = request.robot_state.name.size();
   q_in.resize(nr_of_jnts);
@@ -373,10 +373,12 @@ bool TreeKinematics::getPositionIk(tree_kinematics::GetTreePositionIK::Request &
                                        tree_kinematics::GetTreePositionIK::Response &response)
 {
   ik_srv_duration_ = ros::Time::now().toSec();
-  ROS_DEBUG("getPositionIK method invoked.");
+  ROS_DEBUG("tree_kinematics: getPositionIK method invoked.");
   if (request.endpt_names.size() != request.endpt_poses.size())
   {
-    ROS_ERROR_STREAM("Number of end point names and poses don't match! Aborting service call.");
+    ROS_ERROR_STREAM("Number of end point names and poses don't match! (" << request.endpt_names.size()
+                     << ", " << request.endpt_poses.size() << ")");
+    ROS_ERROR_STREAM("Aborting service call!");
     return false;
   }
 
@@ -403,8 +405,6 @@ bool TreeKinematics::getPositionIk(tree_kinematics::GetTreePositionIK::Request &
   // convert pose messages into transforms from the root frame to the given poses and further into KDL::Frames
   geometry_msgs::PoseStamped pose_msg_in;
   geometry_msgs::PoseStamped pose_msg_transformed;
-  tf::Stamped<tf::Pose> transform;
-  tf::Stamped<tf::Pose> transform_root;
   KDL::Frames desired_poses;
   KDL::Frame desired_pose;
   for(unsigned int i = 0; i < request.endpt_names.size(); ++i)
@@ -413,13 +413,13 @@ bool TreeKinematics::getPositionIk(tree_kinematics::GetTreePositionIK::Request &
     try
     {
       tf_listener_.waitForTransform(tree_root_name_, pose_msg_in.header.frame_id, pose_msg_in.header.stamp,
-      ros::Duration(0.1));
+                                      ros::Duration(0.1));
       tf_listener_.transformPose(tree_root_name_, pose_msg_in, pose_msg_transformed);
     }
     catch (tf::TransformException const &ex)
     {
-      ROS_ERROR_STREAM("Could not transform IK pose from '" << tree_root_name_ << "' to frame '"
-                       << pose_msg_in.header.frame_id <<  "!");
+      ROS_ERROR_STREAM("Could not transform pose from '" << pose_msg_in.header.frame_id << "' to frame '"
+                       << tree_root_name_ <<  "!");
       ROS_DEBUG_STREAM(ex.what());
 //      response.error_code.val = response.error_code.FRAME_TRANSFORM_FAILURE;
       return false;
