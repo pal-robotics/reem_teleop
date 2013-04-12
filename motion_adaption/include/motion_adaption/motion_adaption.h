@@ -35,8 +35,23 @@
 
 /** \author Marcus Liebhardt */
 
+/*****************************************************************************
+** Ifdefs
+*****************************************************************************/
+
+#ifndef MOTION_ADAPTION_H_
+#define MOTION_ADAPTION_H_
+
+/*****************************************************************************
+** Includes
+*****************************************************************************/
+
 #include <vector>
 #include <ros/ros.h>
+#include <tf/tf.h>
+#include <tf/transform_listener.h>
+#include <tf/transform_broadcaster.h>
+#include <geometry_msgs/PoseStamped.h>
 #include "motion_adaption/types/adaption_type.h"
 
 namespace motion_adaption
@@ -51,18 +66,26 @@ namespace motion_adaption
  */
 class MotionAdaption
 {
-  public:
-    MotionAdaption(std::vector<MotionAdaptionParameters>& adaption_parameters);
-    ~MotionAdaption();
+public:
+  MotionAdaption(const std::vector<MotionAdaptionParameters>& adaption_parameters);
+  ~MotionAdaption();
 
-    /**
-     * This method consists of a hierarchy of all private methods of this class. Each method gets called,
-     * if the previous method has finished successfully.
-     */
-    void adapt();
+  /**
+   * This method consists of a hierarchy of all private methods of this class. Each method gets called,
+   * if the previous method has finished successfully.
+   */
+  bool adapt(std::vector<geometry_msgs::PoseStamped>& adapted_poses_output);
 
-  private:
-    std::vector<AdaptionTypePtr> adaptions_;
+  boost::shared_ptr<tf::TransformListener> tf_listener_;
+  boost::shared_ptr<tf::TransformBroadcaster> tf_broadcaster_;
+  boost::shared_ptr<tf::Transformer> internal_tf_;
+private:
+  std::vector<AdaptionTypePtr> adaptions_;
+  std::vector<geometry_msgs::PoseStamped> adapted_poses_;
 };
 
+typedef boost::shared_ptr<motion_adaption::MotionAdaption> MotionAdaptionPtr;
+
 } // namespace motion_adaption
+
+#endif /* MOTION_ADAPTION_H_ */

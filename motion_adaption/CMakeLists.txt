@@ -8,7 +8,6 @@ find_package(catkin REQUIRED COMPONENTS roscpp
                                         tf_conversions
                                         geometry_msgs)
 
-# extend this if we want to make the library available outside the package
 catkin_package(INCLUDE_DIRS include
                LIBRARIES ${PROJECT_NAME}
                CATKIN_DEPENDS roscpp

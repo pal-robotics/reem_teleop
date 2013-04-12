@@ -40,25 +40,54 @@
 namespace motion_adaption
 {
 
-MotionAdaption::MotionAdaption(std::vector<MotionAdaptionParameters>& adaption_parameters)
+MotionAdaption::MotionAdaption(const std::vector<MotionAdaptionParameters>& adaption_parameters)
 {
-  for (unsigned int param; param < adaption_parameters.size(); ++param)
+  tf_listener_ = boost::shared_ptr<tf::TransformListener>(new tf::TransformListener);
+  tf_broadcaster_ = boost::shared_ptr<tf::TransformBroadcaster>(new tf::TransformBroadcaster);
+  internal_tf_ = boost::shared_ptr<tf::Transformer>(new tf::Transformer);
+  ROS_DEBUG_STREAM("Motion adaption: Will prepare " << adaption_parameters.size() << " adaption(s).");
+  for (unsigned int param = 0; param < adaption_parameters.size(); ++param)
   {
     if (adaption_parameters[param].adaption_type == MotionAdaptionParameters::TransRotAdaption)
     {
-      adaptions_.push_back(AdaptionTypePtr(new TransRotAdaption()));
+      AdaptionTypePtr new_adaption(new TransRotAdaption(adaption_parameters[param],
+                                                        tf_listener_,
+                                                        tf_broadcaster_,
+                                                        internal_tf_));
+      adaptions_.push_back(new_adaption);
+      ROS_DEBUG_STREAM("Motion adaption: Adaption '" << adaption_parameters[param].adaption_name << "("
+                       << adaption_parameters[param].adaption_type << ") created.");
     }
   }
 };
 
 MotionAdaption::~MotionAdaption(){};
 
-void MotionAdaption::adapt()
+bool MotionAdaption::adapt(std::vector<geometry_msgs::PoseStamped>& adapted_poses_output)
 {
-  for (unsigned int adaption; adaption < adaptions_.size(); ++adaption)
+  /*
+   * Trigger adaption for each configured adaption type
+   * TODO:
+   * * Do we want synchronisation? E.g. first get _all_ transforms, then adapt _all_.
+   */
+  for (unsigned int adaption = 0; adaption < adaptions_.size(); ++adaption)
   {
-    adaptions_[adaption]->adapt();
+    ROS_DEBUG_STREAM("Motion adaption: Triggering adaption type nr. " << adaption);
+    if (adaptions_[adaption]->adapt(adapted_poses_))
+    {
+      for (unsigned int pose = 0; pose < adapted_poses_.size(); ++pose)
+      {
+        adapted_poses_output.push_back(adapted_poses_[pose]);
+      }
+    }
+    else
+    {
+      ROS_ERROR_STREAM("Motion adaption: Couldn't perform adaption '" << adaptions_[adaption]->getAdaptionName()
+                       << "'. Aborting adaption.");
+      return false;
+    }
   }
+  return true;
 }
 
 } // namespace motion_adaption
