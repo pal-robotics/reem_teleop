@@ -6,9 +6,9 @@ motion_adaption:
   # adaption type (no_adaption, trans_rot_adaption)
   adaption_type: "trans_rot_adaption"
   # reference frame of the input motion
-  input_ref_frame: "torso_1"
+  input_ref_frame: "input_ref"
   # retargeted endpoints 
-  input_endpts: ["head_1"]
+  input_endpts: ["head_input"]
   # reference frame of the target system
   target_ref_frame: "base_link"
   # endpoints of the target system
@@ -18,7 +18,7 @@ motion_adaption:
   # applied rotational correction for the input motion
   input_correction: 
     roll: 0.0
-    pitch: 1.57
+    pitch: 1.5707
     yaw: 0.0
 kinematics:
   # parameter name which holds the URDF robot model description
@@ -48,6 +48,6 @@ kinematics:
   # Factor used for low pass filtering - applied when all end points are considered resting
   low_pass_factor: 1.0
   # Matrix for task space weights for the IK velocity solver (6 x #end points)
-  task_space_weights: [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0]]
+  task_space_weights: [[0.0, 0.0, 0.0, 0.0, 1.0, 1.0]]
   # Matrix of joint weights for the IK velocity solver (#joints x #joints)
   joint_space_weights: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]

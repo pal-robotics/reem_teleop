@@ -24,6 +24,7 @@
 #include <tree_kinematics/GetTreePositionIK.h>
 
 #include "motion_retargeting_configuration.h"
+#include "output_handler.h"
 
 namespace motion_retargeting
 {
@@ -57,24 +58,35 @@ public:
 
 private:
   ros::NodeHandle nh_;
-  // input: target pose from motion tracking devices, output: adapted pose
+  /**
+   * Motion adaption for adapting the input motion to the target system (e.g. robot)
+   */
   motion_adaption::MotionAdaptionPtr motion_adaption_;
   std::vector<geometry_msgs::PoseStamped> adapted_entpt_poses_;
-  // input: adapted poses from motion adaption, output: target joint positions and velocities
+  /*
+   * IK for calculating the goal joint states
+   */
   tree_kinematics::TreeKinematicsPtr tree_kinematics_;
   // Tree IK service
   tree_kinematics::GetTreePositionIK::Request tree_ik_request_;
   tree_kinematics::GetTreePositionIK::Response tree_ik_response_;
-  sensor_msgs::JointState current_joint_states_, goal_joint_states_;
+  /*
+   * Output handler for publishing the goal joint states
+   */
+  OutputHandlerPtr output_handler_;
+  sensor_msgs::JointState goal_joint_states_;
+  /**
+   * Subscriber for retrieving the current joint states, which are used as seed state for the IK calculations
+   */
+  ros::Subscriber joint_states_subscriber_;
+  /**
+   * Storage for last joint statess
+   */
+  sensor_msgs::JointState joint_states_;
   /**
    * Flag for joint state initialisation. It is set to true, once first joint states have been received.
    */
   bool joint_states_initialised_;
-  /**
-   * Subscriber for retrieving the current joint states, which are used as seed state for the IK calculations
-   */
-  ros::Subscriber joint_states_subscriber;
-
   /**
    * callback funtion for the joint states subscriber
    */

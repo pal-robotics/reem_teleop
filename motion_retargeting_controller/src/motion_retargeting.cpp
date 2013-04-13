@@ -35,6 +35,7 @@
 /** \author Marcus Liebhardt */
 
 #include "motion_retargeting_controller/motion_retargeting.h"
+#include "motion_retargeting_controller/follow_joint_trajectory_action_handler.h"
 
 namespace motion_retargeting
 {
@@ -48,23 +49,27 @@ MotionRetargeting::MotionRetargeting(const MotionRetargetingConfiguration& retar
   tree_kinematics_ = tree_kinematics::TreeKinematicsPtr(
                      new tree_kinematics::TreeKinematics(retargeting_config.getParameters().kinematics_parameters, nh_));
   tree_ik_request_.endpt_names = retargeting_config.getParameters().kinematics_parameters.endpt_names;
-  joint_states_subscriber = nh_.subscribe("joint_states", 10, &MotionRetargeting::jointStatesCallback, this);
+  joint_states_subscriber_ = nh_.subscribe("joint_states", 10, &MotionRetargeting::jointStatesCallback, this);
+  output_handler_ = OutputHandlerPtr(new FollowJointTrajectoryActionHandler());
 }
 
 MotionRetargeting::~MotionRetargeting(){};
 
 void MotionRetargeting::jointStatesCallback(const sensor_msgs::JointState::ConstPtr& joint_states)
 {
-  current_joint_states_ = *joint_states;
   if(!joint_states_initialised_)
   {
+    joint_states_ = *joint_states;
     joint_states_initialised_ = true;
     ROS_DEBUG_STREAM("Joint states initialised.");
   }
+  joint_states_subscriber_.shutdown();
+  return;
 }
 
 bool MotionRetargeting::retarget(/*trajectory_msgs::JointTrajectoryPoint& output_joint_states*/)
 {
+  adapted_entpt_poses_.clear();
   /*
    *  Here I would like to call an object taking care of the motion retargeting _input_ (e.g. openni_tracker tf output)
    *  and outputting convenient data for motion adaption (e.g. to allow motion to use solely an internal transformer)
@@ -84,10 +89,11 @@ bool MotionRetargeting::retarget(/*trajectory_msgs::JointTrajectoryPoint& output
   if(joint_states_initialised_)
   {
     tree_ik_request_.endpt_poses = adapted_entpt_poses_;
-    tree_ik_request_.ik_seed_state = current_joint_states_;
+    tree_ik_request_.ik_seed_state = joint_states_;
     if (tree_kinematics_->getPositionIk(tree_ik_request_, tree_ik_response_))
     {
       goal_joint_states_ = tree_ik_response_.solution;
+      joint_states_ = goal_joint_states_;
     }
     else
     {
@@ -101,10 +107,13 @@ bool MotionRetargeting::retarget(/*trajectory_msgs::JointTrajectoryPoint& output
     return false;
   }
   /*
-   *  Here I would like to call an object taking care of the motion retargeting _output_
-   *  and outputting convenient data for the target system (e.g. REEM(?), Robosem (FollowJointTrajectoryAction))
+   * Setting the output
    */
-//  output_handler_->setOutput(tree_ik_response_)
+  if(!(output_handler_->setOutput(tree_ik_response_.solution)))
+  {
+    ROS_WARN_STREAM("Publishing the goal joint states failed!");
+    return false;
+  }
   return true;
 }
 

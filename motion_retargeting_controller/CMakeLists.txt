@@ -4,6 +4,7 @@ project(motion_retargeting_controller)
 find_package(Boost REQUIRED)
 find_package(catkin REQUIRED COMPONENTS roscpp
                                         tf
+                                        actionlib
                                         tf_conversions
                                         geometry_msgs
                                         sensor_msgs
