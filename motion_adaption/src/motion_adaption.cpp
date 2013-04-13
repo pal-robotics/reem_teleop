@@ -70,6 +70,7 @@ bool MotionAdaption::adapt(std::vector<geometry_msgs::PoseStamped>& adapted_pose
    * TODO:
    * * Do we want synchronisation? E.g. first get _all_ transforms, then adapt _all_.
    */
+  adapted_poses_.clear();
   for (unsigned int adaption = 0; adaption < adaptions_.size(); ++adaption)
   {
     ROS_DEBUG_STREAM("Motion adaption: Triggering adaption type nr. " << adaption);
@@ -82,8 +83,8 @@ bool MotionAdaption::adapt(std::vector<geometry_msgs::PoseStamped>& adapted_pose
     }
     else
     {
-      ROS_ERROR_STREAM("Motion adaption: Couldn't perform adaption '" << adaptions_[adaption]->getAdaptionName()
-                       << "'. Aborting adaption.");
+      ROS_WARN_STREAM("Motion adaption: Couldn't perform adaption '" << adaptions_[adaption]->getAdaptionName()
+                      << "'. Aborting adaption.");
       return false;
     }
   }

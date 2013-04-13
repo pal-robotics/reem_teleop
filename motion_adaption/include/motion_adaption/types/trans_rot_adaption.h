@@ -87,11 +87,11 @@ public:
     /*
      * Apply the input correction (TODO)
      */
-//    quat_ = tf_input_.getRotation();
-//    quat_adapt_.setRPY(adaption_parameters_.input_correction.roll,
-//                       adaption_parameters_.input_correction.pitch,
-//                       adaption_parameters_.input_correction.yaw);
-//    tf_input_.setRotation(quat_ * quat_adapt_);
+    quat_ = tf_input_.getRotation();
+    quat_adapt_.setRPY(adaption_parameters_.input_correction.roll,
+                       adaption_parameters_.input_correction.pitch,
+                       adaption_parameters_.input_correction.yaw);
+    tf_input_.setRotation(quat_ * quat_adapt_);
 //    tf_broadcaster_->sendTransform(tf::StampedTransform(tf_input_,
 //                                                        ros::Time::now(),
 //                                                        adaption_parameters_.target_ref_frame,
@@ -99,6 +99,9 @@ public:
     /*
      * Adapt the input motion
      */
+    tf_adapted_.stamp_ = tf_input_.stamp_;
+    tf_adapted_.frame_id_ = tf_target_.frame_id_;
+    tf_adapted_.child_frame_id_ = tf_target_.child_frame_id_;
     // Scaling the translation
     vec_ = tf_target_.getOrigin(); // no scaling (scaling factor is 1)
     tf_adapted_.setOrigin(vec_);
