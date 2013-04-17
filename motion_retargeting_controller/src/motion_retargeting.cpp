@@ -35,7 +35,7 @@
 /** \author Marcus Liebhardt */
 
 #include "motion_retargeting_controller/motion_retargeting.h"
-#include "motion_retargeting_controller/follow_joint_trajectory_action_handler.h"
+#include "motion_retargeting_controller/follow_joint_trajectory_action_output_handler.h"
 
 namespace motion_retargeting
 {
@@ -45,10 +45,11 @@ MotionRetargeting::MotionRetargeting(const MotionRetargetingConfiguration& retar
                                           nh_(nh)
 {
   motion_adaption_ = motion_adaption::MotionAdaptionPtr(
-                     new motion_adaption::MotionAdaption(retargeting_config.getParameters().motion_adaption_parameters));
+      new motion_adaption::MotionAdaption(retargeting_config.getMotionAdaptionParameters()));
+//                     new motion_adaption::MotionAdaption(retargeting_config.getParameters().motion_adaption_parameters));
   tree_kinematics_ = tree_kinematics::TreeKinematicsPtr(
-                     new tree_kinematics::TreeKinematics(retargeting_config.getParameters().kinematics_parameters, nh_));
-  tree_ik_request_.endpt_names = retargeting_config.getParameters().kinematics_parameters.endpt_names;
+                     new tree_kinematics::TreeKinematics(retargeting_config.getIKParameters(), nh_));
+  tree_ik_request_.endpt_names = retargeting_config.getIKParameters().endpt_names;
   joint_states_subscriber_ = nh_.subscribe("joint_states", 10, &MotionRetargeting::jointStatesCallback, this);
   output_handler_ = OutputHandlerPtr(new FollowJointTrajectoryActionHandler());
 }
@@ -70,11 +71,6 @@ void MotionRetargeting::jointStatesCallback(const sensor_msgs::JointState::Const
 bool MotionRetargeting::retarget(/*trajectory_msgs::JointTrajectoryPoint& output_joint_states*/)
 {
   adapted_entpt_poses_.clear();
-  /*
-   *  Here I would like to call an object taking care of the motion retargeting _input_ (e.g. openni_tracker tf output)
-   *  and outputting convenient data for motion adaption (e.g. to allow motion to use solely an internal transformer)
-   */
-// tf::TransformStamped input =  input_handler_->getInput()
   /*
    * Motion adaption
    */

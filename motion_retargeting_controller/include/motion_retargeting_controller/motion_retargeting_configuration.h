@@ -19,31 +19,16 @@
 namespace motion_retargeting
 {
 /**
- * Motion retargeting parameters
+ * General motion retargeting parameters
  */
-struct MotionRetargetingParameters
+struct GeneralParameters
 {
-  /**
-   * General parameters
-   */
-  struct GeneralParameters
-  {
-    std::string retargeting_type_name;
-    double retargeting_freq;
-    double wait_for_tf; // who is using that? only motion_adaption, then move it
-    std::string robot_model_name;
-    bool check_self_collision;
-    bool check_joint_limits;
-  };
-  GeneralParameters general_parameters;
-  /**
-   * Motion adaption parameters
-   */
-  std::vector<motion_adaption::MotionAdaptionParameters> motion_adaption_parameters;
-  /**
-   * IK parameters
-   */
-  tree_kinematics::KinematicsParameters kinematics_parameters;
+  std::string retargeting_type_name;
+  double retargeting_freq;
+  double wait_for_tf; // who is using that? only motion_adaption, then move it
+  std::string robot_model_name;
+  bool check_self_collision;
+  bool check_joint_limits;
 };
 
 class MotionRetargetingConfiguration
@@ -52,25 +37,56 @@ public:
   /**
    * Initialise the configuration
    */
-  MotionRetargetingConfiguration(MotionRetargetingParameters& motion_retargeting_parameters)
-  {
-    parameters_ = motion_retargeting_parameters;
-  };
+  MotionRetargetingConfiguration(GeneralParameters& general_params,
+                                     std::vector<motion_adaption::AdaptionParameters>& motion_adaption_params,
+                                     tree_kinematics::KinematicsParameters kinematics_params) :
+                                     general_params_(general_params),
+                                     motion_adaption_params_(motion_adaption_params),
+                                     kinematics_params_(kinematics_params)
+//  MotionRetargetingConfiguration(MotionRetargetingParameters& motion_retargeting_params) :
+//                                     general_params_(motion_retargeting_params.motion_adaption_params),
+//                                     motion_adaption_params_(motion_adaption_params),
+//                                     kinematics_params_(kinematics_params)
+  {};
   /**
    * Clean up
    */
   ~MotionRetargetingConfiguration(){};
   /**
-   * Get a read-only reference to the configuration parameters
-   * @return configuration_ constant reference to the configuration parameters
+   * Get a constant reference to the general motion retargeting parameters
+   * @return constant reference to the general motion retargeting parameters
    */
-  const MotionRetargetingParameters& getParameters() const
+  const GeneralParameters& getGeneralParameters() const
   {
-    return parameters_;
-  }
+    return general_params_;
+  };
+  /**
+   * Get a constant reference to the motion adaption parameters
+   * @return constant reference to the motion adaption parameters
+   */
+  const std::vector<motion_adaption::AdaptionParameters>& getMotionAdaptionParameters() const
+  {
+    return motion_adaption_params_;
+  };
+  /**
+   * Get a constant reference to the IK parameters
+   * @return constant reference to the IK parameters
+   */
+  const tree_kinematics::KinematicsParameters& getIKParameters() const
+  {
+    return kinematics_params_;
+  };
 
 private:
-  MotionRetargetingParameters parameters_;
+  GeneralParameters general_params_;
+  /**
+   * Motion adaption parameters
+   */
+  std::vector<motion_adaption::AdaptionParameters> motion_adaption_params_;
+  /**
+   * IK parameters
+   */
+  tree_kinematics::KinematicsParameters kinematics_params_;
 };
 
 typedef boost::shared_ptr<MotionRetargetingConfiguration> MotionRetargetingConfigurationPtr;

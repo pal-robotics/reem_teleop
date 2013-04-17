@@ -1,0 +1,11 @@
+<launch>
+  <!-- camera link -->
+  <node name="tf_pub_robot_camera" pkg="tf" type="static_transform_publisher" args="0.3 0.0 0.325 0 -0.4 0 base_link camera_link 30" />
+  
+  <!-- torso and head with reference camera link -->
+<!--   <node name="tf_pub_camera_torso" pkg="tf" type="static_transform_publisher" args="2.0 0.0 0.0 1.5707 0 1.5707 camera_link torso_1 30" /> -->
+<!--   <node name="tf_pub_head_link" pkg="tf" type="static_transform_publisher" args="0.0 0.0 0.5 -1.5707 0 1.5707 torso_1 head_1 30" /> -->
+  <!-- torso and head with reference camera link -->
+<!--   <node name="tf_pub_base_torso" pkg="tf" type="static_transform_publisher" args="2.3 0.0 1.3 1.5707 0 1.5707 base_link torso_1 30" /> -->
+  <node name="tf_pub_torso_head" pkg="tf" type="static_transform_publisher" args="0 0.5 0.0 0 0 0 torso_1 head_1 30" />
+</launch>

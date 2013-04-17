@@ -11,8 +11,8 @@
 ** Ifdefs
 *****************************************************************************/
 
-#ifndef FOLLOW_JOINT_TRAJECTORY_ACTION_HANDLER_H_
-#define FOLLOW_JOINT_TRAJECTORY_ACTION_HANDLER_H_
+#ifndef FOLLOW_JOINT_TRAJECTORY_ACTION_OUTPUT_HANDLER_H_
+#define FOLLOW_JOINT_TRAJECTORY_ACTION_OUTPUT_HANDLER_H_
 
 /*****************************************************************************
 ** Includes
@@ -76,4 +76,4 @@ typedef boost::shared_ptr<FollowJointTrajectoryActionHandler> FollowJointTraject
 
 } // namespace motion_retargeting
 
-#endif /* FOLLOW_JOINT_TRAJECTORY_ACTION_HANDLER_H_ */
+#endif /* FOLLOW_JOINT_TRAJECTORY_ACTION_OUTPUT_HANDLER_H_ */

@@ -7,8 +7,17 @@ motion_adaption:
   adaption_type: "trans_rot_adaption"
   # reference frame of the input motion
   input_ref_frame: "input_ref"
+  # parent frame name for setting the input reference frame
+  input_ref_dep_parent: "camera_link"
+  # child frame name for setting the input reference frame
+  input_ref_dep_child: "torso_1"
+  # correction needed to align the input reference frame's orientation with the target reference frame's
+  input_ref_correction:
+    roll: 0.0
+    pitch: 0.0
+    yaw: 3.1415
   # retargeted endpoints 
-  input_endpts: ["head_input"]
+  input_endpts: ["head_1"]
   # reference frame of the target system
   target_ref_frame: "base_link"
   # endpoints of the target system
@@ -26,15 +35,15 @@ kinematics:
   # name of all endpoints involved in the IK calculations
   endpt_names: ["head_link"]
   # Maximum precision for the IK calculation in meter
-  epsilon: 0.01
+  epsilon: 0.03
   # Maximum iterations for the IK calculation
-  max_iterations: 10
+  max_iterations: 100
   # Damping factor for the IK velocity solver
   lambda: 0.01
   # Frequency of IK calls - used for velocity limiting - smae as retargeting_freq TODO: sync
   ik_call_frequency: 10
   # Factor used for determining the maximum joint velocity (is scaled by ik_call_frequency)
-  q_dot_max_factor: 1.0
+  q_dot_max_factor: 8.0
   # Factor used for determining the minimum joint velocity (is scaled by ik_call_frequency)
   q_dot_min_factor: 0.3
   # Factor used for determining the maximum translational end point velocity (is scaled by ik_call_frequency)
