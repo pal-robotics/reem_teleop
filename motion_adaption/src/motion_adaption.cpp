@@ -40,7 +40,7 @@
 namespace motion_adaption
 {
 
-MotionAdaption::MotionAdaption(const std::vector<MotionAdaptionParameters>& adaption_parameters)
+MotionAdaption::MotionAdaption(const std::vector<AdaptionParameters>& adaption_parameters)
 {
   tf_listener_ = boost::shared_ptr<tf::TransformListener>(new tf::TransformListener);
   tf_broadcaster_ = boost::shared_ptr<tf::TransformBroadcaster>(new tf::TransformBroadcaster);
@@ -48,15 +48,29 @@ MotionAdaption::MotionAdaption(const std::vector<MotionAdaptionParameters>& adap
   ROS_DEBUG_STREAM("Motion adaption: Will prepare " << adaption_parameters.size() << " adaption(s).");
   for (unsigned int param = 0; param < adaption_parameters.size(); ++param)
   {
-    if (adaption_parameters[param].adaption_type == MotionAdaptionParameters::TransRotAdaption)
+    if (adaption_parameters[param].getGeneralParameters().adaption_type == GeneralParameters::TransRotAdaption)
     {
-      AdaptionTypePtr new_adaption(new TransRotAdaption(adaption_parameters[param],
-                                                        tf_listener_,
-                                                        tf_broadcaster_,
-                                                        internal_tf_));
-      adaptions_.push_back(new_adaption);
-      ROS_DEBUG_STREAM("Motion adaption: Adaption '" << adaption_parameters[param].adaption_name << "("
-                       << adaption_parameters[param].adaption_type << ") created.");
+      TransRotAdaptionParameters* trans_rot_param_ptr = (TransRotAdaptionParameters*) &(adaption_parameters[param]);
+      if(trans_rot_param_ptr)
+      {
+        AdaptionTypePtr new_adaption(new TransRotAdaption(trans_rot_param_ptr->getGeneralParameters(),
+                                                          trans_rot_param_ptr->getTransRotParameters(),
+                                                          tf_listener_,
+                                                          tf_broadcaster_,
+                                                          internal_tf_));
+        adaptions_.push_back(new_adaption);
+        ROS_INFO_STREAM("Motion adaption: Adaption '"
+                        << adaption_parameters[param].getGeneralParameters().adaption_name << "' of type '"
+                        << adaption_parameters[param].getGeneralParameters().adaption_type << "' created.");
+      }
+      else
+      {
+        ROS_ERROR_STREAM("Motion adaption: Adaption '"
+                         << adaption_parameters[param].getGeneralParameters().adaption_name
+                         << "' specifies the adaption type '"
+                         << adaption_parameters[param].getGeneralParameters().adaption_type
+                         << "', but the provided parameters do not fit. Adaption discarded!");
+      }
     }
   }
 };

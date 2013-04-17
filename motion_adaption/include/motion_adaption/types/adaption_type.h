@@ -31,34 +31,10 @@
 #include <tf/LinearMath/Vector3.h>
 //#include <tf/LinearMath/Matrix3x3.h>
 #include <geometry_msgs/PoseStamped.h>
+#include "adaption_parameters.h"
 
 namespace motion_adaption
 {
-
-struct MotionAdaptionParameters
-{
-  enum MotionAdaptionType
-  {
-    NoAdaption,
-    TransRotAdaption
-  };
-  std::string adaption_name;
-  MotionAdaptionType adaption_type;
-  std::string input_ref_frame;
-  std::vector<std::string> input_endpts;
-  std::string target_ref_frame;
-  std::vector<std::string> target_endpts;
-  std::vector<std::string> goal_endpts;
-  struct InputCorrection
-  {
-    double roll;
-    double pitch;
-    double yaw;
-  };
-  InputCorrection input_correction;
-  double wait_for_tf;
-  double tf_calc_time;
-};
 
 class AdaptionType
 {
@@ -68,16 +44,36 @@ public:
    * @param adaption_parameters
    * @param tf_listener
    */
-  AdaptionType(const MotionAdaptionParameters& adaption_parameters,
+//  AdaptionType(std::string adaption_name,
+//                 AdaptionTypes adaption_type,
+//                 double wait_for_tf,
+//                 std::string input_ref_frame,
+//                 std::string input_ref_dep_parent,
+//                 std::string input_ref_dep_child,
+//                 OrientationCorrection input_ref_correction,
+//                 std::string target_ref_frame,
+//                 boost::shared_ptr<tf::TransformListener> tf_listener,
+//                 boost::shared_ptr<tf::TransformBroadcaster> tf_broadcaster,
+//                 boost::shared_ptr<tf::Transformer> internal_tf) :
+//                 adaption_name_(adaption_name),
+//                 adaption_type_(adaption_type),
+//                 wait_for_tf_(wait_for_tf),
+//                 input_ref_frame_(input_ref_frame),
+//                 input_ref_dep_parent_(input_ref_dep_parent),
+//                 input_ref_dep_child_(input_ref_dep_child),
+//                 input_ref_correction_(input_ref_correction),
+//                 target_ref_frame_(target_ref_frame),
+//                 tf_listener_(tf_listener),
+//                 tf_broadcaster_(tf_broadcaster),
+//                 internal_tf_(internal_tf)
+  AdaptionType(const GeneralParameters& general_params,
                  boost::shared_ptr<tf::TransformListener> tf_listener,
                  boost::shared_ptr<tf::TransformBroadcaster> tf_broadcaster,
                  boost::shared_ptr<tf::Transformer> internal_tf) :
-                 adaption_parameters_(adaption_parameters),
+                 general_params_(general_params),
                  tf_listener_(tf_listener),
                  tf_broadcaster_(tf_broadcaster),
-                 internal_tf_(internal_tf),
-                 wait_for_tf_(adaption_parameters.wait_for_tf),
-                 tf_calc_time_(adaption_parameters.tf_calc_time)
+                 internal_tf_(internal_tf)
   {};
   /**
    * Cleans up
@@ -95,11 +91,10 @@ public:
    */
   const std::string& getAdaptionName() const
   {
-    return adaption_parameters_.adaption_name;
+    return general_params_.adaption_name;
   };
 
 protected:
-//private:
   /**
    * Transform listener for retrieving all necessary transformations
    */
@@ -112,11 +107,10 @@ protected:
    * TF transformer for internal calculations
    */
   boost::shared_ptr<tf::Transformer> internal_tf_;
-//private:
   /**
    * Adaption parameters
    */
-  MotionAdaptionParameters adaption_parameters_;
+  GeneralParameters general_params_;
   /**
    * Input, target and adapted transforms
    */
@@ -130,15 +124,7 @@ protected:
    */
   tf::Vector3 vec_;
   /**
-   * Time the transform listeners waits for retrieving a transform
-   */
-  ros::Duration wait_for_tf_;
-  /**
-   * Time the internal tf transformer may use for calculations
-   */
-  ros::Duration tf_calc_time_;
-  /**
-   *
+   * Used for converting transforms into messages
    */
   geometry_msgs::PoseStamped pose_adapted_;
 };

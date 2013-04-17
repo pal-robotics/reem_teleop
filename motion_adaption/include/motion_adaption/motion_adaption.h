@@ -67,7 +67,7 @@ namespace motion_adaption
 class MotionAdaption
 {
 public:
-  MotionAdaption(const std::vector<MotionAdaptionParameters>& adaption_parameters);
+  MotionAdaption(const std::vector<AdaptionParameters>& adaption_parameters);
   ~MotionAdaption();
 
   /**
