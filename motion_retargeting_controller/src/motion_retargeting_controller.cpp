@@ -34,6 +34,7 @@
 
 /** \author Marcus Liebhardt */
 
+#include <string>
 #include <exception>
 #include <ros/ros.h>
 #include <motion_adaption/types/adaption_type.h>
@@ -52,169 +53,381 @@ typedef motion_retargeting::MotionRetargetingConfigurationPtr MoRetConfPtr;
  * Get the parameters from the parameter server and set up the motion retargeting configuration
  * TODO: Move this into the motion retargeting or some other "tools" class?
  */
-bool createMotionRetargetingConfiguration(const ros::NodeHandle&  nh_private,
-                                               MoRetConfPtr mo_ret_conf)
+MoRetConfPtr createMotionRetargetingConfiguration(const ros::NodeHandle&  nh_private)
 {
-  motion_retargeting::GeneralParameters mo_ret_general_params;
+  MoRetConfPtr mo_ret_conf;
   /*
    * general configuration
    */
-//  if(!nh_private.getParam("general_configuration/retargeting_freq", mo_ret_params.general_parameters.retargeting_freq))
-//  {
-//    ROS_ERROR_STREAM("Couldn't retrieve parameter 'general_configuration/retargeting_freq' from parameter server!");
-//    return false;
-//  }
+  motion_retargeting::GeneralParameters mo_ret_general_params;
+  if(!nh_private.getParam("general_configuration/retargeting_name", mo_ret_general_params.retargeting_name))
+  {
+    ROS_ERROR_STREAM("Couldn't retrieve parameter 'general_configuration/retargeting_name' from parameter server!");
+    return mo_ret_conf;
+  }
   if(!nh_private.getParam("general_configuration/retargeting_freq", mo_ret_general_params.retargeting_freq))
   {
     ROS_ERROR_STREAM("Couldn't retrieve parameter 'general_configuration/retargeting_freq' from parameter server!");
-    return false;
+    return mo_ret_conf;
   }
   /*
    * motion adaption configuration
    */
   std::vector<motion_adaption::AdaptionParameters> mo_adapt_params;
-  motion_adaption::GeneralParameters mo_adapt_general_params;
-  if(!nh_private.getParam("motion_adaption/adaption_name", mo_adapt_general_params.adaption_name))
+  // First, check how many adaption shall be configured
+  int nr_of_adaptions = 0;
+  if(!nh_private.getParam("motion_adaption/nr_of_adaptions", nr_of_adaptions))
   {
-    ROS_ERROR_STREAM("Couldn't retrieve parameter 'motion_adaption/adaption_name' from parameter server!");
-    return false;
+    ROS_ERROR_STREAM("Couldn't retrieve parameter 'motion_adaption/nr_of_adaptions' from parameter server!");
+    return mo_ret_conf;
   }
-  motion_adaption::TransRotParameters trans_rot_params;
-  motion_adaption::TransRotAdaptionParameters trans_rot_adapt_params(mo_adapt_general_params, trans_rot_params);
-  mo_adapt_params.push_back(trans_rot_adapt_params);
-//  motion_adaption::TransRotAdaptionParameters mo_adapt_params;
-//  if(!nh_private.getParam("motion_adaption/adaption_name", mo_adapt_params.adaption_name))
-//  {
-//    ROS_ERROR_STREAM("Couldn't retrieve parameter 'motion_adaption/adaption_name' from parameter server!");
-//    return false;
-//  }
-//  std::string adaption_type;
-//  if(nh_private.getParam("motion_adaption/adaption_type", adaption_type))
-//  {
-//    if (adaption_type == "trans_rot_adaption")
-//    {
-//      mo_adapt_params.adaption_type = motion_adaption::MotionAdaptionParameters::TransRotAdaption;
-//    }
-//    else
-//    {
-//      ROS_ERROR_STREAM("Retrieve unknown adaption type '" << adaption_type << "'!");
-//      return false;
-//    }
-//  }
-//  else
-//  {
-//    ROS_ERROR_STREAM("Couldn't retrieve parameter 'motion_adaption/adaption_type' from parameter server!");
-//    return false;
-//  }
-//  if(!nh_private.getParam("motion_adaption/input_ref_frame", mo_adapt_params.input_ref_frame))
-//  {
-//    ROS_ERROR_STREAM("Couldn't retrieve parameter 'motion_adaption/input_ref_frame' from parameter server!");
-//    return false;
-//  }
-//  if(!nh_private.getParam("motion_adaption/input_ref_dep_parent", mo_adapt_params.input_ref_dep_parent))
-//  {
-//    ROS_ERROR_STREAM("Couldn't retrieve parameter 'motion_adaption/input_ref_dep_parent' from parameter server!");
-//    return false;
-//  }
-//  if(!nh_private.getParam("motion_adaption/input_ref_dep_child", mo_adapt_params.input_ref_dep_child))
-//  {
-//    ROS_ERROR_STREAM("Couldn't retrieve parameter 'motion_adaption/input_ref_dep_child' from parameter server!");
-//    return false;
-//  }
-//  if(!nh_private.getParam("motion_adaption/input_ref_correction/roll", mo_adapt_params.input_ref_correction.roll))
-//  {
-//    ROS_ERROR_STREAM("Couldn't retrieve parameter 'motion_adaption/input_ref_correction/roll' from parameter server!");
-//    return false;
-//  }
-//  if(!nh_private.getParam("motion_adaption/input_ref_correction/pitch", mo_adapt_params.input_ref_correction.pitch))
-//  {
-//    ROS_ERROR_STREAM("Couldn't retrieve parameter 'motion_adaption/input_ref_correction/pitch' from parameter server!");
-//    return false;
-//  }
-//  if(!nh_private.getParam("motion_adaption/input_ref_correction/yaw", mo_adapt_params.input_ref_correction.yaw))
-//  {
-//    ROS_ERROR_STREAM("Couldn't retrieve parameter 'motion_adaption/input_ref_correction/yaw' from parameter server!");
-//    return false;
-//  }
-//  if(!nh_private.getParam("motion_adaption/target_ref_frame", mo_adapt_params.target_ref_frame))
-//  {
-//    ROS_ERROR_STREAM("Couldn't retrieve parameter 'motion_adaption/target_ref_frame' from parameter server!");
-//    return false;
-//  }
-  XmlRpc::XmlRpcValue endpts_list;
-//  if(!nh_private.getParam("motion_adaption/input_endpts", endpts_list))
-//  {
-//    ROS_ERROR_STREAM("Couldn't retrieve parameter 'motion_adaption/input_endpts' from parameter server!");
-//    return false;
-//  }
-//  else
-//  {
-//    ROS_ASSERT(endpts_list.getType() == XmlRpc::XmlRpcValue::TypeArray);
-//    for (int endpt = 0; endpt < endpts_list.size(); ++endpt)
-//    {
-//      ROS_ASSERT(endpts_list[endpt].getType() == XmlRpc::XmlRpcValue::TypeString);
-//      mo_adapt_params.input_endpts.push_back(std::string(endpts_list[endpt]));
-//    }
-//  }
-//  if(!nh_private.getParam("motion_adaption/target_endpts", endpts_list))
-//  {
-//    ROS_ERROR_STREAM("Couldn't retrieve parameter 'motion_adaption/target_endpts' from parameter server!");
-//    return false;
-//  }
-//  else
-//  {
-//    ROS_ASSERT(endpts_list.getType() == XmlRpc::XmlRpcValue::TypeArray);
-//    for (int endpt = 0; endpt < endpts_list.size(); ++endpt)
-//    {
-//      ROS_ASSERT(endpts_list[endpt].getType() == XmlRpc::XmlRpcValue::TypeString);
-//      mo_adapt_params.target_endpts.push_back(std::string(endpts_list[endpt]));
-//    }
-//  }
-//  if(!nh_private.getParam("motion_adaption/goal_endpts", endpts_list))
-//  {
-//    ROS_ERROR_STREAM("Couldn't retrieve parameter 'motion_adaption/goal_endpts' from parameter server!");
-//    return false;
-//  }
-//  else
-//  {
-//    ROS_ASSERT(endpts_list.getType() == XmlRpc::XmlRpcValue::TypeArray);
-//    for (int endpt = 0; endpt < endpts_list.size(); ++endpt)
-//    {
-//      ROS_ASSERT(endpts_list[endpt].getType() == XmlRpc::XmlRpcValue::TypeString);
-//      mo_adapt_params.goal_endpts.push_back(std::string(endpts_list[endpt]));
-//    }
-//  }
-//  if(!nh_private.getParam("motion_adaption/input_correction/roll", mo_adapt_params.input_correction.roll))
-//  {
-//    ROS_ERROR_STREAM("Couldn't retrieve parameter 'motion_adaption/input_correction/roll' from parameter server!");
-//    return false;
-//  }
-//  if(!nh_private.getParam("motion_adaption/input_correction/pitch", mo_adapt_params.input_correction.pitch))
-//  {
-//    ROS_ERROR_STREAM("Couldn't retrieve parameter 'motion_adaption/input_correction/pitch' from parameter server!");
-//    return false;
-//  }
-//  if(!nh_private.getParam("motion_adaption/input_correction/yaw", mo_adapt_params.input_correction.yaw))
-//  {
-//    ROS_ERROR_STREAM("Couldn't retrieve parameter 'motion_adaption/input_correction/yaw' from parameter server!");
-//    return false;
-//  }
-//  mo_ret_params.motion_adaption_parameters.push_back(mo_adapt_params);
+  // Next, get the general and the adaption-specific parameters for each adaption
+  for (unsigned int adaption = 1; adaption <= nr_of_adaptions; ++adaption)
+  {
+    // stringstream magic to ease parameter retrieval
+    std::stringstream ss;
+    std::string parameter_prep, parameter_name;
+    ss << "motion_adaption/adaption_" << adaption  << "/";
+    ss >> parameter_prep;
 
-//
-//  /*
-//   * tree kinematics configuration
-//   */
+    // Retrieve general parameters
+    motion_adaption::GeneralParameters mo_adapt_general_params;
+    ss.clear();
+    ss << parameter_prep << "adaption_name";
+    ss >> parameter_name;
+    if (!nh_private.getParam(parameter_name, mo_adapt_general_params.adaption_name))
+    {
+      ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+      return mo_ret_conf;
+    }
+    ss.clear();
+    ss << parameter_prep << "adaption_type";
+    ss >> parameter_name;
+    std::string adaption_type;
+    if (nh_private.getParam(parameter_name, adaption_type))
+    {
+      if(adaption_type == "trans_rot_adaption")
+      {
+        mo_adapt_general_params.adaption_type = motion_adaption::GeneralParameters::TransRotAdaption;
+      }
+      else if (adaption_type == "hands_adaption")
+      {
+        mo_adapt_general_params.adaption_type = motion_adaption::GeneralParameters::HandsAdaption;
+      }
+      else
+      {
+        ROS_ERROR_STREAM("Unknown adaption type '" << adaption_type << "' received!");
+        return mo_ret_conf;
+      }
+    }
+    else
+    {
+      ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+      return mo_ret_conf;
+    }
+    ss.clear();
+    ss << parameter_prep << "input_ref_name";
+    ss >> parameter_name;
+    if(!nh_private.getParam(parameter_name, mo_adapt_general_params.input_ref_name))
+    {
+      ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+      return mo_ret_conf;
+    }
+    ss.clear();
+    ss << parameter_prep << "input_pos_ref_name";
+    ss >> parameter_name;
+    if(!nh_private.getParam(parameter_name, mo_adapt_general_params.input_pos_ref_name))
+    {
+      ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+      return mo_ret_conf;
+    }
+    ss.clear();
+    ss << parameter_prep << "input_ref_orient_adjust/roll";
+    ss >> parameter_name;
+    if(!nh_private.getParam(parameter_name, mo_adapt_general_params.input_ref_orient_adjust.roll))
+    {
+      ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+      return mo_ret_conf;
+    }
+    ss.clear();
+    ss << parameter_prep <<"input_ref_orient_adjust/pitch";
+    ss >> parameter_name;
+    if(!nh_private.getParam(parameter_name, mo_adapt_general_params.input_ref_orient_adjust.pitch))
+    {
+      ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+      return mo_ret_conf;
+    }
+    ss.clear();
+    ss << parameter_prep << "input_ref_orient_adjust/yaw";
+    ss >> parameter_name;
+    if(!nh_private.getParam(parameter_name, mo_adapt_general_params.input_ref_orient_adjust.yaw))
+    {
+      ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+      return mo_ret_conf;
+    }
+    ss.clear();
+    ss << parameter_prep << "target_ref_name";
+    ss >> parameter_name;
+    if(!nh_private.getParam(parameter_name, mo_adapt_general_params.target_ref_name))
+    {
+      ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+      return mo_ret_conf;
+    }
+    // Retrieve adaption-specific parameters
+    if (adaption_type == "trans_rot_adaption")
+    {
+      motion_adaption::TransRotParameters trans_rot_params;
+      ss.clear();
+      ss << parameter_prep << "input_endpt_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, trans_rot_params.input_endpt_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss.clear();
+      ss << parameter_prep << "target_endpt_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, trans_rot_params.target_endpt_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss.clear();
+      ss << parameter_prep << "goal_endpt_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, trans_rot_params.goal_endpt_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss.clear();
+      ss << parameter_prep << "goal_orient_adjust/roll";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, trans_rot_params.goal_orient_adjust.roll))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss.clear();
+      ss << parameter_prep <<"goal_orient_adjust/pitch";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, trans_rot_params.goal_orient_adjust.pitch))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss.clear();
+      ss << parameter_prep << "goal_orient_adjust/yaw";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, trans_rot_params.goal_orient_adjust.yaw))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      motion_adaption::TransRotAdaptionParameters trans_rot_adapt_params(mo_adapt_general_params, trans_rot_params);
+      mo_adapt_params.push_back(trans_rot_adapt_params);
+    }
+    else if (adaption_type == "hands_adaption")
+    {
+      motion_adaption::HandsParameters hands_params;
+      ss.clear();
+      ss << parameter_prep << "input_torso_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hands_params.input_torso_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss.clear();
+      ss << parameter_prep << "input_r_shoulder_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hands_params.input_r_shoulder_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss.clear();
+      ss << parameter_prep << "input_r_elbow_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hands_params.input_r_elbow_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss.clear();
+      ss << parameter_prep << "input_r_hand_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hands_params.input_r_elbow_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss.clear();
+      ss << parameter_prep << "input_l_shoulder_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hands_params.input_r_elbow_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss.clear();
+      ss << parameter_prep << "input_l_elbow_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hands_params.input_r_elbow_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss.clear();
+      ss << parameter_prep << "input_l_hand_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hands_params.input_r_elbow_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss.clear();
+      ss << parameter_prep << "target_torso_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hands_params.input_r_elbow_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss.clear();
+      ss << parameter_prep << "target_r_shoulder_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hands_params.input_r_elbow_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss.clear();
+      ss << parameter_prep << "target_r_elbow_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hands_params.input_r_elbow_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss.clear();
+      ss << parameter_prep << "target_r_hand_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hands_params.input_r_elbow_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss << parameter_prep << "target_l_shoulder_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hands_params.input_r_elbow_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss << parameter_prep << "target_l_elbow_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hands_params.input_r_elbow_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss.clear();
+      ss << parameter_prep << "target_l_hand_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hands_params.input_r_elbow_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss.clear();
+      ss << parameter_prep << "goal_r_hand_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hands_params.input_r_elbow_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss.clear();
+      ss << parameter_prep << "goal_r_hand_orient_adjust/roll";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hands_params.goal_r_hand_orient_adjust.roll))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss.clear();
+      ss << parameter_prep <<"goal_r_hand_orient_adjust/pitch";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hands_params.goal_r_hand_orient_adjust.pitch))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss.clear();
+      ss << parameter_prep << "goal_r_hand_orient_adjust/yaw";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hands_params.goal_r_hand_orient_adjust.yaw))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss.clear();
+      ss << parameter_prep << "goal_l_hand_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hands_params.input_r_elbow_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss.clear();
+      ss << parameter_prep << "goal_l_hand_orient_adjust/roll";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hands_params.goal_l_hand_orient_adjust.roll))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss.clear();
+      ss << parameter_prep <<"goal_l_hand_orient_adjust/pitch";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hands_params.goal_l_hand_orient_adjust.pitch))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      ss.clear();
+      ss << parameter_prep << "goal_l_hand_orient_adjust/yaw";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hands_params.goal_l_hand_orient_adjust.yaw))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return mo_ret_conf;
+      }
+      motion_adaption::HandsAdaptionParameters hands_adapt_params(mo_adapt_general_params, hands_params);
+      mo_adapt_params.push_back(hands_adapt_params);
+    }
+    else
+    {
+      ROS_ERROR_STREAM("Retrieve unknown adaption type '" << adaption_type << "'!");
+      return mo_ret_conf;
+    }
+  }
+  /*
+   * tree kinematics configuration
+   */
   tree_kinematics::KinematicsParameters kinematics_params;
   if(!nh_private.getParam("kinematics/robot_model_description_name", kinematics_params.robot_model_description_name))
   {
     ROS_ERROR_STREAM("Couldn't retrieve parameter 'kinematics/robot_model_description_name' from parameter server!");
-    return false;
+    return mo_ret_conf;
   }
+  XmlRpc::XmlRpcValue endpts_list;
   if(!nh_private.getParam("kinematics/endpt_names", endpts_list))
   {
     ROS_ERROR_STREAM("Couldn't retrieve parameter 'kinematics/endpt_names' from parameter server!");
-    return false;
+    return mo_ret_conf;
   }
   else
   {
@@ -228,62 +441,62 @@ bool createMotionRetargetingConfiguration(const ros::NodeHandle&  nh_private,
   if(!nh_private.getParam("kinematics/epsilon", kinematics_params.epsilon))
   {
     ROS_ERROR_STREAM("Couldn't retrieve parameter 'kinematics/epsilon' from parameter server!");
-    return false;
+    return mo_ret_conf;
   }
   if(!nh_private.getParam("kinematics/max_iterations", kinematics_params.max_iterations))
   {
     ROS_ERROR_STREAM("Couldn't retrieve parameter 'kinematics/max_iterations' from parameter server!");
-    return false;
+    return mo_ret_conf;
   }
   if(!nh_private.getParam("kinematics/lambda", kinematics_params.lambda))
   {
     ROS_ERROR_STREAM("Couldn't retrieve parameter 'kinematics/lambda' from parameter server!");
-    return false;
+    return mo_ret_conf;
   }
   if(!nh_private.getParam("kinematics/ik_call_frequency", kinematics_params.ik_call_frequency))
   {
     ROS_ERROR_STREAM("Couldn't retrieve parameter 'kinematics/ik_call_frequency' from parameter server!");
-    return false;
+    return mo_ret_conf;
   }
   if(!nh_private.getParam("kinematics/q_dot_max_factor", kinematics_params.q_dot_max_factor))
   {
     ROS_ERROR_STREAM("Couldn't retrieve parameter 'kinematics/q_dot_max_factor' from parameter server!");
-    return false;
+    return mo_ret_conf;
   }
   if(!nh_private.getParam("kinematics/q_dot_min_factor", kinematics_params.q_dot_min_factor))
   {
     ROS_ERROR_STREAM("Couldn't retrieve parameter 'kinematics/q_dot_min_factor' from parameter server!");
-    return false;
+    return mo_ret_conf;
   }
   if(!nh_private.getParam("kinematics/x_dot_trans_max_factor", kinematics_params.x_dot_trans_max_factor))
   {
     ROS_ERROR_STREAM("Couldn't retrieve parameter 'kinematics/x_dot_trans_max_factor' from parameter server!");
-    return false;
+    return mo_ret_conf;
   }
   if(!nh_private.getParam("kinematics/x_dot_trans_min_factor", kinematics_params.x_dot_trans_min_factor))
   {
     ROS_ERROR_STREAM("Couldn't retrieve parameter 'kinematics/x_dot_trans_min_factor' from parameter server!");
-    return false;
+    return mo_ret_conf;
   }
   if(!nh_private.getParam("kinematics/x_dot_rot_max_factor", kinematics_params.x_dot_rot_max_factor))
   {
     ROS_ERROR_STREAM("Couldn't retrieve parameter 'kinematics/x_dot_rot_max_factor' from parameter server!");
-    return false;
+    return mo_ret_conf;
   }
   if(!nh_private.getParam("kinematics/x_dot_rot_min_factor", kinematics_params.x_dot_rot_min_factor))
   {
     ROS_ERROR_STREAM("Couldn't retrieve parameter 'kinematics/x_dot_rot_min_factor' from parameter server!");
-    return false;
+    return mo_ret_conf;
   }
   if(!nh_private.getParam("kinematics/low_pass_factor", kinematics_params.low_pass_factor))
   {
     ROS_ERROR_STREAM("Couldn't retrieve parameter 'kinematics/low_pass_factor' from parameter server!");
-    return false;
+    return mo_ret_conf;
   }
   if(!nh_private.getParam("kinematics/task_space_weights", endpts_list))
   {
     ROS_ERROR_STREAM("Couldn't retrieve parameter 'kinematics/task_space_weights' from parameter server!");
-    return false;
+    return mo_ret_conf;
   }
   else
   {
@@ -303,7 +516,7 @@ bool createMotionRetargetingConfiguration(const ros::NodeHandle&  nh_private,
   if(!nh_private.getParam("kinematics/joint_space_weights", endpts_list))
   {
     ROS_ERROR_STREAM("Couldn't retrieve parameter 'kinematics/joint_space_weights' from parameter server!");
-    return false;
+    return mo_ret_conf;
   }
   else
   {
@@ -314,9 +527,31 @@ bool createMotionRetargetingConfiguration(const ros::NodeHandle&  nh_private,
       kinematics_params.joint_space_weights.push_back(double(endpts_list[endpt]));
     }
   }
-//  mo_ret_params.kinematics_parameters = kinematics_params;
-  mo_ret_conf = MoRetConfPtr(new MoRetConf(mo_ret_general_params, mo_adapt_params, kinematics_params));
-  return true;
+  /*
+   * Create motion retargeting configuration
+   */
+  try
+  {
+    mo_ret_conf = MoRetConfPtr(new MoRetConf(mo_ret_general_params, mo_adapt_params, kinematics_params));
+    if(!mo_ret_conf)
+    {
+      ROS_ERROR_STREAM("Config not valid! (1)");
+    }
+  }
+  catch (std::exception& e)
+  {
+    ROS_ERROR_STREAM("An exception was thrown when trying to create the motion retargeting configuration"
+                     << " based on the provided parameters:");
+    ROS_ERROR_STREAM("Exception: " << e.what());
+    return mo_ret_conf;
+  }
+  catch (...)
+  {
+    ROS_ERROR_STREAM("Unknown exception was thrown when trying to create the motion retargeting configuration"
+                     << " based on the provided parameters.");
+    return mo_ret_conf;
+  }
+  return mo_ret_conf;
 }
 
 int main(int argc, char** argv)
@@ -324,10 +559,9 @@ int main(int argc, char** argv)
   ros::init(argc, argv, node_name);
   ros::NodeHandle nh, nh_private("~");
   ROS_INFO_STREAM("Initialising controller. [" << node_name << "]");
-//  MoRetParams mo_ret_params;
-  MoRetConfPtr mo_ret_conf;
   MoRetPtr mo_ret;
-  if (createMotionRetargetingConfiguration(nh_private, mo_ret_conf))
+  MoRetConfPtr mo_ret_conf = createMotionRetargetingConfiguration(nh_private);
+  if (mo_ret_conf)
   {
     ROS_INFO_STREAM("Motion retargeting configuration created. [" << node_name << "]");
     try
@@ -343,31 +577,12 @@ int main(int argc, char** argv)
       return -1;
     }
   }
+  else
+  {
+    ROS_ERROR_STREAM("Failed to create the motion retargeting configuration. Aborting.");
+    return -1;
+  }
 
-//  if (createMotionRetargetingFromParameters(nh_private, mo_ret_params))
-//  {
-//    ROS_INFO_STREAM("Motion retargeting parameters retrieved. [" << node_name << "]");
-//    try
-//    {
-//      mo_ret_conf = MoRetConfPtr(new MoRetConf(mo_ret_params));
-//      ROS_INFO_STREAM("Motion retargeting configuration created. [" << node_name << "]");
-//      mo_ret = MoRetPtr(new MoRet(*mo_ret_conf, nh));
-//      ROS_INFO_STREAM("Motion retargeting ready to rock! [" << node_name << "]");
-//    }
-//    catch (std::exception& e)
-//    {
-//      ROS_ERROR_STREAM("Caught an exception, while trying to initialise motion retargeting: "
-//                       << e.what());
-//      ROS_ERROR_STREAM("Aborting.");
-//      return -1;
-//    }
-//  }
-//  else
-//  {
-//    ROS_ERROR_STREAM("Couldn't retrieve all retargeting parameters! Aborting. [" << node_name << "]");
-//    return -1;
-//  }
-  trajectory_msgs::JointTrajectoryPoint output_joint_states;
   ros::Rate loop_rate(mo_ret_conf->getGeneralParameters().retargeting_freq);
   while (nh.ok())
   {

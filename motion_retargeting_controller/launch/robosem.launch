@@ -1,9 +1,10 @@
 <!-- launch-prefix="gdb -ex run -args" -->
 <launch>
   <!-- motion adaption node -->
-  <node pkg="motion_retargeting_controller" type="motion_retargeting_controller" name="motion_retargeting_controller">
+  <node launch-prefix="gdb -ex run --args" pkg="motion_retargeting_controller" type="motion_retargeting_controller" name="motion_retargeting_controller">
     <!-- load parameters for the nodes onto the parameter server into the private namespace -->
-    <rosparam command="load" file="$(find motion_retargeting_controller)/config/robosem_head_adaption_config.yaml" />
+<!--     <rosparam command="load" file="$(find motion_retargeting_controller)/config/robosem_head_adaption_config.yaml" /> -->
+    <rosparam command="load" file="$(find motion_retargeting_controller)/config/robosem_upper_body_retargeting_config.yaml" />
     <!-- topic remappings -->
     <remap from="joint_states" to="/robosem/joint_states" />
     <remap from="follow_joint_trajectory_action_server" to="/robosem/upper_body_controller" />

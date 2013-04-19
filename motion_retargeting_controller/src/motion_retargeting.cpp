@@ -45,8 +45,7 @@ MotionRetargeting::MotionRetargeting(const MotionRetargetingConfiguration& retar
                                           nh_(nh)
 {
   motion_adaption_ = motion_adaption::MotionAdaptionPtr(
-      new motion_adaption::MotionAdaption(retargeting_config.getMotionAdaptionParameters()));
-//                     new motion_adaption::MotionAdaption(retargeting_config.getParameters().motion_adaption_parameters));
+                     new motion_adaption::MotionAdaption(retargeting_config.getMotionAdaptionParameters()));
   tree_kinematics_ = tree_kinematics::TreeKinematicsPtr(
                      new tree_kinematics::TreeKinematics(retargeting_config.getIKParameters(), nh_));
   tree_ik_request_.endpt_names = retargeting_config.getIKParameters().endpt_names;

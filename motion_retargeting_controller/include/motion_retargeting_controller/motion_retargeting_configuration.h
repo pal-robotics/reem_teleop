@@ -23,12 +23,11 @@ namespace motion_retargeting
  */
 struct GeneralParameters
 {
-  std::string retargeting_type_name;
+  std::string retargeting_name;
   double retargeting_freq;
-  double wait_for_tf; // who is using that? only motion_adaption, then move it
-  std::string robot_model_name;
-  bool check_self_collision;
-  bool check_joint_limits;
+//  std::string robot_model_name; not used I think
+//  bool check_self_collision; not yet implemented
+//  bool check_joint_limits; not yet implemented
 };
 
 class MotionRetargetingConfiguration
@@ -43,10 +42,6 @@ public:
                                      general_params_(general_params),
                                      motion_adaption_params_(motion_adaption_params),
                                      kinematics_params_(kinematics_params)
-//  MotionRetargetingConfiguration(MotionRetargetingParameters& motion_retargeting_params) :
-//                                     general_params_(motion_retargeting_params.motion_adaption_params),
-//                                     motion_adaption_params_(motion_adaption_params),
-//                                     kinematics_params_(kinematics_params)
   {};
   /**
    * Clean up
