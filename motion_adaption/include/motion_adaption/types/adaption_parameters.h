@@ -24,7 +24,7 @@
 namespace motion_adaption
 {
 
-struct OrientationCorrection
+struct OrientationAdjustments
 {
   double roll;
   double pitch;
@@ -42,43 +42,41 @@ struct GeneralParameters
     UpperBodyAdaption
   };
   AdaptionTypes adaption_type;
+  std::string input_ref_name;
+  std::string input_pos_ref_name;
+  OrientationAdjustments input_ref_orient_adjust;
+  std::string target_ref_name;
   double wait_for_tf;
-  std::string input_ref_frame;
-  std::string input_ref_dep_parent;
-  std::string input_ref_dep_child;
-  OrientationCorrection input_ref_correction;
-  std::string target_ref_frame;
 };
 
 struct TransRotParameters
 {
-  std::string input_endpt;
-  std::string target_endpt;
-  std::string goal_endpt;
+  std::string input_endpt_name;
+  std::string target_endpt_name;
+  std::string goal_endpt_name;
+  OrientationAdjustments goal_orient_adjust;
 };
 
 struct HandsParameters
 {
-  std::string user_torso_name;
-  std::string user_r_shoulder_name;
-  std::string user_r_elbow_name;
-  std::string user_r_hand_name;
-  std::string user_l_shoulder_name;
-  std::string user_l_elbow_name;
-  std::string user_l_hand_name;
-  std::string robot_r_shoulder_name;
-  std::string robot_r_elbow_name;
-  std::string robot_r_hand_name;
-  std::string robot_l_shoulder_name;
-  std::string robot_l_elbow_name;
-  std::string robot_l_hand_name;
-  std::string goal_torso_name;
-  std::string goal_r_shoulder_name;
-  std::string goal_r_elbow_name;
+  std::string input_torso_name;
+  std::string input_r_shoulder_name;
+  std::string input_r_elbow_name;
+  std::string input_r_hand_name;
+  std::string input_l_shoulder_name;
+  std::string input_l_elbow_name;
+  std::string input_l_hand_name;
+  std::string target_torso_name;
+  std::string target_r_shoulder_name;
+  std::string target_r_elbow_name;
+  std::string target_r_hand_name;
+  std::string target_l_shoulder_name;
+  std::string target_l_elbow_name;
+  std::string target_l_hand_name;
   std::string goal_r_hand_name;
-  std::string goal_l_shoulder_name;
-  std::string goal_l_elbow_name;
+  OrientationAdjustments goal_r_hand_orient_adjust;
   std::string goal_l_hand_name;
+  OrientationAdjustments goal_l_hand_orient_adjust;
 };
 
 class AdaptionParameters
@@ -103,7 +101,7 @@ public:
                                 trans_rot_params_(trans_rot_params)
   {};
   ~TransRotAdaptionParameters(){};
-  const TransRotParameters& getTransRotParameters() const
+  const TransRotParameters& getAdaptionSpecificParameters() const
   {
     return trans_rot_params_;
   }
@@ -119,6 +117,10 @@ public:
                              AdaptionParameters(general_params),
                              hands_params_(hands_params)
   {};
+  const HandsParameters& getAdaptionSpecificParameters() const
+  {
+    return hands_params_;
+  }
   ~HandsAdaptionParameters(){};
 private:
   HandsParameters hands_params_;

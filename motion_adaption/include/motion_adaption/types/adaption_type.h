@@ -44,37 +44,24 @@ public:
    * @param adaption_parameters
    * @param tf_listener
    */
-//  AdaptionType(std::string adaption_name,
-//                 AdaptionTypes adaption_type,
-//                 double wait_for_tf,
-//                 std::string input_ref_frame,
-//                 std::string input_ref_dep_parent,
-//                 std::string input_ref_dep_child,
-//                 OrientationCorrection input_ref_correction,
-//                 std::string target_ref_frame,
+//  AdaptionType(const GeneralParameters& general_params,
 //                 boost::shared_ptr<tf::TransformListener> tf_listener,
 //                 boost::shared_ptr<tf::TransformBroadcaster> tf_broadcaster,
 //                 boost::shared_ptr<tf::Transformer> internal_tf) :
-//                 adaption_name_(adaption_name),
-//                 adaption_type_(adaption_type),
-//                 wait_for_tf_(wait_for_tf),
-//                 input_ref_frame_(input_ref_frame),
-//                 input_ref_dep_parent_(input_ref_dep_parent),
-//                 input_ref_dep_child_(input_ref_dep_child),
-//                 input_ref_correction_(input_ref_correction),
-//                 target_ref_frame_(target_ref_frame),
+//                 general_params_(general_params),
 //                 tf_listener_(tf_listener),
 //                 tf_broadcaster_(tf_broadcaster),
 //                 internal_tf_(internal_tf)
   AdaptionType(const GeneralParameters& general_params,
                  boost::shared_ptr<tf::TransformListener> tf_listener,
                  boost::shared_ptr<tf::TransformBroadcaster> tf_broadcaster,
-                 boost::shared_ptr<tf::Transformer> internal_tf) :
-                 general_params_(general_params),
-                 tf_listener_(tf_listener),
-                 tf_broadcaster_(tf_broadcaster),
-                 internal_tf_(internal_tf)
-  {};
+                 boost::shared_ptr<tf::Transformer> internal_tf)
+  {
+    general_params_ = general_params;
+    tf_listener_ = tf_listener;
+    tf_broadcaster_ = tf_broadcaster;
+    internal_tf_ = internal_tf;
+  };
   /**
    * Cleans up
    */
@@ -96,6 +83,48 @@ public:
 
 protected:
   /**
+   * Set the reference frame
+   * The input reference frame will be located at input_ref_dep_child's position,
+   * but with the orientation of the target system. This will make the following adaption easier.
+   * @return true, if no errors occur
+   */
+  bool setReferenceFrame()
+  {
+    try
+    {
+      tf_listener_->lookupTransform(general_params_.target_ref_name,
+                                    general_params_.input_pos_ref_name,
+                                    ros::Time(0),
+                                    tf_input_);
+    }
+    catch (tf::TransformException const &ex)
+    {
+      ROS_WARN_STREAM("Coulnd't get transform from '" << general_params_.target_ref_name
+                      << "' to '" << general_params_.input_pos_ref_name
+                      << "'! Skipping motion adaption.");
+      ROS_DEBUG_STREAM(ex.what());
+      return false;
+    }
+    // Use the same position
+    tf_adapted_ = tf_input_;
+    // But adjust the orientation to align with the target system - has to be done manually.
+    // TODO: should be possible to determine automatically!
+    quat_ = tf::createIdentityQuaternion ();
+    quat_adapt_.setRPY(general_params_.input_ref_orient_adjust.roll,
+                       general_params_.input_ref_orient_adjust.pitch,
+                       general_params_.input_ref_orient_adjust.yaw);
+    tf_adapted_.setRotation(quat_ * quat_adapt_);
+    tf_broadcaster_->sendTransform(tf::StampedTransform(tf_adapted_,
+                                                        ros::Time::now(),
+                                                        general_params_.target_ref_name,
+                                                        general_params_.input_ref_name));
+    return true;
+  }
+  /**
+   * Adaption parameters
+   */
+  GeneralParameters general_params_;
+  /**
    * Transform listener for retrieving all necessary transformations
    */
   boost::shared_ptr<tf::TransformListener> tf_listener_;
@@ -107,10 +136,6 @@ protected:
    * TF transformer for internal calculations
    */
   boost::shared_ptr<tf::Transformer> internal_tf_;
-  /**
-   * Adaption parameters
-   */
-  GeneralParameters general_params_;
   /**
    * Input, target and adapted transforms
    */
