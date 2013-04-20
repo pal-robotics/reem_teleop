@@ -26,25 +26,26 @@ namespace motion_adaption
 class TransRotAdaption : public AdaptionType
 {
 public:
-  TransRotAdaption(const GeneralParameters& general_params,
-                     const TransRotParameters& trans_rot_params,
+  TransRotAdaption(const TransRotAdaptionParameters& trans_rot_adapt_params,
                      boost::shared_ptr<tf::TransformListener> tf_listener,
                      boost::shared_ptr<tf::TransformBroadcaster> tf_broadcaster,
                      boost::shared_ptr<tf::Transformer> internal_tf) :
-                     AdaptionType(general_params,
+                     AdaptionType(trans_rot_adapt_params,
                                   tf_listener,
                                   tf_broadcaster,
-                                  internal_tf)
+                                  internal_tf),
+                     trans_rot_adapt_params_(trans_rot_adapt_params)
   {
-    trans_rot_params_ = trans_rot_params;
+    std::cout << "TransRotAdaption constructor: adaption name: " << trans_rot_adapt_params_.adaption_name << std::endl;
+    std::cout << "TransRotAdaption constructor: input_endpt_name: " << trans_rot_adapt_params_.input_endpt_name << std::endl;
   };
 
   ~TransRotAdaption(){};
 
   virtual bool adapt(std::vector<geometry_msgs::PoseStamped>& adapted_transforms)
   {
-    ROS_DEBUG_STREAM("Performing adaption '" << general_params_.adaption_name
-                    << "' of type '" << general_params_.adaption_type << "'.");
+    ROS_DEBUG_STREAM("Performing adaption '" << trans_rot_adapt_params_.adaption_name
+                    << "' of type 'TransRotAdaption'.");
     /*
      * Set the reference frame
      */
@@ -54,19 +55,19 @@ public:
      */
     try
     {
-      tf_listener_->waitForTransform(general_params_.input_ref_name,
-                                     trans_rot_params_.input_endpt_name,
+      tf_listener_->waitForTransform(trans_rot_adapt_params_.input_ref_name,
+                                     trans_rot_adapt_params_.input_endpt_name,
                                      ros::Time(0),
-                                     ros::Duration(general_params_.wait_for_tf));
-      tf_listener_->lookupTransform(general_params_.input_ref_name,
-                                    trans_rot_params_.input_endpt_name,
+                                     ros::Duration(trans_rot_adapt_params_.wait_for_tf));
+      tf_listener_->lookupTransform(trans_rot_adapt_params_.input_ref_name,
+                                    trans_rot_adapt_params_.input_endpt_name,
                                     ros::Time(0),
                                     tf_input_);
     }
     catch (tf::TransformException const &ex)
     {
-      ROS_WARN_STREAM("Coulnd't get transform from '" << general_params_.input_ref_name
-                      << "' to '" << trans_rot_params_.input_endpt_name
+      ROS_WARN_STREAM("Coulnd't get transform from '" << trans_rot_adapt_params_.input_ref_name
+                      << "' to '" << trans_rot_adapt_params_.input_endpt_name
                       << "'! Skipping motion adaption.");
       ROS_DEBUG_STREAM(ex.what());
       return false;
@@ -76,19 +77,19 @@ public:
      */
     try
     {
-      tf_listener_->waitForTransform(general_params_.target_ref_name,
-                                     trans_rot_params_.target_endpt_name,
+      tf_listener_->waitForTransform(trans_rot_adapt_params_.target_ref_name,
+                                     trans_rot_adapt_params_.target_endpt_name,
                                      ros::Time(0),
-                                     ros::Duration(general_params_.wait_for_tf));
-      tf_listener_->lookupTransform(general_params_.target_ref_name,
-                                    trans_rot_params_.target_endpt_name,
+                                     ros::Duration(trans_rot_adapt_params_.wait_for_tf));
+      tf_listener_->lookupTransform(trans_rot_adapt_params_.target_ref_name,
+                                    trans_rot_adapt_params_.target_endpt_name,
                                     ros::Time(0),
                                     tf_target_);
     }
     catch (tf::TransformException const &ex)
     {
-      ROS_WARN_STREAM("Coulnd't get transform from '" << general_params_.target_ref_name
-                      << "' to '" << trans_rot_params_.target_endpt_name
+      ROS_WARN_STREAM("Coulnd't get transform from '" << trans_rot_adapt_params_.target_ref_name
+                      << "' to '" << trans_rot_adapt_params_.target_endpt_name
                       << "'! Skipping motion adaption.");
       ROS_DEBUG_STREAM(ex.what());
       return false;
@@ -107,9 +108,9 @@ public:
      * Probably can be done automatically
      */
     quat_ = tf_input_.getRotation();
-    quat_adapt_.setRPY(trans_rot_params_.goal_orient_adjust.roll,
-                       trans_rot_params_.goal_orient_adjust.pitch,
-                       trans_rot_params_.goal_orient_adjust.yaw);
+    quat_adapt_.setRPY(trans_rot_adapt_params_.goal_orient_adjust.roll,
+                       trans_rot_adapt_params_.goal_orient_adjust.pitch,
+                       trans_rot_adapt_params_.goal_orient_adjust.yaw);
     tf_adapted_.setRotation(quat_ * quat_adapt_);
 
      /*
@@ -128,13 +129,13 @@ public:
     adapted_transforms.push_back(pose_adapted_);
     tf_broadcaster_->sendTransform(tf::StampedTransform(tf_adapted_,
                                                         ros::Time::now(),
-                                                        general_params_.target_ref_name,
-                                                        trans_rot_params_.goal_endpt_name));
+                                                        trans_rot_adapt_params_.target_ref_name,
+                                                        trans_rot_adapt_params_.goal_endpt_name));
     return true;
   };
 
 private:
-  TransRotParameters trans_rot_params_;
+  TransRotAdaptionParameters trans_rot_adapt_params_;
 };
 
 } // namespace motion_adaption

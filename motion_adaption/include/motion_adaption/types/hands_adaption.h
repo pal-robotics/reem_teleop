@@ -26,62 +26,55 @@ namespace motion_adaption
 class HandsAdaption : public AdaptionType
 {
 public:
-  HandsAdaption(const GeneralParameters& general_params,
-                  const HandsParameters& hands_adaption_params,
+  HandsAdaption(const HandsAdaptionParameters& hands_adaption_params,
                   boost::shared_ptr<tf::TransformListener> tf_listener,
                   boost::shared_ptr<tf::TransformBroadcaster> tf_broadcaster,
                   boost::shared_ptr<tf::Transformer> internal_tf) :
-                  AdaptionType(general_params,
+                  AdaptionType(hands_adaption_params,
                                tf_listener,
                                tf_broadcaster,
                                internal_tf),
                   hands_adaption_params_(hands_adaption_params)
   {
     tf_input_stamp_ =  ros::Time::now();
+    std::cout << "HandsAdaption constructor: adaption name: " << hands_adaption_params_.adaption_name << std::endl;
+    std::cout << "HandsAdaption constructor: input_endpt_name: " << hands_adaption_params_.input_l_elbow_name << std::endl;
+    tf_r_hand_scaled_.setIdentity();
+    tf_l_hand_scaled_.setIdentity();
   };
 
   ~HandsAdaption(){};
 
   virtual bool adapt(std::vector<geometry_msgs::PoseStamped>& adapted_transforms)
   {
+    ROS_DEBUG_STREAM("Performing adaption '" << hands_adaption_params_.adaption_name
+                    << "' of type 'HandsAdaption'.");
     /*
      * Get all input transforms
      */
-    getTransforms();
+    if(!getTransforms())
+    {
+      return false;
+    }
     /*
-     * Then start with scaling hands and elbows
+     * Use input and target system's proportions to adapt the goal hand positions
      */
-//    if(scaleUserHandsAndElbows())
+    if(!adaptHandPositions())
+    {
+      return false;
+    }
+    /*
+     * Use the adapted hand positions to determine the shoulder orientation
+     */
+//    if(!adaptShoulderOrientations())
 //    {
-//      /*
-//       * Next, use the scaled elbow and hand poses to adapt the output shoulder poses
-//       */
-//      if(adaptShoulders())
-//      {
-//        /*
-//         * and to adapt the output elbow poses
-//         */
-//        if(adaptElbows())
-//        {
-//          /*
-//           * and to adapt the output hand poses
-//           */
-//          if(!adaptHands())
-//          {
-//            return false;
-//          }
-//        }
-//        else
-//        {
-//          return false;
-//        }
-//      }
-//      else
-//      {
-//        return false;
-//      }
+//      return false;
 //    }
-//    else
+//    /*
+//     * Align hand orientations with shoulder orientation
+//     * TODO: Allow the use of extra orientation information (e.g. from IMU sensors)
+//     */
+//    if(!adaptHandOrientations())
 //    {
 //      return false;
 //    }
@@ -90,13 +83,12 @@ public:
   };
 
 private:
-  HandsParameters hands_adaption_params_;
+  HandsAdaptionParameters hands_adaption_params_;
   tf::StampedTransform tf_input_torso_;
   tf::StampedTransform tf_input_r_shoulder_,tf_input_r_shoulder_elbow_, tf_r_shoulder_elbow_, tf_r_shoulder_hand_, tf_input_r_elbow_, tf_input_r_elbow_hand_, tf_input_r_hand_;
-  tf::StampedTransform tf_input_l_shoulder_,tf_input_l_shoulder_elbow_, tf_l_shoulder_elbow_, tf_l_shoulder_hand_, tf_input_l_elbow_, tf_input_l_elbow_hand_, tf_input_l_hand_;
-  tf::StampedTransform tf_robot_r_shoulder_l_shoulder_;
-  tf::StampedTransform tf_robot_torso_r_shoulder_, tf_robot_r_shoulder_r_elbow_, tf_robot_r_elbow_r_hand_;
-  tf::StampedTransform tf_robot_torso_l_shoulder_, tf_robot_l_shoulder_l_elbow_, tf_robot_l_elbow_l_hand_;
+  tf::StampedTransform tf_input_l_shoulder_,tf_input_l_shoulder_elbow_, tf_l_shoulder_elbow_, tf_l_shoulder_hand_, tf_input_l_elbow_, tf_input_l_elbow_hand_, tf_input_l_hand_, tf_input_r_shoulder_l_shoulder_;
+  tf::StampedTransform tf_target_torso_r_shoulder_, tf_target_r_shoulder_r_elbow_, tf_target_r_elbow_r_hand_;
+  tf::StampedTransform tf_target_torso_l_shoulder_, tf_target_r_shoulder_r_hand_, tf_target_r_shoulder_l_shoulder_;
   tf::StampedTransform tf_r_shoulder_scaled_, tf_r_elbow_scaled_, tf_r_hand_scaled_;
   tf::StampedTransform tf_l_shoulder_scaled_, tf_l_elbow_scaled_, tf_l_hand_scaled_;
   tf::StampedTransform tf_r_elbow_pos_, tf_r_elbow_orient_, tf_r_elbow_hand_;
@@ -110,9 +102,9 @@ private:
   ///////////////////
   tf::Matrix3x3 mat_orientation_;
   double input_shoulder_width_, input_shoulder_height_, input_upper_arm_length_, input_arm_length_;
-  double robot_shoulder_width_, robot_shoulder_heigth_, robot_upper_arm_length_, robot_lower_arm_length_, robot_arm_length_;
+  double target_shoulder_width_, target_shoulder_height_, target_upper_arm_length_, target_lower_arm_length_, target_arm_length_;
   double x_norm_, y_norm_, z_norm_, x_adapt_, y_adapt_, z_adapt_, elbow_x_, elbow_y_, limb_length_;
-  bool r_elbow_extended_, l_elbow_extended_;
+  bool use_elbows_, r_elbow_extended_, l_elbow_extended_;
   ros::Time tf_input_stamp_;
 
   /**
@@ -121,23 +113,24 @@ private:
    */
   bool getTransforms()
   {
+    // Input transforms
     try
     {
-      // input reference to torso
-      tf_listener_->lookupTransform(general_params_.input_ref_name,
+      // input reference to torso - used?
+      tf_listener_->lookupTransform(hands_adaption_params_.input_ref_name,
                                    hands_adaption_params_.input_torso_name,
                                    ros::Time(0), tf_input_torso_);
-      tf_input_stamp_ = std::min(tf_input_stamp_, tf_input_torso_.stamp_);
+      tf_input_stamp_ = tf_input_torso_.stamp_;
       // torso to right shoulder
-      tf_listener_->lookupTransform(hands_adaption_params_.input_torso_name,
+      tf_listener_->lookupTransform(hands_adaption_params_.input_ref_name,
                                    hands_adaption_params_.input_r_shoulder_name,
                                    ros::Time(0), tf_input_r_shoulder_);
       // torso to right elbow
-      tf_listener_->lookupTransform(hands_adaption_params_.input_torso_name,
+      tf_listener_->lookupTransform(hands_adaption_params_.input_ref_name,
                                    hands_adaption_params_.input_r_elbow_name,
                                    ros::Time(0), tf_input_r_elbow_);
       // torso to right hand
-      tf_listener_->lookupTransform(hands_adaption_params_.input_torso_name,
+      tf_listener_->lookupTransform(hands_adaption_params_.input_ref_name,
                                    hands_adaption_params_.input_r_hand_name,
                                    ros::Time(0), tf_input_r_hand_);
       // right shoulder to right elbow
@@ -149,15 +142,15 @@ private:
                                    hands_adaption_params_.input_r_hand_name,
                                    ros::Time(0), tf_input_r_elbow_hand_);
       // torso to left shoulder
-      tf_listener_->lookupTransform(hands_adaption_params_.input_l_shoulder_name,
-                                   hands_adaption_params_.input_torso_name,
-                                   ros::Time(0), tf_input_l_shoulder_);
+      tf_listener_->lookupTransform(hands_adaption_params_.input_ref_name,
+                                    hands_adaption_params_.input_l_shoulder_name,
+                                    ros::Time(0), tf_input_l_shoulder_);
       // torso to left elbow
-      tf_listener_->lookupTransform(hands_adaption_params_.input_torso_name,
+      tf_listener_->lookupTransform(hands_adaption_params_.input_ref_name,
                                    hands_adaption_params_.input_l_elbow_name,
                                    ros::Time(0), tf_input_l_elbow_);
       // torso to left hand
-      tf_listener_->lookupTransform(hands_adaption_params_.input_torso_name,
+      tf_listener_->lookupTransform(hands_adaption_params_.input_ref_name,
                                    hands_adaption_params_.input_l_hand_name,
                                    ros::Time(0), tf_input_l_hand_);
       // left shoulder to left elbow
@@ -168,10 +161,60 @@ private:
       tf_listener_->lookupTransform(hands_adaption_params_.input_l_elbow_name,
                                    hands_adaption_params_.input_l_hand_name,
                                    ros::Time(0), tf_input_l_elbow_hand_);
+      // right shoulder to left shoulder
+      tf_listener_->lookupTransform(hands_adaption_params_.input_r_shoulder_name,
+                                   hands_adaption_params_.input_l_shoulder_name,
+                                   ros::Time(0), tf_input_r_shoulder_l_shoulder_);
     }
     catch (tf::TransformException const &ex)
     {
-      ROS_WARN_STREAM("hands adaption: Couldn't get one or more user transformations. Aborting adaption!");
+      ROS_WARN_STREAM("hands adaption: Couldn't get one or more input transformations. Aborting adaption!");
+      ROS_DEBUG_STREAM("hands adaption: tf error: " << ex.what());
+      return false;
+    }
+
+    // Target transforms
+    try
+    {
+      tf_listener_->lookupTransform(hands_adaption_params_.target_ref_name,
+                                    hands_adaption_params_.target_r_shoulder_name,
+                                    ros::Time(0),
+                                    tf_target_torso_r_shoulder_);
+      tf_listener_->lookupTransform(hands_adaption_params_.target_ref_name,
+                                    hands_adaption_params_.target_l_shoulder_name,
+                                    ros::Time(0),
+                                    tf_target_torso_l_shoulder_);
+      tf_listener_->lookupTransform(hands_adaption_params_.target_r_shoulder_name,
+                                    hands_adaption_params_.target_l_shoulder_name,
+                                    ros::Time(0),
+                                    tf_target_r_shoulder_l_shoulder_);
+      if ((hands_adaption_params_.target_r_elbow_name != "")
+          && (hands_adaption_params_.target_l_elbow_name != ""))
+      {
+        tf_listener_->lookupTransform(hands_adaption_params_.target_r_shoulder_name,
+                                      hands_adaption_params_.target_r_elbow_name,
+                                      ros::Time(0),
+                                      tf_target_r_shoulder_r_elbow_);
+        tf_listener_->lookupTransform(hands_adaption_params_.target_r_elbow_name,
+                                      hands_adaption_params_.target_r_hand_name,
+                                      ros::Time(0),
+                                      tf_target_r_elbow_r_hand_);
+        use_elbows_ = true;
+        ROS_DEBUG_STREAM("Motion Adaption: Will use elbows.");
+      }
+      else
+      {
+        tf_listener_->lookupTransform(hands_adaption_params_.target_r_shoulder_name,
+                                      hands_adaption_params_.target_r_hand_name,
+                                      ros::Time(0),
+                                      tf_target_r_shoulder_r_hand_);
+        use_elbows_ = false;
+        ROS_DEBUG_STREAM("Motion Adaption: Won't use elbows.");
+      }
+    }
+    catch (tf::TransformException const &ex)
+    {
+      ROS_WARN_STREAM("hands adaption: Couldn't get one or more target transformations. Aborting adaption!");
       ROS_DEBUG_STREAM("hands adaption: tf error: " << ex.what());
       return false;
     }
@@ -179,66 +222,100 @@ private:
   }
 
   /**
-   *
+   * This assumes that shoulder height is always larger than 0.5 * shoulder width (should be ok, most of the times)
+   * TODO: Find a smarter way of handling this
    * @return
    */
-  bool scaleElbowsAndShoulders()
+  bool adaptHandPositions()
   {
-    input_shoulder_width_ = tf_input_r_shoulder_.getOrigin().x() + (- tf_input_l_shoulder_.getOrigin().x());
-    input_shoulder_height_ = (tf_input_r_shoulder_.getOrigin().y() + tf_input_l_shoulder_.getOrigin().y()) / 2.0;
-    input_upper_arm_length_ = tf_input_r_shoulder_elbow_.getOrigin().x();
-    input_arm_length_ = tf_input_r_shoulder_elbow_.getOrigin().x() + tf_input_r_elbow_hand_.getOrigin().x();
+    vec_helper_ = (tf_input_r_shoulder_.getOrigin() + tf_input_l_shoulder_.getOrigin()) / 2.0;
+    input_shoulder_height_ = sqrt(pow(vec_helper_[vec_helper_.absolute().maxAxis()], 2));
+    input_shoulder_width_ = tf_input_r_shoulder_l_shoulder_.getOrigin().length();
+    input_upper_arm_length_ = tf_input_r_shoulder_elbow_.getOrigin().length();
+    input_arm_length_ = tf_input_r_shoulder_elbow_.getOrigin().length() + tf_input_r_elbow_hand_.getOrigin().length();
+//    ROS_DEBUG_STREAM_THROTTLE(1.0, "input_shoulder_height = " << input_shoulder_height_
+//                                   << ", input_shoulder_width = " << input_shoulder_width_
+//                                   << ", input_arm_length = " << input_arm_length_);
+    ROS_DEBUG_STREAM("input_shoulder_height = " << input_shoulder_height_
+                     << ", input_shoulder_width = " << input_shoulder_width_
+                     << ", input_arm_length = " << input_arm_length_);
 
-    if (input_shoulder_width_ > 0.0 && input_shoulder_height_ > 0.0 && input_arm_length_ > 0.0)
+
+    vec_helper_ = (tf_target_torso_r_shoulder_.getOrigin() + tf_target_torso_l_shoulder_.getOrigin()) / 2.0;
+    target_shoulder_height_ = sqrt(pow(vec_helper_[vec_helper_.absolute().maxAxis()], 2));
+    target_shoulder_width_ = tf_target_r_shoulder_l_shoulder_.getOrigin().length();
+    if (use_elbows_)
     {
-      x_norm_ = tf_input_r_hand_.getOrigin().x() / (input_arm_length_ + 0.5 * input_shoulder_width_);
-      y_norm_ = tf_input_r_hand_.getOrigin().y() / (input_arm_length_ + input_shoulder_height_);
-      z_norm_ = tf_input_r_hand_.getOrigin().z() / input_arm_length_;
-      x_adapt_ = x_norm_ * ( robot_arm_length_ + 0.5 * robot_shoulder_width_);
-      y_adapt_ = y_norm_ * ( robot_arm_length_ + robot_shoulder_heigth_);
-      z_adapt_ = z_norm_ * robot_arm_length_;
-      tf_r_hand_scaled_.setOrigin(tf::Vector3(x_adapt_, y_adapt_, z_adapt_));
-
-      x_norm_ = tf_input_l_hand_.getOrigin().x() / (input_arm_length_ + 0.5 * input_shoulder_width_);
-      y_norm_ = tf_input_l_hand_.getOrigin().y() / (input_arm_length_ + input_shoulder_height_);
-      z_norm_ = tf_input_l_hand_.getOrigin().z() / input_arm_length_;
-      x_adapt_ = x_norm_ * ( robot_arm_length_ + 0.5 * robot_shoulder_width_);
-      y_adapt_ = y_norm_ * ( robot_arm_length_ + robot_shoulder_heigth_);
-      z_adapt_ = z_norm_ * robot_arm_length_;
-      tf_l_hand_scaled_.setOrigin(tf::Vector3(x_adapt_, y_adapt_, z_adapt_));
-
-      x_norm_ = tf_input_r_elbow_.getOrigin().x() / (input_upper_arm_length_ + 0.5 * input_shoulder_width_);
-      y_norm_ = tf_input_r_elbow_.getOrigin().y() / (input_upper_arm_length_ + input_shoulder_height_);
-      z_norm_ = tf_input_r_elbow_.getOrigin().z() / input_upper_arm_length_;
-      x_adapt_ = x_norm_ * ( robot_upper_arm_length_ + 0.5 * robot_shoulder_width_);
-      y_adapt_ = y_norm_ * ( robot_upper_arm_length_ + robot_shoulder_heigth_);
-      z_adapt_ = z_norm_ * robot_upper_arm_length_;
-      tf_r_elbow_scaled_.setOrigin(tf::Vector3(x_adapt_, y_adapt_, z_adapt_));
-
-      x_norm_ = tf_input_l_elbow_.getOrigin().x() / (input_upper_arm_length_ + 0.5 * input_shoulder_width_);
-      y_norm_ = tf_input_l_elbow_.getOrigin().y() / (input_upper_arm_length_ + input_shoulder_height_);
-      z_norm_ = tf_input_l_elbow_.getOrigin().z() / input_upper_arm_length_;
-      x_adapt_ = x_norm_ * ( robot_upper_arm_length_ + 0.5 * robot_shoulder_width_);
-      y_adapt_ = y_norm_ * ( robot_upper_arm_length_ + robot_shoulder_heigth_);
-      z_adapt_ = z_norm_ * robot_upper_arm_length_;
-      tf_l_elbow_scaled_.setOrigin(tf::Vector3(x_adapt_, y_adapt_, z_adapt_));
-
-   //  tf_broadcaster_.sendTransform(tf::StampedTransform(tf_r_elbow_scaled_, ros::Time::now(), "/ref_frame", "/r_elbow_scaled"));
-      internal_tf_->setTransform(tf::StampedTransform(tf_r_elbow_scaled_, tf_input_stamp_,
-                                                      general_params_.target_ref_name, "/r_elbow_scaled"));
-   //   tf_broadcaster_.sendTransform(tf::StampedTransform(tf_r_hand_scaled_, ros::Time::now(), "/ref_frame", "/r_hand_scaled"));
-      internal_tf_->setTransform(tf::StampedTransform(tf_r_hand_scaled_, tf_input_stamp_,
-                                                      general_params_.target_ref_name, "/r_hand_scaled"));
-    //  tf_broadcaster_.sendTransform(tf::StampedTransform(tf_l_elbow_scaled_, ros::Time::now(), "/ref_frame", "/l_elbow_scaled"));
-      internal_tf_->setTransform(tf::StampedTransform(tf_l_elbow_scaled_, tf_input_stamp_,
-                                                      general_params_.target_ref_name, "/l_elbow_scaled"));
-     // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_l_hand_scaled_, ros::Time::now(), "/ref_frame", "/l_hand_scaled"));
-      internal_tf_->setTransform(tf::StampedTransform(tf_l_hand_scaled_, tf_input_stamp_,
-                                                      general_params_.target_ref_name, "/l_hand_scaled"));
+      target_upper_arm_length_ = tf_target_r_shoulder_r_elbow_.getOrigin().length();
+      target_lower_arm_length_ = tf_target_r_elbow_r_hand_.getOrigin().length();
+      target_arm_length_ = target_upper_arm_length_ + target_lower_arm_length_;
     }
     else
     {
-      ROS_WARN_STREAM("hands adaption: User's body proportions are not valid. Aborting adaption!");
+      target_arm_length_ = tf_target_r_shoulder_r_hand_.getOrigin().length();
+    }
+//    ROS_DEBUG_STREAM_THROTTLE(1.0, "target_shoulder_height = " << target_shoulder_height_
+//                                   << ", target_shoulder_width = " << target_shoulder_width_
+//                                   << ", target_arm_length = " << target_arm_length_);
+    ROS_DEBUG_STREAM("target_shoulder_height = " << target_shoulder_height_
+                     << ", target_shoulder_width = " << target_shoulder_width_
+                     << ", target_arm_length = " << target_arm_length_);
+
+    if ((input_shoulder_width_ > 0.0) && (input_shoulder_height_ > 0.0) && (input_upper_arm_length_ > 0.0)
+        && (input_arm_length_ > 0.0) && (target_shoulder_height_ > 0.0) && (target_shoulder_width_ > 0.0)
+        && (target_arm_length_ > 0.0))
+    {
+      ROS_DEBUG_STREAM("right hand - input position: " << tf_input_r_hand_.getOrigin().x()
+                       << ", " << tf_input_r_hand_.getOrigin().y() << ", " << tf_input_r_hand_.getOrigin().z());
+//      x_norm_ = tf_input_r_hand_.getOrigin().x() / (input_arm_length_ + 0.5 * input_shoulder_width_);
+//      y_norm_ = tf_input_r_hand_.getOrigin().y() / (input_arm_length_ + input_shoulder_height_);
+//      z_norm_ = tf_input_r_hand_.getOrigin().z() / input_arm_length_;
+      x_norm_ = tf_input_r_hand_.getOrigin().x() / input_arm_length_;
+      y_norm_ = (tf_input_r_hand_.getOrigin().y() - 0.5 * input_shoulder_width_) / input_arm_length_;
+      z_norm_ = (tf_input_r_hand_.getOrigin().z() - input_shoulder_height_)/ input_arm_length_;
+      ROS_DEBUG_STREAM("right hand - normalised position - right hand: " << x_norm_ << ", " << y_norm_ << ", " << z_norm_);
+//      x_adapt_ = x_norm_ * ( target_arm_length_ + 0.5 * target_shoulder_width_);
+//      y_adapt_ = y_norm_ * ( target_arm_length_ + target_shoulder_height_);
+//      z_adapt_ = z_norm_ * target_arm_length_;
+      x_adapt_ = x_norm_ * target_arm_length_;
+      y_adapt_ = (y_norm_ * target_arm_length_) +  0.5 * target_shoulder_width_;
+      z_adapt_ = (z_norm_ * target_arm_length_) + target_shoulder_height_;
+      ROS_DEBUG_STREAM("right hand - adapted position: " << x_adapt_ << ", " << y_adapt_ << ", " << z_adapt_);
+      tf_r_hand_scaled_.setOrigin(tf::Vector3(x_adapt_, y_adapt_, z_adapt_));
+
+//      x_norm_ = tf_input_r_hand_.getOrigin().x() / (input_arm_length_ + 0.5 * input_shoulder_width_);
+//      y_norm_ = tf_input_r_hand_.getOrigin().y() / (input_arm_length_ + input_shoulder_height_);
+//      z_norm_ = tf_input_r_hand_.getOrigin().z() / input_arm_length_;
+      ROS_DEBUG_STREAM("left hand - input position: " << tf_input_l_hand_.getOrigin().x()
+                       << ", " << tf_input_r_hand_.getOrigin().y() << ", " << tf_input_r_hand_.getOrigin().z());
+      x_norm_ = tf_input_l_hand_.getOrigin().x() / input_arm_length_;
+      y_norm_ = (tf_input_l_hand_.getOrigin().y() - 0.5 * input_shoulder_width_) / input_arm_length_;
+      z_norm_ = (tf_input_l_hand_.getOrigin().z() - input_shoulder_height_)/ input_arm_length_;
+      ROS_DEBUG_STREAM("left hand - normalised position - right hand: " << x_norm_ << ", " << y_norm_ << ", " << z_norm_);
+//      x_adapt_ = x_norm_ * ( target_arm_length_ + 0.5 * target_shoulder_width_);
+//      y_adapt_ = y_norm_ * ( target_arm_length_ + target_shoulder_height_);
+//      z_adapt_ = z_norm_ * target_arm_length_;
+      x_adapt_ = x_norm_ * target_arm_length_;
+      y_adapt_ = (y_norm_ * target_arm_length_) +  0.5 * target_shoulder_width_;
+      z_adapt_ = (z_norm_ * target_arm_length_) + target_shoulder_height_;
+      ROS_DEBUG_STREAM("left hand - adapted position: " << x_adapt_ << ", " << y_adapt_ << ", " << z_adapt_);
+      tf_l_hand_scaled_.setOrigin(tf::Vector3(x_adapt_, y_adapt_, z_adapt_));
+
+      tf_broadcaster_->sendTransform(tf::StampedTransform(tf_r_hand_scaled_, tf_input_stamp_,
+                                                          hands_adaption_params_.target_ref_name, "/hand_r_pos_adapted"));
+      internal_tf_->setTransform(tf::StampedTransform(tf_r_hand_scaled_, tf_input_stamp_,
+                                                      hands_adaption_params_.target_ref_name, "/hand_r_pos_adapted"));
+      tf_broadcaster_->sendTransform(tf::StampedTransform(tf_l_hand_scaled_, tf_input_stamp_,
+                                                         hands_adaption_params_.target_ref_name, "/hand_l_pos_adapted"));
+      internal_tf_->setTransform(tf::StampedTransform(tf_l_hand_scaled_, tf_input_stamp_,
+                                                      hands_adaption_params_.target_ref_name, "/hand_l_pos_adapted"));
+      tf_r_hand_goal_ = tf_r_hand_scaled_;
+      tf_l_hand_goal_ = tf_l_hand_scaled_;
+    }
+    else
+    {
+      ROS_WARN_STREAM("Hands Adaption: One or more proportions of the input and/or target system are not valid. "
+                      << "Aborting adaption!");
       return false;
     }
     return true;
@@ -248,90 +325,37 @@ private:
    *
    * @return
    */
-  /*
-   *  TODO: Make elbows optional!
-   */
-  bool adaptShoulders()
+  bool adaptShoulderOrientations()
   {
-    // positions
-    try
-    {
-//      tf_listener_->waitForTransform(adaption_parameters_.input_ref_frame, robot_r_shoulder_str_, ros::Time(0),
-//       ros::Duration(wait_for_tf_));
-      tf_listener_->lookupTransform(general_params_.target_ref_name,
-                                    hands_adaption_params_.target_r_shoulder_name,
-                                    ros::Time(0),
-                                    tf_robot_torso_r_shoulder_);
-//      tf_listener_->waitForTransform(adaption_parameters_.input_ref_frame, robot_l_shoulder_str_, ros::Time(0),
-//      ros::Duration(wait_for_tf_));
-      tf_listener_->lookupTransform(general_params_.target_ref_name,
-                                    hands_adaption_params_.target_r_shoulder_name,
-                                    ros::Time(0),
-                                    tf_robot_torso_l_shoulder_);
-//      tf_listener_->waitForTransform(robot_r_shoulder_str_, robot_l_shoulder_str_, ros::Time(0),
-//      ros::Duration(wait_for_tf_));
-      tf_listener_->lookupTransform(hands_adaption_params_.target_r_shoulder_name,
-                                    hands_adaption_params_.target_l_shoulder_name,
-                                    ros::Time(0),
-                                    tf_robot_r_shoulder_l_shoulder_);
-//      tf_listener_->waitForTransform(robot_r_shoulder_str_, robot_r_elbow_str_, ros::Time(0), ros::Duration(wait_for_tf_));
-      tf_listener_->lookupTransform(hands_adaption_params_.target_r_shoulder_name,
-                                    hands_adaption_params_.target_r_elbow_name,
-                                    ros::Time(0),
-                                    tf_robot_r_shoulder_r_elbow_);
-//      tf_listener_->waitForTransform(robot_r_elbow_str_, robot_r_hand_str_, ros::Time(0), ros::Duration(wait_for_tf_));
-      tf_listener_->lookupTransform(hands_adaption_params_.target_r_elbow_name,
-                                    hands_adaption_params_.target_r_hand_name,
-                                    ros::Time(0),
-                                    tf_robot_r_elbow_r_hand_);
-    }
-    catch (tf::TransformException const &ex)
-    {
-      ROS_DEBUG("%s",ex.what());
-      ROS_WARN("(Step 3.4.1) Couldn't get one or more transformations of the robot to calculate body measurements.");
-      ROS_WARN("No further processing will be done!");
-      return false;
-    }
-    robot_shoulder_heigth_ = sqrt(pow(tf_robot_torso_r_shoulder_.getOrigin()[
-    tf_robot_torso_r_shoulder_.getOrigin().absolute().maxAxis()], 2));
-    robot_shoulder_width_ = sqrt(pow(tf_robot_r_shoulder_l_shoulder_.getOrigin()[
-                                 tf_robot_r_shoulder_l_shoulder_.getOrigin().absolute().maxAxis()], 2));
-    robot_upper_arm_length_ = sqrt(tf_robot_r_shoulder_r_elbow_.getOrigin().length2());
-    robot_lower_arm_length_ = sqrt(tf_robot_r_elbow_r_hand_.getOrigin().length2());
-    robot_arm_length_ = robot_upper_arm_length_ + robot_lower_arm_length_;
-    ROS_DEBUG_STREAM_THROTTLE(1.0, "robot_shoulder_heigth = " << robot_shoulder_heigth_
-                                   << ", robot_shoulder_width = " << robot_shoulder_width_
-                                   << ", robot_arm_length = " << robot_arm_length_);
-    tf_r_shoulder_scaled_.setOrigin(tf_robot_torso_r_shoulder_.getOrigin());
-    tf_l_shoulder_scaled_.setOrigin(tf_robot_torso_l_shoulder_.getOrigin());
-  //  tf_broadcaster_.sendTransform(tf::StampedTransform(tf_r_shoulder_scaled_, ros::Time::now(),"/ref_frame", "/r_robot_shoulder"));
+    tf_r_shoulder_scaled_.setOrigin(tf_target_torso_r_shoulder_.getOrigin());
+    tf_l_shoulder_scaled_.setOrigin(tf_target_torso_l_shoulder_.getOrigin());
+  //  tf_broadcaster_.sendTransform(tf::StampedTransform(tf_r_shoulder_scaled_, ros::Time::now(),"/ref_frame", "/r_target_shoulder"));
     internal_tf_->setTransform(tf::StampedTransform(tf_r_shoulder_scaled_, tf_input_stamp_,
-                                                    general_params_.target_ref_name, "/r_robot_shoulder"));
-  // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_l_shoulder_scaled_, ros::Time::now(),"/ref_frame", "/l_robot_shoulder"));
+                                                    hands_adaption_params_.target_ref_name, "/r_target_shoulder"));
+  // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_l_shoulder_scaled_, ros::Time::now(),"/ref_frame", "/l_target_shoulder"));
     internal_tf_->setTransform(tf::StampedTransform(tf_l_shoulder_scaled_, tf_input_stamp_,
-                                                    general_params_.target_ref_name, "/l_robot_shoulder"));
+                                                    hands_adaption_params_.target_ref_name, "/l_target_shoulder"));
     /*
-    tf_r_shoulder_scaled_.setOrigin(tf::Vector3(robot_shoulder_width_*0;.5, robot_shoulder_heigth_,
-    robot_shoulder_x_offset_));
-    tf_l_shoulder_scaled_.setOrigin(tf::Vector3(-robot_shoulder_width_*0.5, robot_shoulder_heigth_,
-    robot_shoulder_x_offset_));
+    tf_r_shoulder_scaled_.setOrigin(tf::Vector3(target_shoulder_width_*0;.5, target_shoulder_height_,
+    target_shoulder_x_offset_));
+    tf_l_shoulder_scaled_.setOrigin(tf::Vector3(-target_shoulder_width_*0.5, target_shoulder_height_,
+    target_shoulder_x_offset_));
     tf_broadcaster_.sendTransform(tf::StampedTransform(tf_r_shoulder_scaled_, ros::Time::now(),
     "/ref_frame", "/r_shoulder_scaled"));
     tf_broadcaster_.sendTransform(tf::StampedTransform(tf_l_shoulder_scaled_, ros::Time::now(),
     "/ref_frame", "/l_shoulder_scaled"));
     */
 
-    // orientations
     try
     {
-      //tf_listener_->waitForTransform("/r_robot_shoulder", "/r_elbow_scaled", ros::Time(0), ros::Duration(wait_for_tf_));
-      internal_tf_->lookupTransform("/r_robot_shoulder", "/r_elbow_scaled", ros::Time(0), tf_r_shoulder_elbow_);
-      //tf_listener_->waitForTransform("/r_robot_shoulder", "/r_hand_scaled", ros::Time(0), ros::Duration(wait_for_tf_));
-      internal_tf_->lookupTransform("/r_robot_shoulder", "/r_hand_scaled", ros::Time(0), tf_r_shoulder_hand_);
-      //tf_listener_->waitForTransform("/l_robot_shoulder", "/l_elbow_scaled", ros::Time(0), ros::Duration(wait_for_tf_));
-      internal_tf_->lookupTransform("/l_robot_shoulder", "/l_elbow_scaled", ros::Time(0), tf_l_shoulder_elbow_);
-      //tf_listener_->waitForTransform("/l_robot_shoulder", "/l_hand_scaled", ros::Time(0), ros::Duration(wait_for_tf_));
-      internal_tf_->lookupTransform("/l_robot_shoulder", "/l_hand_scaled", ros::Time(0), tf_l_shoulder_hand_);
+      //tf_listener_->waitForTransform("/r_target_shoulder", "/r_elbow_scaled", ros::Time(0), ros::Duration(wait_for_tf_));
+      internal_tf_->lookupTransform("/r_target_shoulder", "/r_elbow_scaled", ros::Time(0), tf_r_shoulder_elbow_);
+      //tf_listener_->waitForTransform("/r_target_shoulder", "/r_hand_scaled", ros::Time(0), ros::Duration(wait_for_tf_));
+      internal_tf_->lookupTransform("/r_target_shoulder", "/r_hand_scaled", ros::Time(0), tf_r_shoulder_hand_);
+      //tf_listener_->waitForTransform("/l_target_shoulder", "/l_elbow_scaled", ros::Time(0), ros::Duration(wait_for_tf_));
+      internal_tf_->lookupTransform("/l_target_shoulder", "/l_elbow_scaled", ros::Time(0), tf_l_shoulder_elbow_);
+      //tf_listener_->waitForTransform("/l_target_shoulder", "/l_hand_scaled", ros::Time(0), ros::Duration(wait_for_tf_));
+      internal_tf_->lookupTransform("/l_target_shoulder", "/l_hand_scaled", ros::Time(0), tf_l_shoulder_hand_);
     }
     catch (tf::TransformException const &ex)
     {
@@ -365,8 +389,8 @@ private:
                               vec_shoulder_hand_.y(), vec_helper_.y(), vec_normal_.y(),
                               vec_shoulder_hand_.z(), vec_helper_.z(), vec_normal_.z());
     tf_r_shoulder_goal_.setBasis(mat_orientation_);
-   // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_r_shoulder_goal_, ros::Time::now(), "/r_robot_shoulder", "/r_shoulder_adapted"));
-    internal_tf_->setTransform(tf::StampedTransform(tf_r_shoulder_goal_, tf_input_stamp_, "/r_robot_shoulder", "/r_shoulder_adapted"));
+   // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_r_shoulder_goal_, ros::Time::now(), "/r_target_shoulder", "/r_shoulder_adapted"));
+    internal_tf_->setTransform(tf::StampedTransform(tf_r_shoulder_goal_, tf_input_stamp_, "/r_target_shoulder", "/r_shoulder_adapted"));
 
     // left shoulder
     vec_shoulder_elbow_ = tf_l_shoulder_elbow_.getOrigin();
@@ -392,8 +416,8 @@ private:
                               vec_shoulder_hand_.y(), vec_helper_.y(), vec_normal_.y(),
                               vec_shoulder_hand_.z(), vec_helper_.z(), vec_normal_.z());
     tf_l_shoulder_goal_.setBasis(mat_orientation_);
-  //  tf_broadcaster_.sendTransform(tf::StampedTransform(tf_l_shoulder_goal_, ros::Time::now(), "/l_robot_shoulder", "/l_shoulder_adapted"));
-    internal_tf_->setTransform(tf::StampedTransform(tf_l_shoulder_goal_, tf_input_stamp_, "/l_robot_shoulder", "/l_shoulder_adapted"));
+  //  tf_broadcaster_.sendTransform(tf::StampedTransform(tf_l_shoulder_goal_, ros::Time::now(), "/l_target_shoulder", "/l_shoulder_adapted"));
+    internal_tf_->setTransform(tf::StampedTransform(tf_l_shoulder_goal_, tf_input_stamp_, "/l_target_shoulder", "/l_shoulder_adapted"));
 
     return true;
   }
@@ -402,108 +426,7 @@ private:
    *
    * @return
    */
-  bool adaptElbows()
-  {
-    // positions
-    limb_length_ = tf_r_shoulder_hand_.getOrigin().length();
-    if (limb_length_ >= robot_arm_length_|| r_elbow_extended_)
-    {
-      elbow_x_ = robot_upper_arm_length_;
-      elbow_y_ = 0.0;
-    }
-    else if (limb_length_ < 1e-6)
-    {
-      elbow_x_ = 0.0;
-      elbow_y_ = robot_upper_arm_length_;
-    }
-    else
-    {
-      elbow_x_ = (pow(limb_length_, 2) - pow(robot_lower_arm_length_, 2) + pow(robot_upper_arm_length_, 2)) /
-      ( 2 * limb_length_);
-      elbow_y_ = sqrt(pow(robot_upper_arm_length_, 2) - pow(elbow_x_, 2));
-    }
-    tf_r_elbow_pos_.setOrigin(tf::Vector3(elbow_x_, elbow_y_, 0.0));
-    //tf_broadcaster_.sendTransform(tf::StampedTransform(tf_r_elbow_pos_, ros::Time::now(), "/r_shoulder_adapted", "/r_elbow_pos"));
-    internal_tf_->setTransform(tf::StampedTransform(tf_r_elbow_pos_, tf_input_stamp_, "/r_shoulder_adapted", "/r_elbow_pos"));
-
-    limb_length_ = tf_l_shoulder_hand_.getOrigin().length();
-    if (limb_length_ >= robot_arm_length_ || l_elbow_extended_)
-    {
-      elbow_x_ = robot_upper_arm_length_;
-      elbow_y_ = 0.0;
-    }
-    else if (limb_length_ < 1e-6)
-    {
-      elbow_x_ = 0.0;
-      elbow_y_ = robot_upper_arm_length_;
-    }
-    else
-    {
-      elbow_x_ = (pow(limb_length_, 2) - pow(robot_lower_arm_length_, 2) + pow(robot_upper_arm_length_, 2)) /
-      ( 2 * limb_length_);
-      elbow_y_ = sqrt(pow(robot_upper_arm_length_, 2) - pow(elbow_x_, 2));
-    }
-    tf_l_elbow_pos_.setOrigin(tf::Vector3(elbow_x_, elbow_y_, 0.0));
-  //  tf_broadcaster_.sendTransform(tf::StampedTransform(tf_l_elbow_pos_, ros::Time::now(), "/l_shoulder_adapted", "/l_elbow_pos"));
-    internal_tf_->setTransform(tf::StampedTransform(tf_l_elbow_pos_, tf_input_stamp_, "/l_shoulder_adapted", "/l_elbow_pos"));
-
-    // orientations
-    try
-    {
-     // tf_listener_->waitForTransform("/r_elbow_pos", "/r_hand_scaled", ros::Time(0), ros::Duration(wait_for_tf_));
-      internal_tf_->lookupTransform("/r_elbow_pos", "/r_hand_scaled", ros::Time(0), tf_r_elbow_hand_);
-     // tf_listener_->waitForTransform("/l_elbow_pos", "/l_hand_scaled", ros::Time(0), ros::Duration(wait_for_tf_));
-      internal_tf_->lookupTransform("/l_elbow_pos", "/l_hand_scaled", ros::Time(0), tf_l_elbow_hand_);
-    }
-    catch (tf::TransformException ex)
-    {
-      ROS_DEBUG("%s",ex.what());
-      ROS_WARN("(Step 3.5) Couldn't get one or more transformations from the elbow to the hands.");
-      ROS_WARN("No further processing will be done!");
-      return false;
-    }
-
-    // this is already done further up
-//    if(l_elbow_extended_ == true)
-//    {
-//      tf_l_elbow_hand_.setOrigin(tf::Vector3(robot_lower_arm_length_, 0.0, 0.0));
-//    }
-    vec_elbow_hand_ = tf_r_elbow_hand_.getOrigin();
-    vec_normal_ = tf::Vector3(0.0, 0.0, 1.0);
-    vec_helper_ = vec_normal_.cross(vec_elbow_hand_);
-    vec_elbow_hand_.normalize();
-    vec_normal_.normalize();
-    vec_helper_.normalize();
-    mat_orientation_.setValue(vec_elbow_hand_.x(), vec_helper_.x(), vec_normal_.x(),
-                              vec_elbow_hand_.y(), vec_helper_.y(), vec_normal_.y(),
-                              vec_elbow_hand_.z(), vec_helper_.z(), vec_normal_.z());
-    tf_r_elbow_goal_.setOrigin(tf_r_elbow_pos_.getOrigin());
-    tf_r_elbow_goal_.setBasis(mat_orientation_);
-
-   // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_r_elbow_goal_, ros::Time::now(), "/r_shoulder_adapted", "/r_elbow_adapted"));
-    internal_tf_->setTransform(tf::StampedTransform(tf_r_elbow_goal_, tf_input_stamp_, "/r_shoulder_adapted", "/r_elbow_adapted"));
-    vec_elbow_hand_ = tf_l_elbow_hand_.getOrigin();
-    vec_normal_ = tf::Vector3(0.0, 0.0, 1.0);
-    vec_helper_ = vec_normal_.cross(vec_elbow_hand_);
-    vec_elbow_hand_.normalize();
-    vec_normal_.normalize();
-    vec_helper_.normalize();
-    mat_orientation_.setValue(vec_elbow_hand_.x(), vec_helper_.x(), vec_normal_.x(),
-                              vec_elbow_hand_.y(), vec_helper_.y(), vec_normal_.y(),
-                              vec_elbow_hand_.z(), vec_helper_.z(), vec_normal_.z());
-    tf_l_elbow_goal_.setOrigin(tf_l_elbow_pos_.getOrigin());
-    tf_l_elbow_goal_.setBasis(mat_orientation_);
-   // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_l_elbow_goal_, ros::Time::now(), "/l_shoulder_adapted", "/l_elbow_adapted"));
-    internal_tf_->setTransform(tf::StampedTransform(tf_l_elbow_goal_, tf_input_stamp_, "/l_shoulder_adapted", "/l_elbow_adapted"));
-
-    return true;
-  }
-
-  /**
-   *
-   * @return
-   */
-  bool adaptHands()
+  bool adaptHandOrientations()
   {
     try
     {
@@ -520,11 +443,11 @@ private:
       return false;
     }
     tf_r_hand_adjusted_.setIdentity();
-    tf_r_hand_adjusted_.setOrigin(tf::Vector3(robot_lower_arm_length_, 0.0, 0.0));
+    tf_r_hand_adjusted_.setOrigin(tf::Vector3(target_lower_arm_length_, 0.0, 0.0));
    // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_r_hand_adjusted_, ros::Time::now(), "/r_elbow_adapted", "/r_hand_adapted"));
     internal_tf_->setTransform(tf::StampedTransform(tf_r_hand_adjusted_, tf_input_stamp_, "/r_elbow_adapted", "/r_hand_adapted"));
     tf_l_hand_goal_.setIdentity();
-    tf_l_hand_goal_.setOrigin(tf::Vector3(robot_lower_arm_length_, 0.0, 0.0));
+    tf_l_hand_goal_.setOrigin(tf::Vector3(target_lower_arm_length_, 0.0, 0.0));
    // tf_broadcaster_.sendTransform(tf::StampedTransform(tf_l_hand_goal_, ros::Time::now(), "/l_elbow_adapted", "/l_hand_adapted"));
     internal_tf_->setTransform(tf::StampedTransform(tf_l_hand_goal_, tf_input_stamp_, "/l_elbow_adapted", "/l_hand_adapted"));
 
@@ -536,45 +459,9 @@ private:
    */
   void convertTfToPoseMsg(std::vector<geometry_msgs::PoseStamped>& adapted_transforms)
   {
-//    // Torso
-//    pose_adapted_.header.stamp = ros::Time::now();
-//    pose_adapted_.header.frame_id = hands_adaption_params_.goal_torso_name;
-//    pose_adapted_.pose.position.x = tf_torso_goal_.getOrigin().x();
-//    pose_adapted_.pose.position.y = tf_torso_goal_.getOrigin().y();
-//    pose_adapted_.pose.position.z = tf_torso_goal_.getOrigin().z();
-//    pose_adapted_.pose.orientation.x = tf_torso_goal_.getRotation().x();
-//    pose_adapted_.pose.orientation.y = tf_torso_goal_.getRotation().y();
-//    pose_adapted_.pose.orientation.z = tf_torso_goal_.getRotation().z();
-//    pose_adapted_.pose.orientation.w = tf_torso_goal_.getRotation().w();
-//    adapted_transforms.push_back(pose_adapted_);
-//
-//    // Right shoulder
-//    pose_adapted_.header.stamp = ros::Time::now();
-//    pose_adapted_.header.frame_id = hands_adaption_params_.goal_r_shoulder_name;
-//    pose_adapted_.pose.position.x = tf_r_hand_goal_.getOrigin().x();
-//    pose_adapted_.pose.position.y = tf_r_hand_goal_.getOrigin().y();
-//    pose_adapted_.pose.position.z = tf_r_hand_goal_.getOrigin().z();
-//    pose_adapted_.pose.orientation.x = tf_r_hand_goal_.getRotation().x();
-//    pose_adapted_.pose.orientation.y = tf_r_hand_goal_.getRotation().y();
-//    pose_adapted_.pose.orientation.z = tf_r_hand_goal_.getRotation().z();
-//    pose_adapted_.pose.orientation.w = tf_r_hand_goal_.getRotation().w();
-//    adapted_transforms.push_back(pose_adapted_);
-//
-//    // Right elbow
-//    pose_.header.stamp = ros::Time::now();
-//    pose_adapted_.header.frame_id = hands_adaption_params_.goal_r_elbow_name;
-//    pose_adapted_.pose.position.x = tf_r_elbow_goal_.getOrigin().x();
-//    pose_adapted_.pose.position.y = tf_r_elbow_goal_.getOrigin().y();
-//    pose_adapted_.pose.position.z = tf_r_elbow_goal_.getOrigin().z();
-//    pose_adapted_.pose.orientation.x = tf_r_elbow_goal_.getRotation().x();
-//    pose_adapted_.pose.orientation.y = tf_r_elbow_goal_.getRotation().y();
-//    pose_adapted_.pose.orientation.z = tf_r_elbow_goal_.getRotation().z();
-//    pose_adapted_.pose.orientation.w = tf_r_elbow_goal_.getRotation().w();
-//    adapted_transforms.push_back(pose_adapted_);
-//
     // Right hand
     pose_adapted_.header.stamp = ros::Time::now();
-    pose_adapted_.header.frame_id = hands_adaption_params_.goal_r_hand_name;
+    pose_adapted_.header.frame_id = hands_adaption_params_.target_ref_name;
     pose_adapted_.pose.position.x = tf_r_hand_goal_.getOrigin().x();
     pose_adapted_.pose.position.y = tf_r_hand_goal_.getOrigin().y();
     pose_adapted_.pose.position.z = tf_r_hand_goal_.getOrigin().z();
@@ -583,34 +470,10 @@ private:
     pose_adapted_.pose.orientation.z = tf_r_hand_goal_.getRotation().z();
     pose_adapted_.pose.orientation.w = tf_r_hand_goal_.getRotation().w();
     adapted_transforms.push_back(pose_adapted_);
-//
-//    // Left shoulder
-//    pose_adapted_.header.stamp = ros::Time::now();
-//    pose_adapted_.header.frame_id = hands_adaption_params_.goal_r_hand_name;
-//    pose_adapted_.pose.position.x = tf_r_hand_goal_.getOrigin().x();
-//    pose_adapted_.pose.position.y = tf_r_hand_goal_.getOrigin().y();
-//    pose_adapted_.pose.position.z = tf_r_hand_goal_.getOrigin().z();
-//    pose_adapted_.pose.orientation.x = tf_r_hand_goal_.getRotation().x();
-//    pose_adapted_.pose.orientation.y = tf_r_hand_goal_.getRotation().y();
-//    pose_adapted_.pose.orientation.z = tf_r_hand_goal_.getRotation().z();
-//    pose_adapted_.pose.orientation.w = tf_r_hand_goal_.getRotation().w();
-//    adapted_transforms.push_back(pose_adapted_);
-//
-//    // Left elbow
-//    pose_adapted_.header.stamp = ros::Time::now();
-//    pose_adapted_.header.frame_id = hands_adaption_params_.goal_l_elbow_name;
-//    pose_adapted_.pose.position.x = tf_l_elbow_goal_.getOrigin().x();
-//    pose_adapted_.pose.position.y = tf_l_elbow_goal_.getOrigin().y();
-//    pose_adapted_.pose.position.z = tf_l_elbow_goal_.getOrigin().z();
-//    pose_adapted_.pose.orientation.x = tf_l_elbow_goal_.getRotation().x();
-//    pose_adapted_.pose.orientation.y = tf_l_elbow_goal_.getRotation().y();
-//    pose_adapted_.pose.orientation.z = tf_l_elbow_goal_.getRotation().z();
-//    pose_adapted_.pose.orientation.w = tf_l_elbow_goal_.getRotation().w();
-//    adapted_transforms.push_back(pose_adapted_);
 
     // Left hand
     pose_adapted_.header.stamp = ros::Time::now();
-    pose_adapted_.header.frame_id = hands_adaption_params_.goal_l_hand_name;
+    pose_adapted_.header.frame_id = hands_adaption_params_.target_ref_name;
     pose_adapted_.pose.position.x = tf_l_hand_goal_.getOrigin().x();
     pose_adapted_.pose.position.y = tf_l_hand_goal_.getOrigin().y();
     pose_adapted_.pose.position.z = tf_l_hand_goal_.getOrigin().z();

@@ -20,6 +20,7 @@
 
 #include<string>
 #include<vector>
+#include<iostream>
 
 namespace motion_adaption
 {
@@ -31,8 +32,42 @@ struct OrientationAdjustments
   double yaw;
 };
 
-struct GeneralParameters
+struct TransRotAdaptionParameters;
+struct HandsAdaptionParameters;
+
+/**
+ * TODO: I'm not proud nor happy of the current style of parameter handling. Let's replace it with something
+ *        smarter in the future.
+ *        In the meanwhile try to replace normal pointers with boost::shared_ptr - maybe not needed, check the current
+ *        use of references and pointers
+ */
+struct AdaptionParameters
 {
+  AdaptionParameters(){};
+  AdaptionParameters(const AdaptionParameters& adapt_params) :
+    adaption_name(adapt_params.adaption_name),
+    adaption_type(adapt_params.adaption_type),
+    input_ref_name(adapt_params.input_ref_name),
+    input_pos_ref_name(adapt_params.input_pos_ref_name),
+    input_ref_orient_adjust(adapt_params.input_ref_orient_adjust),
+    target_ref_name(adapt_params.target_ref_name),
+    wait_for_tf(adapt_params.wait_for_tf)
+  {};
+
+  virtual ~AdaptionParameters()
+  {
+    std::cout << "AdaptionParameters deleted." << std::endl;
+  };
+
+  virtual TransRotAdaptionParameters* getAsTransRotAdaptionParams()
+  {
+    return 0;
+  }
+  virtual HandsAdaptionParameters* getAsHandsAdaptionParams()
+  {
+    return 0;
+  }
+
   std::string adaption_name;
   enum AdaptionTypes
   {
@@ -49,16 +84,42 @@ struct GeneralParameters
   double wait_for_tf;
 };
 
-struct TransRotParameters
+struct TransRotAdaptionParameters : public AdaptionParameters
 {
+  TransRotAdaptionParameters(){};
+  TransRotAdaptionParameters(AdaptionParameters adapt_params) : AdaptionParameters(adapt_params){};
+
+  ~TransRotAdaptionParameters()
+  {
+    std::cout << "TransRotAdaptionParameters deleted." << std::endl;
+  };
+
+  virtual TransRotAdaptionParameters* getAsTransRotAdaptionParams()
+  {
+    return static_cast<TransRotAdaptionParameters*>(this);
+  }
+
   std::string input_endpt_name;
   std::string target_endpt_name;
   std::string goal_endpt_name;
   OrientationAdjustments goal_orient_adjust;
 };
 
-struct HandsParameters
+struct HandsAdaptionParameters : public AdaptionParameters
 {
+  HandsAdaptionParameters(){};
+  HandsAdaptionParameters(AdaptionParameters adapt_params) : AdaptionParameters(adapt_params){};
+
+  ~HandsAdaptionParameters()
+  {
+    std::cout << "HandsAdaptionParameters deleted." << std::endl;
+  };
+
+  virtual HandsAdaptionParameters* getAsHandsAdaptionParams()
+  {
+    return static_cast<HandsAdaptionParameters*>(this);
+  }
+
   std::string input_torso_name;
   std::string input_r_shoulder_name;
   std::string input_r_elbow_name;
@@ -77,53 +138,6 @@ struct HandsParameters
   OrientationAdjustments goal_r_hand_orient_adjust;
   std::string goal_l_hand_name;
   OrientationAdjustments goal_l_hand_orient_adjust;
-};
-
-class AdaptionParameters
-{
-public:
-  AdaptionParameters(const GeneralParameters& general_params) : general_params_(general_params){};
-  ~AdaptionParameters(){};
-  const GeneralParameters& getGeneralParameters() const
-  {
-    return general_params_;
-  }
-private:
-  GeneralParameters general_params_;
-};
-
-class TransRotAdaptionParameters : public AdaptionParameters
-{
-public:
-  TransRotAdaptionParameters(const GeneralParameters& general_params,
-                                const TransRotParameters& trans_rot_params) :
-                                AdaptionParameters(general_params),
-                                trans_rot_params_(trans_rot_params)
-  {};
-  ~TransRotAdaptionParameters(){};
-  const TransRotParameters& getAdaptionSpecificParameters() const
-  {
-    return trans_rot_params_;
-  }
-private:
-  TransRotParameters trans_rot_params_;
-};
-
-class HandsAdaptionParameters : public AdaptionParameters
-{
-public:
-  HandsAdaptionParameters(const GeneralParameters& general_params,
-                             const HandsParameters& hands_params) :
-                             AdaptionParameters(general_params),
-                             hands_params_(hands_params)
-  {};
-  const HandsParameters& getAdaptionSpecificParameters() const
-  {
-    return hands_params_;
-  }
-  ~HandsAdaptionParameters(){};
-private:
-  HandsParameters hands_params_;
 };
 
 } // namespace motion_adaption

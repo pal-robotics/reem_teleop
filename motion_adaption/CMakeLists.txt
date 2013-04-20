@@ -26,11 +26,11 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 #                            src/set_goals.cpp
 #                            src/publish_msgs.cpp)
 add_library(motion_adaption src/motion_adaption.cpp)
-#add_executable(motion_adaption_node src/motion_adaption_node.cpp)
-#add_executable(motion_adaption src/motion_adaption.cpp)
-#target_link_libraries(motion_adaption_node motion_adaption)
-#target_link_libraries(motion_adaption_node ${catkin_LIBRARIES})
 target_link_libraries(motion_adaption ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_executable(test_motion_adaption src/test.cpp)
+target_link_libraries(test_motion_adaption motion_adaption)
+
 
 install(TARGETS motion_adaption
         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

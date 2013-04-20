@@ -44,23 +44,16 @@ public:
    * @param adaption_parameters
    * @param tf_listener
    */
-//  AdaptionType(const GeneralParameters& general_params,
-//                 boost::shared_ptr<tf::TransformListener> tf_listener,
-//                 boost::shared_ptr<tf::TransformBroadcaster> tf_broadcaster,
-//                 boost::shared_ptr<tf::Transformer> internal_tf) :
-//                 general_params_(general_params),
-//                 tf_listener_(tf_listener),
-//                 tf_broadcaster_(tf_broadcaster),
-//                 internal_tf_(internal_tf)
-  AdaptionType(const GeneralParameters& general_params,
+  AdaptionType(const AdaptionParameters& adaption_params,
                  boost::shared_ptr<tf::TransformListener> tf_listener,
                  boost::shared_ptr<tf::TransformBroadcaster> tf_broadcaster,
-                 boost::shared_ptr<tf::Transformer> internal_tf)
+                 boost::shared_ptr<tf::Transformer> internal_tf) :
+                 adaption_params_(adaption_params),
+                 tf_listener_(tf_listener),
+                 tf_broadcaster_(tf_broadcaster),
+                 internal_tf_(internal_tf)
   {
-    general_params_ = general_params;
-    tf_listener_ = tf_listener;
-    tf_broadcaster_ = tf_broadcaster;
-    internal_tf_ = internal_tf;
+    std::cout << "AdaptionType constructor: adaption name: " << adaption_params_.adaption_name << std::endl;
   };
   /**
    * Cleans up
@@ -78,7 +71,7 @@ public:
    */
   const std::string& getAdaptionName() const
   {
-    return general_params_.adaption_name;
+    return adaption_params_.adaption_name;
   };
 
 protected:
@@ -92,15 +85,15 @@ protected:
   {
     try
     {
-      tf_listener_->lookupTransform(general_params_.target_ref_name,
-                                    general_params_.input_pos_ref_name,
+      tf_listener_->lookupTransform(adaption_params_.target_ref_name,
+                                    adaption_params_.input_pos_ref_name,
                                     ros::Time(0),
                                     tf_input_);
     }
     catch (tf::TransformException const &ex)
     {
-      ROS_WARN_STREAM("Coulnd't get transform from '" << general_params_.target_ref_name
-                      << "' to '" << general_params_.input_pos_ref_name
+      ROS_WARN_STREAM("Coulnd't get transform from '" << adaption_params_.target_ref_name
+                      << "' to '" << adaption_params_.input_pos_ref_name
                       << "'! Skipping motion adaption.");
       ROS_DEBUG_STREAM(ex.what());
       return false;
@@ -110,20 +103,20 @@ protected:
     // But adjust the orientation to align with the target system - has to be done manually.
     // TODO: should be possible to determine automatically!
     quat_ = tf::createIdentityQuaternion ();
-    quat_adapt_.setRPY(general_params_.input_ref_orient_adjust.roll,
-                       general_params_.input_ref_orient_adjust.pitch,
-                       general_params_.input_ref_orient_adjust.yaw);
+    quat_adapt_.setRPY(adaption_params_.input_ref_orient_adjust.roll,
+                       adaption_params_.input_ref_orient_adjust.pitch,
+                       adaption_params_.input_ref_orient_adjust.yaw);
     tf_adapted_.setRotation(quat_ * quat_adapt_);
     tf_broadcaster_->sendTransform(tf::StampedTransform(tf_adapted_,
                                                         ros::Time::now(),
-                                                        general_params_.target_ref_name,
-                                                        general_params_.input_ref_name));
+                                                        adaption_params_.target_ref_name,
+                                                        adaption_params_.input_ref_name));
     return true;
   }
-  /**
-   * Adaption parameters
-   */
-  GeneralParameters general_params_;
+//  /**
+//   * Adaption parameters
+//   */
+  AdaptionParameters adaption_params_;
   /**
    * Transform listener for retrieving all necessary transformations
    */
