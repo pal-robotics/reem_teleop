@@ -40,15 +40,17 @@
 namespace motion_retargeting
 {
 
-MotionRetargeting::MotionRetargeting(const MotionRetargetingConfiguration& retargeting_config,
-                                          const ros::NodeHandle& nh) :
+MotionRetargeting::MotionRetargeting(const ros::NodeHandle& nh,
+                                          const GeneralParameters& general_params,
+                                          const std::vector<motion_adaption::AdaptionParameters*>& motion_adaption_params,
+                                          const tree_kinematics::KinematicsParameters& kinematics_params) :
                                           nh_(nh)
 {
   motion_adaption_ = motion_adaption::MotionAdaptionPtr(
-                     new motion_adaption::MotionAdaption(retargeting_config.getMotionAdaptionParameters()));
+                     new motion_adaption::MotionAdaption(motion_adaption_params));
   tree_kinematics_ = tree_kinematics::TreeKinematicsPtr(
-                     new tree_kinematics::TreeKinematics(retargeting_config.getIKParameters(), nh_));
-  tree_ik_request_.endpt_names = retargeting_config.getIKParameters().endpt_names;
+                     new tree_kinematics::TreeKinematics(kinematics_params, nh_));
+  tree_ik_request_.endpt_names = kinematics_params.endpt_names;
   joint_states_subscriber_ = nh_.subscribe("joint_states", 10, &MotionRetargeting::jointStatesCallback, this);
   output_handler_ = OutputHandlerPtr(new FollowJointTrajectoryActionHandler());
 }

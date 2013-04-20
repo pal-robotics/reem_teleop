@@ -23,11 +23,23 @@
 #include <tree_kinematics/tree_kinematics.h>
 #include <tree_kinematics/GetTreePositionIK.h>
 
-#include "motion_retargeting_configuration.h"
+//#include "motion_retargeting_configuration.h"
 #include "output_handler.h"
 
 namespace motion_retargeting
 {
+
+/**
+ * General motion retargeting parameters
+ */
+struct GeneralParameters
+{
+  std::string retargeting_name;
+  double retargeting_freq;
+//  std::string robot_model_name; not used I think
+//  bool check_self_collision; not yet implemented
+//  bool check_joint_limits; not yet implemented
+};
 
 class MotionRetargeting
 {
@@ -35,8 +47,10 @@ public:
   /**
    * Initialies motion retargeting by configures motion adaption and tree kinematics
    */
-  MotionRetargeting(const MotionRetargetingConfiguration& retargeting_config,
-                      const ros::NodeHandle& nh);
+  MotionRetargeting(const ros::NodeHandle& nh,
+                      const GeneralParameters& general_params,
+                      const std::vector<motion_adaption::AdaptionParameters*>& motion_adaption_params,
+                      const tree_kinematics::KinematicsParameters& kinematics_params);
   /**
    * Throws out the trash
    */
