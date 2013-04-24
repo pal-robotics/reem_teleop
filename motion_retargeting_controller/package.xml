@@ -14,20 +14,24 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <build_depend>actionlib</build_depend>
+  <build_depend></build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>tf</build_depend>
-  <build_depend>actionlib</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>sensor_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
   <build_depend>trajectory_msgs</build_depend>
   <build_depend>motion_adaption</build_depend>
   <build_depend>tree_kinematics</build_depend>
-  
+
+  <run_depend>actionlib</run_depend>
+  <run_depend>rosbag</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>tf</run_depend>
-  <run_depend>actionlib</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>sensor_msgs</run_depend>
+  <run_depend>std_msgs</run_depend>
   <run_depend>trajectory_msgs</run_depend>
   <run_depend>motion_adaption</run_depend>
   <run_depend>tree_kinematics</run_depend>

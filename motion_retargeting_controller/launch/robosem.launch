@@ -7,6 +7,6 @@
     <rosparam command="load" file="$(find motion_retargeting_controller)/config/robosem_upper_body_retargeting_config.yaml" />
     <!-- topic remappings -->
     <remap from="joint_states" to="/robosem/joint_states" />
-    <remap from="follow_joint_trajectory_action_server" to="/robosem/upper_body_controller" />
+    <remap from="action_server_name" to="/robosem/upper_body_controller" />
   </node>
 </launch>

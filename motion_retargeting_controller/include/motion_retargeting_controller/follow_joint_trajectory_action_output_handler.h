@@ -34,7 +34,10 @@ namespace motion_retargeting
 class FollowJointTrajectoryActionHandler : public OutputHandler
 {
 public:
-  FollowJointTrajectoryActionHandler() : OutputHandler() {};
+  FollowJointTrajectoryActionHandler(const std::string& action_server_name = std::string("action_server_name")) :
+                                         OutputHandler(),
+                                         action_server_name_(action_server_name)
+  {};
 
   ~FollowJointTrajectoryActionHandler(){};
 
@@ -43,7 +46,7 @@ public:
     if (!action_client_)
     {
       action_client_.reset(new actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>(
-          "follow_joint_trajectory_action_server", true));
+          action_server_name_, true));
     }
     action_goal_.trajectory.points.clear();
     action_goal_.trajectory.joint_names.clear();
@@ -63,11 +66,13 @@ public:
     action_goal_.trajectory.points.push_back(trajectory_point_);
     action_goal_.trajectory.header.stamp = output_joint_states.header.stamp;
     action_client_->sendGoal(action_goal_);
+    ROS_DEBUG_STREAM("FollowJointTrajectoryAction Output Handler: Action goal sent.");
     return true;
   };
 
 private:
   boost::shared_ptr<actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction> > action_client_;
+  std::string action_server_name_;
   control_msgs::FollowJointTrajectoryGoal action_goal_;
   trajectory_msgs::JointTrajectoryPoint trajectory_point_;
 };

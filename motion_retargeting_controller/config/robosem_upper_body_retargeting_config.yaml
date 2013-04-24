@@ -1,6 +1,6 @@
 general_configuration:
   retargeting_name: "robosem_upper_body_retargeting"
-  retargeting_freq: 10.0
+  retargeting_freq: 5.0
 motion_adaption:
   # providing the toatl number of adaptions makes it easier to parse the config file
   nr_of_adaptions: 2
@@ -65,14 +65,14 @@ motion_adaption:
     # goal names and orientation adjustments
     goal_r_hand_name: "hand_right_goal"
     goal_r_hand_orient_adjust:
-      roll: 0.0
+      roll: 1.5707
       pitch: 0.0
-      yaw: 3.1415
+      yaw: 0.0
     goal_l_hand_name: "hand_left_goal"
     goal_l_hand_orient_adjust:
-      roll: 0.0
+      roll: 1.5707
       pitch: 0.0
-      yaw: 3.1415
+      yaw: 0.0
 kinematics:
   # parameter name which holds the URDF robot model description
   robot_model_description_name: "/robosem/robot_description"
@@ -84,8 +84,8 @@ kinematics:
   max_iterations: 100
   # Damping factor for the IK velocity solver
   lambda: 0.01
-  # Frequency of IK calls - used for velocity limiting - smae as retargeting_freq TODO: sync
-  ik_call_frequency: 10
+  # Frequency of IK calls - used for velocity limiting - same as retargeting_freq TODO: sync
+  ik_call_frequency: 5
   # Factor used for determining the maximum joint velocity (is scaled by ik_call_frequency)
   q_dot_max_factor: 8.0
   # Factor used for determining the minimum joint velocity (is scaled by ik_call_frequency)
@@ -100,7 +100,7 @@ kinematics:
   x_dot_rot_min_factor: 3.14
   # Factor used for low pass filtering - applied when all end points are considered resting
   low_pass_factor: 1.0
-  # Matrix for task space weights for the IK velocity solver (6 x #end points)
+  # Defines the matrix for task space weights for the IK velocity solver (6 x #end points)
   task_space_weights: [[0.5, 0.5, 0.5, 0.0, 0.0, 0.0], [0.5, 0.5, 0.5, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.5, 0.5]]
-  # Matrix of joint weights for the IK velocity solver (#joints x #joints)
+  # Defines the matrix of joint weights for the IK velocity solver (#joints)
   joint_space_weights: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]

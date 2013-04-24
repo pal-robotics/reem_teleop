@@ -17,6 +17,7 @@
 #include <tf/transform_datatypes.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <sensor_msgs/JointState.h>
+#include <std_msgs/Empty.h>
 #include <trajectory_msgs/JointTrajectoryPoint.h>
 
 #include <motion_adaption/motion_adaption.h>
@@ -24,6 +25,7 @@
 #include <tree_kinematics/GetTreePositionIK.h>
 
 //#include "motion_retargeting_configuration.h"
+#include "motion_recorder.h"
 #include "output_handler.h"
 
 namespace motion_retargeting
@@ -51,7 +53,7 @@ public:
                       const GeneralParameters& general_params,
                       const std::vector<motion_adaption::AdaptionParameters*>& motion_adaption_params,
                       const tree_kinematics::KinematicsParameters& kinematics_params);
-  /**
+/**
    * Throws out the trash
    */
   ~MotionRetargeting();
@@ -71,6 +73,9 @@ public:
   bool retarget(/*trajectory_msgs::JointTrajectoryPoint& output_joint_states*/);
 
 private:
+  /**
+   * ROS node handle
+   */
   ros::NodeHandle nh_;
   /**
    * Motion adaption for adapting the input motion to the target system (e.g. robot)
@@ -84,10 +89,13 @@ private:
   // Tree IK service
   tree_kinematics::GetTreePositionIK::Request tree_ik_request_;
   tree_kinematics::GetTreePositionIK::Response tree_ik_response_;
-  /*
+  /**
    * Output handler for publishing the goal joint states
    */
   OutputHandlerPtr output_handler_;
+  /**
+   * Goal joint states sent to the output handler
+   */
   sensor_msgs::JointState goal_joint_states_;
   /**
    * Subscriber for retrieving the current joint states, which are used as seed state for the IK calculations
@@ -102,9 +110,25 @@ private:
    */
   bool joint_states_initialised_;
   /**
-   * callback funtion for the joint states subscriber
+   * Callback function for the joint states subscriber
    */
   void jointStatesCallback(const sensor_msgs::JointState::ConstPtr& msg);
+  /**
+   * Pointer to the motion recorder
+   */
+  MotionRecorderPtr motion_recorder_;
+  /**
+   * Subscriber for turning on and off the motion recorder
+   */
+  ros::Subscriber motion_recorder_subscriber_;
+  /**
+   * Callback function for the motion recorder subscriber
+   */
+  void motionRecorderCallback(const std_msgs::Empty::ConstPtr& msg);
+  /**
+   * Flag for indicating if motion recording is in progress
+   */
+  bool record_motion_;
 };
 
 typedef boost::shared_ptr<MotionRetargeting> MotionRetargetingPtr;
