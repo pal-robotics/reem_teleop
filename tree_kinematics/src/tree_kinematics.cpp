@@ -373,7 +373,7 @@ bool TreeKinematics::getPositionIk(tree_kinematics::GetTreePositionIK::Request &
                                        tree_kinematics::GetTreePositionIK::Response &response)
 {
   ik_srv_duration_ = ros::Time::now().toSec();
-  ROS_DEBUG("tree_kinematics: getPositionIK method invoked.");
+  ROS_DEBUG_STREAM("tree kinematics: getPositionIK method invoked.");
   if (request.endpt_names.size() != request.endpt_poses.size())
   {
     ROS_ERROR_STREAM("Number of end point names and poses don't match! (" << request.endpt_names.size()
@@ -410,21 +410,28 @@ bool TreeKinematics::getPositionIk(tree_kinematics::GetTreePositionIK::Request &
   for(unsigned int i = 0; i < request.endpt_names.size(); ++i)
   {
     pose_msg_in = request.endpt_poses[i];
-    try
+    if (pose_msg_in.header.frame_id != tree_root_name_)
     {
-      tf_listener_.waitForTransform(tree_root_name_, pose_msg_in.header.frame_id, pose_msg_in.header.stamp,
-                                      ros::Duration(0.1));
-      tf_listener_.transformPose(tree_root_name_, pose_msg_in, pose_msg_transformed);
+      try
+      {
+        tf_listener_.waitForTransform(tree_root_name_, pose_msg_in.header.frame_id, pose_msg_in.header.stamp,
+                                        ros::Duration(0.1));
+        tf_listener_.transformPose(tree_root_name_, pose_msg_in, pose_msg_transformed);
+      }
+      catch (tf::TransformException const &ex)
+      {
+        ROS_ERROR_STREAM("Could not transform pose from '" << pose_msg_in.header.frame_id << "' to frame '"
+                         << tree_root_name_ <<  "!");
+        ROS_DEBUG_STREAM(ex.what());
+  //      response.error_code.val = response.error_code.FRAME_TRANSFORM_FAILURE;
+        return false;
+      }
+      tf::poseMsgToKDL(pose_msg_transformed.pose, desired_pose);
     }
-    catch (tf::TransformException const &ex)
+    else
     {
-      ROS_ERROR_STREAM("Could not transform pose from '" << pose_msg_in.header.frame_id << "' to frame '"
-                       << tree_root_name_ <<  "!");
-      ROS_DEBUG_STREAM(ex.what());
-//      response.error_code.val = response.error_code.FRAME_TRANSFORM_FAILURE;
-      return false;
+      tf::poseMsgToKDL(pose_msg_in.pose, desired_pose);
     }
-    tf::poseMsgToKDL(pose_msg_transformed.pose, desired_pose);
     desired_poses[request.endpt_names[i]] = desired_pose;
   }
 
@@ -437,6 +444,8 @@ bool TreeKinematics::getPositionIk(tree_kinematics::GetTreePositionIK::Request &
   // insert the solver's result into the service response
   if (ik_ret >= 0 || ik_ret == -3)
   {
+    response.solution.header.stamp = ros::Time::now();
+    response.solution.header.frame_id = tree_root_name_;
     response.solution.name = info_.joint_names;
     response.solution.position.resize(nr_of_jnts_);
     response.solution.velocity.resize(nr_of_jnts_);
@@ -459,7 +468,7 @@ bool TreeKinematics::getPositionIk(tree_kinematics::GetTreePositionIK::Request &
 
     if (ik_ret == -3)
     {
-      ROS_WARN_STREAM("Maximum iterations reached! (error code = " << ik_ret << ")");
+      ROS_DEBUG_STREAM("Maximum iterations reached! (error code = " << ik_ret << ")");
     }
   }
   else
