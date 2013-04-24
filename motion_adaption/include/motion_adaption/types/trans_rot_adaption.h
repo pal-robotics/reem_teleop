@@ -55,10 +55,6 @@ public:
      */
     try
     {
-      tf_listener_->waitForTransform(trans_rot_adapt_params_.input_ref_name,
-                                     trans_rot_adapt_params_.input_endpt_name,
-                                     ros::Time(0),
-                                     ros::Duration(trans_rot_adapt_params_.wait_for_tf));
       tf_listener_->lookupTransform(trans_rot_adapt_params_.input_ref_name,
                                     trans_rot_adapt_params_.input_endpt_name,
                                     ros::Time(0),
@@ -68,7 +64,7 @@ public:
     {
       ROS_WARN_STREAM("Coulnd't get transform from '" << trans_rot_adapt_params_.input_ref_name
                       << "' to '" << trans_rot_adapt_params_.input_endpt_name
-                      << "'! Skipping motion adaption.");
+                      << "'! Skipping trans rot adaption.");
       ROS_DEBUG_STREAM(ex.what());
       return false;
     }
@@ -77,10 +73,6 @@ public:
      */
     try
     {
-      tf_listener_->waitForTransform(trans_rot_adapt_params_.target_ref_name,
-                                     trans_rot_adapt_params_.target_endpt_name,
-                                     ros::Time(0),
-                                     ros::Duration(trans_rot_adapt_params_.wait_for_tf));
       tf_listener_->lookupTransform(trans_rot_adapt_params_.target_ref_name,
                                     trans_rot_adapt_params_.target_endpt_name,
                                     ros::Time(0),
@@ -90,7 +82,7 @@ public:
     {
       ROS_WARN_STREAM("Coulnd't get transform from '" << trans_rot_adapt_params_.target_ref_name
                       << "' to '" << trans_rot_adapt_params_.target_endpt_name
-                      << "'! Skipping motion adaption.");
+                      << "'! Skipping trans rot adaption.");
       ROS_DEBUG_STREAM(ex.what());
       return false;
     }

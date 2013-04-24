@@ -65,7 +65,7 @@ MotionAdaption::MotionAdaption(const std::vector<AdaptionParameters*>& adaption_
         {
           adaptions_.push_back(new_adaption);
           ROS_INFO_STREAM("Motion adaption: Adaption '"
-                          << adaption_parameters[param]->adaption_name << "' of type 'TransRotAdaption' created.");
+                          << adaption_parameters[param]->adaption_name << "' of type 'TransRotAdaption' initialised.");
         }
         else
         {

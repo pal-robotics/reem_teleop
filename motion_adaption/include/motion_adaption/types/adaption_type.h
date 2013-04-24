@@ -99,10 +99,10 @@ protected:
       return false;
     }
     // Use the same position
-    tf_adapted_ = tf_input_;
+    tf_adapted_.setOrigin(tf_input_.getOrigin());
     // But adjust the orientation to align with the target system - has to be done manually.
     // TODO: should be possible to determine automatically!
-    quat_ = tf::createIdentityQuaternion ();
+    quat_ = tf::createIdentityQuaternion();
     quat_adapt_.setRPY(adaption_params_.input_ref_orient_adjust.roll,
                        adaption_params_.input_ref_orient_adjust.pitch,
                        adaption_params_.input_ref_orient_adjust.yaw);
