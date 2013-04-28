@@ -79,21 +79,11 @@ public:
     }
 
     scaleShoulderPositions();
+
     /*
-     * Use the adapted hand positions to determine the shoulder orientation
+     * Align hand orientations with shoulder orientation
+     * TODO: Allow the use of extra orientation information (e.g. from IMU sensors)
      */
-//    if(!adaptShoulderOrientations())
-//    {
-//      return false;
-//    }
-//    /*
-//     * Align hand orientations with shoulder orientation
-//     * TODO: Allow the use of extra orientation information (e.g. from IMU sensors)
-//     */
-//    if(!adaptHandOrientations())
-//    {
-//      return false;
-//    }
     if(!adjustHandOrientations())
     {
       return false;
@@ -168,8 +158,8 @@ private:
       tf_input_stamp_ = std::min(tf_input_stamp_, tf_input_l_elbow_.stamp_);
       // reference to left hand
       tf_listener_->lookupTransform(hands_adaption_params_.input_ref_name,
-                                   hands_adaption_params_.input_l_hand_name,
-                                   ros::Time(0), tf_input_l_hand_);
+                                    hands_adaption_params_.input_l_hand_name,
+                                    ros::Time(0), tf_input_l_hand_);
       tf_input_stamp_ = std::min(tf_input_stamp_, tf_input_l_hand_.stamp_);
       // left shoulder to left elbow
       tf_listener_->lookupTransform(hands_adaption_params_.input_l_shoulder_name,
@@ -273,9 +263,9 @@ private:
 //    ROS_DEBUG_STREAM_THROTTLE(1.0, "input_shoulder_height = " << input_shoulder_height_
 //                                   << ", input_shoulder_width = " << input_shoulder_width_
 //                                   << ", input_arm_length = " << input_arm_length_);
-    ROS_DEBUG_STREAM("input_shoulder_height = " << input_shoulder_height_
-                     << ", input_shoulder_width = " << input_shoulder_width_
-                     << ", input_arm_length = " << input_arm_length_);
+    ROS_DEBUG_STREAM("input_shoulder_height  = " << input_shoulder_height_
+                     << ", input_shoulder_width  = " << input_shoulder_width_
+                     << ", input_arm_length  = " << input_arm_length_);
 
 
     vec_helper_ = (tf_target_r_shoulder_.getOrigin() + tf_target_r_shoulder_.getOrigin()) / 2.0;
@@ -319,40 +309,42 @@ private:
    */
   void scaleHandPositions()
   {
-    ROS_DEBUG_STREAM("right hand - input position: " << tf_input_r_hand_.getOrigin().x()
-                     << ", " << tf_input_r_hand_.getOrigin().y() << ", " << tf_input_r_hand_.getOrigin().z());
+    ROS_DEBUG_STREAM("right hand - input position:      x = " << tf_input_r_hand_.getOrigin().x()
+                     << ", y = " << tf_input_r_hand_.getOrigin().y() << ", z = " << tf_input_r_hand_.getOrigin().z());
 //      x_norm_ = tf_input_r_hand_.getOrigin().x() / (input_arm_length_ + 0.5 * input_shoulder_width_);
 //      y_norm_ = tf_input_r_hand_.getOrigin().y() / (input_arm_length_ + input_shoulder_height_);
 //      z_norm_ = tf_input_r_hand_.getOrigin().z() / input_arm_length_;
     x_norm_ = tf_input_r_hand_.getOrigin().x() / input_arm_length_;
-    y_norm_ = (tf_input_r_hand_.getOrigin().y() - 0.5 * input_shoulder_width_) / input_arm_length_;
+    y_norm_ = (tf_input_r_hand_.getOrigin().y() + 0.5 * input_shoulder_width_) / input_arm_length_;
     z_norm_ = (tf_input_r_hand_.getOrigin().z() - input_shoulder_height_)/ input_arm_length_;
-    ROS_DEBUG_STREAM("right hand - normalised position: " << x_norm_ << ", " << y_norm_ << ", " << z_norm_);
+    ROS_DEBUG_STREAM("right hand - normalised position: x = " << x_norm_ << ", y = " << y_norm_ << ", x = " << z_norm_);
+//      x_adapt_ = x_norm_ * ( target_arm_length_ + 0.5 * target_shoulder_width_);
+//      y_adapt_ = y_norm_ * ( target_arm_length_ + target_shoulder_height_);
+//      z_adapt_ = z_norm_ * target_arm_length_;
+    x_adapt_ = x_norm_ * target_arm_length_;
+    y_adapt_ = (y_norm_ * target_arm_length_) - 0.5 * target_shoulder_width_;
+    z_adapt_ = (z_norm_ * target_arm_length_) + target_shoulder_height_;
+    ROS_DEBUG_STREAM("right hand - adapted position:    x = " << x_adapt_ << ", y = " << y_adapt_
+                     << ", z = " << z_adapt_);
+    tf_r_hand_scaled_.setOrigin(tf::Vector3(x_adapt_, y_adapt_, z_adapt_));
+
+//      x_norm_ = tf_input_r_hand_.getOrigin().x() / (input_arm_length_ + 0.5 * input_shoulder_width_);
+//      y_norm_ = tf_input_r_hand_.getOrigin().y() / (input_arm_length_ + input_shoulder_height_);
+//      z_norm_ = tf_input_r_hand_.getOrigin().z() / input_arm_length_;
+    ROS_DEBUG_STREAM("left hand  - input position:      x = " << tf_input_l_hand_.getOrigin().x()
+                     << ", y = " << tf_input_l_hand_.getOrigin().y() << ", z = " << tf_input_l_hand_.getOrigin().z());
+    x_norm_ = tf_input_l_hand_.getOrigin().x() / input_arm_length_;
+    y_norm_ = (tf_input_l_hand_.getOrigin().y() - 0.5 * input_shoulder_width_) / input_arm_length_;
+    z_norm_ = (tf_input_l_hand_.getOrigin().z() - input_shoulder_height_)/ input_arm_length_;
+    ROS_DEBUG_STREAM("left hand  - normalised position: x = " << x_norm_ << ", y = " << y_norm_ << ", x = " << z_norm_);
 //      x_adapt_ = x_norm_ * ( target_arm_length_ + 0.5 * target_shoulder_width_);
 //      y_adapt_ = y_norm_ * ( target_arm_length_ + target_shoulder_height_);
 //      z_adapt_ = z_norm_ * target_arm_length_;
     x_adapt_ = x_norm_ * target_arm_length_;
     y_adapt_ = (y_norm_ * target_arm_length_) +  0.5 * target_shoulder_width_;
     z_adapt_ = (z_norm_ * target_arm_length_) + target_shoulder_height_;
-    ROS_DEBUG_STREAM("right hand - adapted position: " << x_adapt_ << ", " << y_adapt_ << ", " << z_adapt_);
-    tf_r_hand_scaled_.setOrigin(tf::Vector3(x_adapt_, y_adapt_, z_adapt_));
-
-//      x_norm_ = tf_input_r_hand_.getOrigin().x() / (input_arm_length_ + 0.5 * input_shoulder_width_);
-//      y_norm_ = tf_input_r_hand_.getOrigin().y() / (input_arm_length_ + input_shoulder_height_);
-//      z_norm_ = tf_input_r_hand_.getOrigin().z() / input_arm_length_;
-    ROS_DEBUG_STREAM("left hand - input position: " << tf_input_l_hand_.getOrigin().x()
-                     << ", " << tf_input_r_hand_.getOrigin().y() << ", " << tf_input_r_hand_.getOrigin().z());
-    x_norm_ = tf_input_l_hand_.getOrigin().x() / input_arm_length_;
-    y_norm_ = (tf_input_l_hand_.getOrigin().y() + 0.5 * input_shoulder_width_) / input_arm_length_;
-    z_norm_ = (tf_input_l_hand_.getOrigin().z() - input_shoulder_height_)/ input_arm_length_;
-    ROS_DEBUG_STREAM("left hand - normalised position: " << x_norm_ << ", " << y_norm_ << ", " << z_norm_);
-//      x_adapt_ = x_norm_ * ( target_arm_length_ + 0.5 * target_shoulder_width_);
-//      y_adapt_ = y_norm_ * ( target_arm_length_ + target_shoulder_height_);
-//      z_adapt_ = z_norm_ * target_arm_length_;
-    x_adapt_ = x_norm_ * target_arm_length_;
-    y_adapt_ = (y_norm_ * target_arm_length_) -  0.5 * target_shoulder_width_;
-    z_adapt_ = (z_norm_ * target_arm_length_) + target_shoulder_height_;
-    ROS_DEBUG_STREAM("left hand - adapted position: " << x_adapt_ << ", " << y_adapt_ << ", " << z_adapt_);
+    ROS_DEBUG_STREAM("left hand  - adapted position:    x = " << x_adapt_ << ", y = " << y_adapt_
+                     << ", z = " << z_adapt_);
     tf_l_hand_scaled_.setOrigin(tf::Vector3(x_adapt_, y_adapt_, z_adapt_));
 
 //    tf_broadcaster_->sendTransform(tf::StampedTransform(tf_r_hand_scaled_, tf_input_stamp_,
@@ -366,41 +358,48 @@ private:
   }
 
   /**
-   *
+   * Scaling assumes certain the reference frame being a right hand system with the following properties:
+   * x points to the front, y points to the left, z points up
    * @return
    */
   void scaleShoulderPositions()
   {
-    ROS_DEBUG_STREAM("right shoulder - input position: " << tf_input_r_shoulder_.getOrigin().x()
-                     << ", " << tf_input_r_shoulder_.getOrigin().y() << ", " << tf_input_r_shoulder_.getOrigin().z());
+    ROS_DEBUG_STREAM("right shoulder - input position:      x = " << tf_input_r_shoulder_.getOrigin().x()
+                     << ", y = " << tf_input_r_shoulder_.getOrigin().y()
+                     << ", z = " << tf_input_r_shoulder_.getOrigin().z());
     x_norm_ = tf_input_r_shoulder_.getOrigin().x() / (0.5 * input_shoulder_width_);
     y_norm_ = tf_input_r_shoulder_.getOrigin().y() / (0.5 * input_shoulder_width_);
     z_norm_ = tf_input_r_shoulder_.getOrigin().z() / input_shoulder_height_;
-    ROS_DEBUG_STREAM("right shoulder - normalised position: " << x_norm_ << ", " << y_norm_ << ", " << z_norm_);
+    ROS_DEBUG_STREAM("right shoulder - normalised position: x = " << x_norm_ << ", y = " << y_norm_
+                     << ", z = " << z_norm_);
     x_adapt_ = x_norm_ * (0.5 * target_shoulder_width_);
     y_adapt_ = y_norm_ * (0.5 * target_shoulder_width_);
     z_adapt_ = z_norm_ * target_shoulder_height_;
-    ROS_DEBUG_STREAM("right shoulder - adapted position: " << x_adapt_ << ", " << y_adapt_ << ", " << z_adapt_);
+    ROS_DEBUG_STREAM("right shoulder - adapted position:    x = " << x_adapt_ << ", y = " << y_adapt_
+                     << ", z = " << z_adapt_);
     tf_r_shoulder_scaled_.setOrigin(tf::Vector3(x_adapt_, y_adapt_, z_adapt_));
 
-    ROS_DEBUG_STREAM("left shoulder - input position: " << tf_input_l_shoulder_.getOrigin().x()
-                     << ", " << tf_input_l_shoulder_.getOrigin().y() << ", " << tf_input_l_shoulder_.getOrigin().z());
+    ROS_DEBUG_STREAM("left shoulder  - input position:      x = " << tf_input_l_shoulder_.getOrigin().x()
+                     << ", y = " << tf_input_l_shoulder_.getOrigin().y()
+                     << ", z = " << tf_input_l_shoulder_.getOrigin().z());
     x_norm_ = tf_input_l_shoulder_.getOrigin().x() / (0.5 * input_shoulder_width_);
     y_norm_ = tf_input_l_shoulder_.getOrigin().y() / (0.5 * input_shoulder_width_);
     z_norm_ = tf_input_l_shoulder_.getOrigin().z() / input_shoulder_height_;
-    ROS_DEBUG_STREAM("left shoulder - normalised position: " << x_norm_ << ", " << y_norm_ << ", " << z_norm_);
+    ROS_DEBUG_STREAM("left shoulder  - normalised position: x = " << x_norm_ << ", y = " << y_norm_
+                     << ", z = " << z_norm_);
     x_adapt_ = x_norm_ * (0.5 * target_shoulder_width_);
     y_adapt_ = y_norm_ * (0.5 * target_shoulder_width_);
     z_adapt_ = z_norm_ * target_shoulder_height_;
-    ROS_DEBUG_STREAM("left shoulder - adapted position: " << x_adapt_ << ", " << y_adapt_ << ", " << z_adapt_);
+    ROS_DEBUG_STREAM("left shoulder  - adapted position:    x = " << x_adapt_ << ", y = " << y_adapt_
+                     << ", z = " << z_adapt_);
     tf_l_shoulder_scaled_.setOrigin(tf::Vector3(x_adapt_, y_adapt_, z_adapt_));
 
-    tf_broadcaster_->sendTransform(tf::StampedTransform(tf_r_shoulder_scaled_, tf_input_stamp_,
-                                                        hands_adaption_params_.target_ref_name, "/shoulder_r_pos_scaled"));
+//    tf_broadcaster_->sendTransform(tf::StampedTransform(tf_r_shoulder_scaled_, tf_input_stamp_,
+//                                                        hands_adaption_params_.target_ref_name, "/shoulder_r_pos_scaled"));
     internal_tf_->setTransform(tf::StampedTransform(tf_r_shoulder_scaled_, tf_input_stamp_,
                                                     hands_adaption_params_.target_ref_name, "/shoulder_r_pos_scaled"));
-    tf_broadcaster_->sendTransform(tf::StampedTransform(tf_l_shoulder_scaled_, tf_input_stamp_,
-                                                       hands_adaption_params_.target_ref_name, "/shoulder_l_pos_scaled"));
+//    tf_broadcaster_->sendTransform(tf::StampedTransform(tf_l_shoulder_scaled_, tf_input_stamp_,
+//                                                       hands_adaption_params_.target_ref_name, "/shoulder_l_pos_scaled"));
     internal_tf_->setTransform(tf::StampedTransform(tf_l_shoulder_scaled_, tf_input_stamp_,
                                                     hands_adaption_params_.target_ref_name, "/shoulder_l_pos_scaled"));
   }

@@ -1,0 +1,15 @@
+motion_adaption:
+  # name of this adaption
+  adaption_name: "my_trans_rot_adaption"
+  # adaption type (no_adaption, trans_rot_adaption)
+  adaption_type: "trans_rot_adaption"
+  # reference frame for the input motion
+  input_ref_frame: "in_ref_link"
+  # endpoint, which motion is retargeted 
+  input_endpt: {"in_test_link"}
+  # reference frame for the retargeted motion
+  output_ref_frame: "out_ref_link"
+  # endpoint for the retarget motion
+  output_endpt: {"out_test_link"}
+  # applied rotational correction for the input motion
+  input_correction: {0.0, 0.0, 0.0}
