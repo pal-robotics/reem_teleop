@@ -79,7 +79,7 @@ kinematics:
   # name of all endpoints involved in the IK calculations
   endpt_names: ["head_link", "hand_right_link", "hand_left_link"]
   # Maximum precision for the IK calculation in meter
-  epsilon: 0.03
+  epsilon: 0.05
   # Maximum iterations for the IK calculation
   max_iterations: 100
   # Damping factor for the IK velocity solver
@@ -87,7 +87,7 @@ kinematics:
   # Frequency of IK calls - used for velocity limiting - same as retargeting_freq TODO: sync
   ik_call_frequency: 5
   # Factor used for determining the maximum joint velocity (is scaled by ik_call_frequency)
-  q_dot_max_factor: 8.0
+  q_dot_max_factor: 4.0
   # Factor used for determining the minimum joint velocity (is scaled by ik_call_frequency)
   q_dot_min_factor: 0.3
   # Factor used for determining the maximum translational end point velocity (is scaled by ik_call_frequency)
@@ -101,6 +101,6 @@ kinematics:
   # Factor used for low pass filtering - applied when all end points are considered resting
   low_pass_factor: 1.0
   # Defines the matrix for task space weights for the IK velocity solver (6 x #end points)
-  task_space_weights: [[0.5, 0.5, 0.5, 0.0, 0.0, 0.0], [0.5, 0.5, 0.5, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.5, 0.5]]
+  task_space_weights: [[1.0, 1.0, 1.0, 0.1, 0.1, 0.1], [1.0, 1.0, 1.0, 0.1, 0.1, 0.1], [0.0, 0.0, 0.0, 0.0, 0.8, 0.8]]
   # Defines the matrix of joint weights for the IK velocity solver (#joints)
   joint_space_weights: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
