@@ -1,0 +1,5 @@
+display: Robosem Motion Retargeting
+description: Motion retargeting for Robosem
+platform: linux.ros.pc
+launch: motion_retargeting_controller/robosem_motion_retargeting.launch
+interface: motion_retargeting_controller/robosem_motion_retargeting.interface

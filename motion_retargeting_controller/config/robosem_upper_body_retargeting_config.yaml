@@ -21,7 +21,7 @@ motion_adaption:
     # reference frame name of the target system
     target_ref_name: "base_link"
     # retargeted endpoint
-    input_endpt_name: "head_1"
+    input_endpt_name: "head"
     # endpoints of the target system
     target_endpt_name: "head_link"
     # names for the endpoint goals
@@ -48,13 +48,13 @@ motion_adaption:
     # reference frame name of the target system
     target_ref_name: "base_link"
     # input required for retargeting 
-    input_torso_name: "torso_1"
-    input_r_shoulder_name: "right_shoulder_1"
-    input_r_elbow_name: "right_elbow_1"
-    input_r_hand_name: "right_hand_1"
-    input_l_shoulder_name: "left_shoulder_1"
-    input_l_elbow_name: "left_elbow_1"
-    input_l_hand_name: "left_hand_1"
+    input_torso_name: "torso"
+    input_r_shoulder_name: "right_shoulder"
+    input_r_elbow_name: "right_elbow"
+    input_r_hand_name: "right_hand"
+    input_l_shoulder_name: "left_shoulder"
+    input_l_elbow_name: "left_elbow"
+    input_l_hand_name: "left_hand"
     target_torso_name: "turret_link"
     target_r_shoulder_name: "arm_right_two_link"
     target_r_elbow_name: "" # optional

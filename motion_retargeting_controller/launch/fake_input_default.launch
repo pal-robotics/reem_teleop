@@ -5,7 +5,8 @@
 
   <!-- default -->
   <!-- head -->
-  <node name="tf_pub_torso_head"        pkg="tf" type="static_transform_publisher" args=" 0.0 0.6 0.0 0.0     0.0 0.0 torso_1 head_1 30" />
+  <node name="tf_pub_torso_neck"        pkg="tf" type="static_transform_publisher" args=" 0.0 0.4 0.0 0.0     0.0 0.0 torso_1 neck_1 30" />
+  <node name="tf_pub_neck_head"        pkg="tf" type="static_transform_publisher" args=" 0.0 0.2 0.0 0.0     0.0 0.0 neck_1 head_1 30" />
   <!-- upper body -->
   <node name="tf_pub_torso_r_shoulder"  pkg="tf" type="static_transform_publisher" args=" 0.25  0.40  0.00  0.78  0.00  0.00 torso_1 right_shoulder_1 30" />
   <node name="tf_pub_torso_r_elbow"     pkg="tf" type="static_transform_publisher" args=" 0.00 -0.30  0.00  0.00  0.00  0.00 right_shoulder_1 right_elbow_1 30" />
