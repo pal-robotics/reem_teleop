@@ -46,7 +46,9 @@ MotionRetargeting::MotionRetargeting(const ros::NodeHandle& nh,
                                           const std::vector<motion_adaption::AdaptionParameters*>& motion_adaption_params,
                                           const tree_kinematics::KinematicsParameters& kinematics_params) :
                                           nh_(nh),
-                                          joint_states_initialised_(false)
+                                          joint_states_initialised_(false),
+                                          process_output_(true),
+                                          record_motion_(false)
 {
   motion_adaption_ = motion_adaption::MotionAdaptionPtr(
                      new motion_adaption::MotionAdaption(motion_adaption_params));
@@ -56,6 +58,7 @@ MotionRetargeting::MotionRetargeting(const ros::NodeHandle& nh,
   joint_states_subscriber_ = nh_.subscribe("joint_states", 10, &MotionRetargeting::jointStatesCallback, this);
   motion_recorder_subscriber_ = nh_.subscribe("record_motion", 10, &MotionRetargeting::motionRecorderCallback, this);
   output_handler_ = OutputHandlerPtr(new FollowJointTrajectoryActionHandler());
+  output_control_subscriber_ = nh_.subscribe("output_control", 10, &MotionRetargeting::outputControlCallback, this);
 }
 
 MotionRetargeting::~MotionRetargeting(){};
@@ -99,6 +102,21 @@ void MotionRetargeting::motionRecorderCallback(const std_msgs::Empty::ConstPtr& 
       ROS_ERROR_STREAM("Motion retargeting: Couldn't initialise the motion recorder!");
       ROS_DEBUG_STREAM(e.what());
     }
+  }
+  return;
+}
+
+void MotionRetargeting::outputControlCallback(const std_msgs::Empty::ConstPtr& msg)
+{
+  if(process_output_)
+  {
+    process_output_ = false;
+    ROS_INFO_STREAM("Motion Retargeting Controller: Output processing has been deactivated.");
+  }
+  else
+  {
+    process_output_ = true;
+    ROS_INFO_STREAM("Motion Retargeting Controller: Output processing has been activated.");
   }
   return;
 }
@@ -156,10 +174,20 @@ bool MotionRetargeting::retarget(/*trajectory_msgs::JointTrajectoryPoint& output
   /*
    * Publish the results
    */
-  if(!(output_handler_->setOutput(goal_joint_states_)))
+  if (process_output_)
   {
-    ROS_WARN_STREAM("Publishing the goal joint states failed!");
-    return false;
+    if (output_handler_)
+    {
+      if(!(output_handler_->setOutput(goal_joint_states_)))
+      {
+        ROS_WARN_STREAM("Publishing the goal joint states failed!");
+        return false;
+      }
+    }
+    else
+    {
+      ROS_WARN_STREAM("Can't process output, since output handler hasn't been initialised yet!");
+    }
   }
   return true;
 }

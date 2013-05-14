@@ -129,6 +129,18 @@ private:
    * Flag for indicating if motion recording is in progress
    */
   bool record_motion_;
+  /**
+   * Subscriber for turning on and off output processing
+   */
+  ros::Subscriber output_control_subscriber_;
+  /**
+   * Callback function for turning on/off processing the output of motion retargeting
+   */
+  void outputControlCallback(const std_msgs::Empty::ConstPtr& msg);
+  /**
+   * Flag for indicating if motion recording is in progress
+   */
+  bool process_output_;
 };
 
 typedef boost::shared_ptr<MotionRetargeting> MotionRetargetingPtr;

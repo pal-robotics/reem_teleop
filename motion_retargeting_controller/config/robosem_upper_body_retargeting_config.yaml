@@ -12,7 +12,7 @@ motion_adaption:
     # reference frame of the input motion
     input_ref_name: "input_ref"
     # frame at which position the reference frame will be placed
-    input_pos_ref_name: "torso_1"
+    input_pos_ref_name: "torso"
     # correction needed to align the input reference frame's orientation with the target reference frame's
     input_ref_orient_adjust:
       roll: 0.0
@@ -39,7 +39,7 @@ motion_adaption:
     # reference frame of the input motion
     input_ref_name: "input_ref"
     # frame at which position the reference frame will be placed
-    input_pos_ref_name: "torso_1"
+    input_pos_ref_name: "torso"
     # correction needed to align the input reference frame's orientation with the target reference frame's
     input_ref_orient_adjust:
       roll: 0.0
