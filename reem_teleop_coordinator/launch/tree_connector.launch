@@ -1,8 +1,0 @@
-<launch>
-  <!-- static transform to conect the trees -->
-  <node pkg="tf" type="static_transform_publisher" name="linker" args="2 -2 0 -1.57 0 1.57  base_footprint openni_camera 100" />
-
-
-  <!-- static transform to fix the rotation of the frame from the openni tracker in electric -->
-  <node pkg="tf" type="static_transform_publisher" name="kinect_orientation_adapt" args="0.0 0 0 1.57 0.0 1.57  openni_depth_frame new_frame  10" />
-</launch>

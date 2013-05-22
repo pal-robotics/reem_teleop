@@ -13,9 +13,10 @@
   <author email="hilario.tome@pal-robotics.com">Hilario Tome</author>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <run_depend>joint_position_controller</run_depend>
   <run_depend>motion_adaption</run_depend>
-  <run_depend>reem_teleop_coordinator</run_depend>
+  <run_depend>motion_retargeting</run_depend>
+  <run_depend>reem_motion_retargeting_controller</run_depend>
+  <run_depend>robosem_motion_retargeting_controller</run_depend>
   <run_depend>tree_kinematics</run_depend>
   
   <export>
