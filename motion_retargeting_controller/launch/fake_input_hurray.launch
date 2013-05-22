@@ -1,23 +1,23 @@
 <launch>
   <!-- camera link -->
-  <node name="tf_pub_robot_camera" pkg="tf" type="static_transform_publisher" args="0.3 0.0 0.325 0 -0.4 0 base_link camera_link 30" />
-  <node name="tf_pub_camera_torso"      pkg="tf" type="static_transform_publisher" args=" 2.0 0.0 0.0 1.5707  0.0 1.9707 camera_link torso_1 30" />
+  <node name="tf_pub_robot_camera"      pkg="tf" type="static_transform_publisher" args="0.3 0.0 0.325 0 -0.4 0 base_link camera_link 30" />
+  <node name="tf_pub_camera_torso"      pkg="tf" type="static_transform_publisher" args=" 2.0 0.0 0.0 1.5707  0.0 1.9707 camera_link torso 30" />
   
   <!-- hurray -->
   <!-- head -->
-  <node name="tf_pub_torso_head"        pkg="tf" type="static_transform_publisher" args=" 0.00  0.60  0.00  0.00  0.00  0.00 torso_1 head_1 30" />
+  <node name="tf_pub_torso_head"        pkg="tf" type="static_transform_publisher" args=" 0.00  0.60  0.00  0.00  0.00  0.00 torso head 30" />
   <!-- upper body -->
-  <node name="tf_pub_torso_r_shoulder"  pkg="tf" type="static_transform_publisher" args=" 0.25  0.40  0.00  0.00 -0.78  2.50 torso_1 right_shoulder_1 30" />
-  <node name="tf_pub_torso_r_elbow"     pkg="tf" type="static_transform_publisher" args=" 0.00 -0.30  0.00  0.00  0.00  0.00 right_shoulder_1 right_elbow_1 30" />
-  <node name="tf_pub_torso_r_hand"      pkg="tf" type="static_transform_publisher" args=" 0.00 -0.30  0.00  0.00  0.00  0.00 right_elbow_1 right_hand_1 30" />
-  <node name="tf_pub_torso_l_shoulder"  pkg="tf" type="static_transform_publisher" args="-0.25  0.40  0.00  0.00  0.78  2.50 torso_1 left_shoulder_1 30" />
-  <node name="tf_pub_torso_l_elbow"     pkg="tf" type="static_transform_publisher" args=" 0.00 -0.3   0.00  0.00  0.00  0.00 left_shoulder_1 left_elbow_1 30" />
-  <node name="tf_pub_torso_l_hand"      pkg="tf" type="static_transform_publisher" args=" 0.00 -0.3   0.00  0.00  0.00  0.00 left_elbow_1 left_hand_1 30" />
+  <node name="tf_pub_torso_r_shoulder"  pkg="tf" type="static_transform_publisher" args=" 0.25  0.40  0.00  0.00 -0.78  2.50 torso right_shoulder 30" />
+  <node name="tf_pub_torso_r_elbow"     pkg="tf" type="static_transform_publisher" args=" 0.00 -0.30  0.00  0.00  0.00  0.00 right_shoulder right_elbow 30" />
+  <node name="tf_pub_torso_r_hand"      pkg="tf" type="static_transform_publisher" args=" 0.00 -0.30  0.00  0.00  0.00  0.00 right_elbow right_hand 30" />
+  <node name="tf_pub_torso_l_shoulder"  pkg="tf" type="static_transform_publisher" args="-0.25  0.40  0.00  0.00  0.78  2.50 torso left_shoulder 30" />
+  <node name="tf_pub_torso_l_elbow"     pkg="tf" type="static_transform_publisher" args=" 0.00 -0.3   0.00  0.00  0.00  0.00 left_shoulder left_elbow 30" />
+  <node name="tf_pub_torso_l_hand"      pkg="tf" type="static_transform_publisher" args=" 0.00 -0.3   0.00  0.00  0.00  0.00 left_elbow left_hand 30" />
   <!-- lower body -->
-  <node name="tf_pub_torso_r_hip"       pkg="tf" type="static_transform_publisher" args=" 0.20 -0.40  0.00  0.00  0.00  0.00 torso_1 right_hip_1 30" />
-  <node name="tf_pub_torso_r_knee"      pkg="tf" type="static_transform_publisher" args=" 0.00 -0.35  0.00  0.00  0.00  0.00 right_hip_1 right_knee_1 30" />
-  <node name="tf_pub_torso_r_foot"      pkg="tf" type="static_transform_publisher" args=" 0.00 -0.35  0.00  0.00  0.00  0.00 right_knee_1 right_foot_1 30" />
-  <node name="tf_pub_torso_l_hip"       pkg="tf" type="static_transform_publisher" args="-0.20 -0.40  0.00  0.00  0.00  0.00 torso_1 left_hip_1 30" />
-  <node name="tf_pub_torso_l_knee"      pkg="tf" type="static_transform_publisher" args=" 0.00 -0.35  0.00  0.00  0.00  0.00 left_hip_1 left_knee_1 30" />
-  <node name="tf_pub_torso_l_foot"      pkg="tf" type="static_transform_publisher" args=" 0.00 -0.35  0.00  0.00  0.00  0.00 left_knee_1 left_foot_1 30" />
+  <node name="tf_pub_torso_r_hip"       pkg="tf" type="static_transform_publisher" args=" 0.20 -0.40  0.00  0.00  0.00  0.00 torso right_hip 30" />
+  <node name="tf_pub_torso_r_knee"      pkg="tf" type="static_transform_publisher" args=" 0.00 -0.35  0.00  0.00  0.00  0.00 right_hip right_knee 30" />
+  <node name="tf_pub_torso_r_foot"      pkg="tf" type="static_transform_publisher" args=" 0.00 -0.35  0.00  0.00  0.00  0.00 right_knee right_foot 30" />
+  <node name="tf_pub_torso_l_hip"       pkg="tf" type="static_transform_publisher" args="-0.20 -0.40  0.00  0.00  0.00  0.00 torso left_hip 30" />
+  <node name="tf_pub_torso_l_knee"      pkg="tf" type="static_transform_publisher" args=" 0.00 -0.35  0.00  0.00  0.00  0.00 left_hip left_knee 30" />
+  <node name="tf_pub_torso_l_foot"      pkg="tf" type="static_transform_publisher" args=" 0.00 -0.35  0.00  0.00  0.00  0.00 left_knee left_foot 30" />
 </launch>

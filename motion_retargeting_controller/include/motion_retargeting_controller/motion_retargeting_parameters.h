@@ -1,75 +1,44 @@
-/*
- * Software License Agreement (Modified BSD License)
+/**
+ * @file /motion_retargeting_controller/include/motion_retargeting_controller/motion_retargeting_parameters.h
  *
- *  Copyright (c) 2013, Yujin Robot
- *  All rights reserved.
+ * @brief File comment
  *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
+ * File comment
  *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above
- *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/or other materials provided
- *     with the distribution.
- *   * Neither the name of Yujin Robot nor the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *  POSSIBILITY OF SUCH DAMAGE.
- */
+ * @date May 16, 2013
+ **/
+/*****************************************************************************
+** Ifdefs
+*****************************************************************************/
 
-/** \author Marcus Liebhardt */
+#ifndef MOTION_RETARGETING_PARAMETERS_H_
+#define MOTION_RETARGETING_PARAMETERS_H_
+
+/*****************************************************************************
+** Includes
+*****************************************************************************/
 
 #include <string>
-#include <exception>
+#include <iostream>
 #include <ros/ros.h>
-#include <motion_adaption/types/adaption_type.h>
-#include "motion_retargeting_controller/motion_retargeting.h"
+#include <motion_adaption/types/adaption_parameters.h>
+#include <tree_kinematics/kinematics_parameters.h>
 
-// Globals
-std::string node_name = "motion_retargeting_controller";
 
-//typedef motion_retargeting::MotionRetargetingParameters MoRetParams;
-typedef motion_retargeting::MotionRetargeting MoRet;
-typedef motion_retargeting::MotionRetargetingPtr MoRetPtr;
-//typedef motion_retargeting::MotionRetargetingConfiguration MoRetConf;
-//typedef motion_retargeting::MotionRetargetingConfigurationPtr MoRetConfPtr;
-
-/*
+/**
  * Get the parameters from the parameter server and set up the motion retargeting configuration
- * TODO: Move this into the motion retargeting or some other "tools" class?
  */
 bool getMotionRetargetingParameters(const ros::NodeHandle&  nh_private,
-                                        motion_retargeting::GeneralParameters& mo_ret_general_params,
+                                        double& retargeting_frequency,
                                         std::vector<motion_adaption::AdaptionParameters*>& mo_adapt_params,
                                         tree_kinematics::KinematicsParameters& kinematics_params)
 {
   /*
-   * general configuration
+   * General parameters
    */
-//  motion_retargeting::AdpationParameters mo_ret_general_params;
-  if(!nh_private.getParam("general_configuration/retargeting_name", mo_ret_general_params.retargeting_name))
+  if(!nh_private.getParam("retargeting_frequency", retargeting_frequency))
   {
-    ROS_ERROR_STREAM("Couldn't retrieve parameter 'general_configuration/retargeting_name' from parameter server!");
-    return false;
-  }
-  if(!nh_private.getParam("general_configuration/retargeting_freq", mo_ret_general_params.retargeting_freq))
-  {
-    ROS_ERROR_STREAM("Couldn't retrieve parameter 'general_configuration/retargeting_freq' from parameter server!");
+    ROS_ERROR_STREAM("Couldn't retrieve parameter 'retargeting_frequency' from parameter server!");
     return false;
   }
   /*
@@ -533,70 +502,4 @@ bool getMotionRetargetingParameters(const ros::NodeHandle&  nh_private,
   return true;
 }
 
-
-int main(int argc, char** argv)
-{
-  ros::init(argc, argv, node_name);
-  ros::NodeHandle nh, nh_private("~");
-  ROS_INFO_STREAM("Initialising controller. [" << node_name << "]");
-  MoRetPtr mo_ret;
-//  MoRetConfPtr mo_ret_conf = createMotionRetargetingConfiguration(nh_private);
-  motion_retargeting::GeneralParameters mo_ret_general_params;
-  std::vector<motion_adaption::AdaptionParameters*> mo_adapt_params;
-  tree_kinematics::KinematicsParameters kinematics_params;
-
-  if (getMotionRetargetingParameters(nh_private,
-                                     mo_ret_general_params,
-                                     mo_adapt_params,
-                                     kinematics_params))
-  {
-    ROS_INFO_STREAM("Motion retargeting configuration created. [" << node_name << "]");
-    try
-    {
-      mo_ret = MoRetPtr(new MoRet(nh,
-                                  mo_ret_general_params,
-                                  mo_adapt_params,
-                                  kinematics_params));
-      ROS_INFO_STREAM("Motion retargeting ready to rock! [" << node_name << "]");
-    }
-    catch (std::exception& e)
-    {
-      ROS_ERROR_STREAM("Caught an exception, while trying to initialise motion retargeting: "
-                       << e.what());
-      ROS_ERROR_STREAM("Aborting.");
-      return -1;
-    }
-  }
-  else
-  {
-    ROS_ERROR_STREAM("Failed to create the motion retargeting configuration. Aborting.");
-    return -1;
-  }
-
-  ros::Rate loop_rate(mo_ret_general_params.retargeting_freq);
-  while (nh.ok())
-  {
-    ros::spinOnce();
-    try
-    {
-      // Get rid of exceptions here - apparently its computational expensive.
-      ROS_INFO_STREAM_THROTTLE(1.0, "Retargeting ... [" << node_name << "]");
-      mo_ret->retarget();
-    }
-    catch (std::exception& e)
-    {
-      ROS_ERROR_STREAM("Caught this exception, while trying to do retargeting: " << e.what());
-      return -1;
-    }
-    loop_rate.sleep();
-  }
-
-  // Take care of the garbage
-  for (unsigned int param = 0; param < mo_adapt_params.size(); ++param)
-  {
-    delete mo_adapt_params[param];
-  }
-
-  std::cout << "Exiting motion retargeting." << std::endl;
-  return 0;
-}
+#endif /* MOTION_RETARGETING_PARAMETERS_H_ */

@@ -38,14 +38,22 @@ namespace motion_retargeting
 class Rosbagger : public MotionRecorder
 {
 public:
-  Rosbagger(const rosbag::BagMode& bagmode,
-             const std::string& filename = std::string("")) :
-             MotionRecorder(),
-             bagmode_(bagmode),
-             bag_name_(filename)
+  Rosbagger() : MotionRecorder(),
+                 recording_(false),
+                 playback_(false)
   {
     recorded_motion_topic_name_ = "recorded_motion";
-    if (bagmode_ == rosbag::bagmode::Write)
+  };
+
+  ~Rosbagger()
+  {
+    // Just to make sure the bag is closed
+    bag_.close();
+  };
+
+  virtual bool prepareRecording()
+  {
+    if (!playback_)
     {
       std::stringstream ss;
       ss << to_iso_string(ros::Time::now().toBoost()) << "_motion_retargeting_record.bag";
@@ -54,67 +62,41 @@ public:
       {
         bag_.open(bag_name_, rosbag::bagmode::Write);
         ROS_INFO_STREAM("Rosbagger: Ready to write to rosbag '" << bag_name_ << "'.");
+        recording_ = true;
       }
       catch (rosbag::BagException& e)
       {
         ROS_ERROR_STREAM("Rosbagger: Exception thrown while creating rosbag '" << bag_name_ << "'!");
         throw std::invalid_argument(bag_name_);
       }
-    }
-    else if (bagmode_ == rosbag::bagmode::Read)
-    {
-      if (bag_name_ != std::string(""))
-      {
-        try
-        {
-          bag_.open(bag_name_, rosbag::bagmode::Read);
-        }
-        catch (rosbag::BagException& e)
-        {
-          ROS_ERROR_STREAM("Rosbagger: Exception thrown while opening rosbag '" << bag_name_ << "'!");
-          throw std::invalid_argument(bag_name_);
-          return;
-        }
-        view_ptr_ = boost::shared_ptr<rosbag::View>(new rosbag::View(bag_,
-                                                                     rosbag::TopicQuery(recorded_motion_topic_name_)));
-        view_it_ = view_ptr_->begin();
-        ROS_INFO_STREAM("Rosbagger: Ready to read from rosbag '" << bag_name_ << "'.");
-      }
-      else
-      {
-        ROS_ERROR_STREAM("Rosbagger: Initialsing in read mode, but no filename was provided!");
-        throw std::invalid_argument(bag_name_);
-      }
-    }
-    else if (bagmode_ == rosbag::bagmode::Append)
-    {
-      std::stringstream ss;
-      ss << bagmode;
-      std::string invalid_arg;
-      ss >> invalid_arg;
-      ROS_ERROR_STREAM("Rosbagger: Appending is not supported!");
-      throw std::invalid_argument(invalid_arg);
+      return true;
     }
     else
     {
-      std::stringstream ss;
-      ss << bagmode;
-      std::string invalid_arg;
-      ss >> invalid_arg;
-      ROS_ERROR_STREAM("Rosbagger: Unknown bagmode (" << invalid_arg << ") received.");
-      throw std::invalid_argument(invalid_arg);
+      ROS_WARN_STREAM("Rosbagger: Can't prepare recording, since rosbagger is in playback mode.");
+      return false;
     }
   };
 
-  ~Rosbagger()
+  virtual bool stopRecording()
   {
-    bag_.close();
-    std::cout << "Rosbagger: Rosbag '" << bag_name_ << "' closed." << std::endl;
+    if (recording_)
+    {
+      bag_.close();
+      recording_ = false;
+      ROS_INFO_STREAM("Rosbagger: Rosbag '" << bag_name_ << "' closed.");
+      return true;
+    }
+    else
+    {
+      ROS_WARN_STREAM("Rosbagger: Can't stop recording, since no rosbagger is not in recording mode.");
+      return false;
+    }
   };
 
   virtual bool storeMotion(const sensor_msgs::JointState& joint_states)
   {
-    if(bagmode_ == rosbag::bagmode::Write)
+    if(recording_)
     {
       try
       {
@@ -130,14 +112,68 @@ public:
     }
     else
     {
-      ROS_WARN_STREAM("Rosbagger: Can't write to rosbag, since rosbagger is in read mode!");
+      ROS_WARN_STREAM("Rosbagger: Can't write to rosbag, since rosbagger is not in recording mode!");
       return false;
     }
   };
 
+  virtual bool preparePlayback(std::string& filename)
+  {
+    if (!recording_)
+    {
+      bag_name_ = filename;
+      if (bag_name_ != std::string(""))
+      {
+        try
+        {
+          bag_.open(bag_name_, rosbag::bagmode::Read);
+        }
+        catch (rosbag::BagException& e)
+        {
+          ROS_ERROR_STREAM("Rosbagger: Exception thrown while opening rosbag '" << bag_name_ << "'!");
+          throw std::invalid_argument(bag_name_);
+          return false;
+        }
+        view_ptr_ = boost::shared_ptr<rosbag::View>(new rosbag::View(bag_,
+                                                                     rosbag::TopicQuery(recorded_motion_topic_name_)));
+        view_it_ = view_ptr_->begin();
+        ROS_INFO_STREAM("Rosbagger: Ready to read from rosbag '" << bag_name_ << "'.");
+        playback_ = true;
+        return true;
+      }
+      else
+      {
+        ROS_ERROR_STREAM("Rosbagger: Can't open bag, since no filename was provided!");
+        throw std::invalid_argument(bag_name_);
+        return false;
+      }
+    }
+    else
+    {
+      ROS_WARN_STREAM("Rosbagger: Can't prepare play back, since rosbagger is in recording mode.");
+      return false;
+    }
+  }
+
+  virtual bool stopPlayback()
+  {
+    if (playback_)
+    {
+      playback_ = false;
+      bag_.close();
+      ROS_INFO_STREAM("Rosbagger: Rosbag '" << bag_name_ << "' closed.");
+      return true;
+    }
+    else
+    {
+      ROS_WARN_STREAM("Rosbagger: Can't stop play back, since rosbagger is in not in playback mode.");
+      return false;
+    }
+  }
+
   virtual bool readMotion(sensor_msgs::JointState& joint_states)
   {
-    if(bagmode_ == rosbag::bagmode::Read)
+    if (playback_)
     {
       if (view_it_ != view_ptr_->end())
       {
@@ -156,12 +192,12 @@ public:
           return false;
         }
       }
-      ROS_WARN_STREAM("Rosbagger: We reached the end of the rosbag.");
+      ROS_INFO_STREAM("Rosbagger: We reached the end of the rosbag.");
       return false;
     }
     else
     {
-      ROS_WARN_STREAM("Rosbagger: Can't read from rosbag, since rosbagger is in write mode!");
+      ROS_WARN_STREAM("Rosbagger: Can't read from rosbag, since rosbagger is not in playback mode!");
       return false;
     }
   };
@@ -180,9 +216,13 @@ private:
    */
   rosbag::View::iterator view_it_;
   /**
-   * Mode of the rosbagger - either read or write
+   * Flag indicating, if the rosbagger is in recording mode
    */
-  rosbag::BagMode bagmode_;
+  bool recording_;
+  /**
+   * Flag indicating, if the rosbagger is in play back mode
+   */
+  bool playback_;
   /**
    * Filename of the rosbag
    */

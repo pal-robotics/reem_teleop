@@ -24,24 +24,11 @@
 #include <tree_kinematics/tree_kinematics.h>
 #include <tree_kinematics/GetTreePositionIK.h>
 
-//#include "motion_retargeting_configuration.h"
 #include "motion_recorder.h"
 #include "output_handler.h"
 
 namespace motion_retargeting
 {
-
-/**
- * General motion retargeting parameters
- */
-struct GeneralParameters
-{
-  std::string retargeting_name;
-  double retargeting_freq;
-//  std::string robot_model_name; not used I think
-//  bool check_self_collision; not yet implemented
-//  bool check_joint_limits; not yet implemented
-};
 
 class MotionRetargeting
 {
@@ -50,10 +37,12 @@ public:
    * Initialies motion retargeting by configures motion adaption and tree kinematics
    */
   MotionRetargeting(const ros::NodeHandle& nh,
-                      const GeneralParameters& general_params,
-                      const std::vector<motion_adaption::AdaptionParameters*>& motion_adaption_params,
-                      const tree_kinematics::KinematicsParameters& kinematics_params);
-/**
+                      const motion_adaption::MotionAdaptionPtr motion_adaption,
+                      const tree_kinematics::KinematicsParameters& kinematics_params,
+                      const tree_kinematics::TreeKinematicsPtr tree_kinematics,
+                      const MotionRecorderPtr motion_recorder,
+                      const OutputHandlerPtr output_handler);
+  /**
    * Throws out the trash
    */
   ~MotionRetargeting();
@@ -68,9 +57,8 @@ public:
    *     and make it the responsibility of the program using this class?
    *     * Pros: more flexible
    *     * Cons: need to checking of correct input and output each time -> takes time
-   *   * Current output is fixed as well. Should we make it more generic? If yes, how?
    */
-  bool retarget(/*trajectory_msgs::JointTrajectoryPoint& output_joint_states*/);
+  bool retarget();
 
 private:
   /**
@@ -81,13 +69,21 @@ private:
    * Motion adaption for adapting the input motion to the target system (e.g. robot)
    */
   motion_adaption::MotionAdaptionPtr motion_adaption_;
+  /**
+   * Adapted endpoint poses
+   */
   std::vector<geometry_msgs::PoseStamped> adapted_entpt_poses_;
-  /*
-   * IK for calculating the goal joint states
+  /**
+   * Tree IK for calculating the goal joint states
    */
   tree_kinematics::TreeKinematicsPtr tree_kinematics_;
-  // Tree IK service
+  /**
+   * Tree IK service request
+   */
   tree_kinematics::GetTreePositionIK::Request tree_ik_request_;
+  /**
+   * Tree IK service response
+   */
   tree_kinematics::GetTreePositionIK::Response tree_ik_response_;
   /**
    * Output handler for publishing the goal joint states
@@ -102,7 +98,7 @@ private:
    */
   ros::Subscriber joint_states_subscriber_;
   /**
-   * Storage for last joint statess
+   * Storage for last joint states
    */
   sensor_msgs::JointState joint_states_;
   /**

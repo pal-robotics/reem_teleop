@@ -78,30 +78,21 @@ int main (int argc, char** argv)
   unsigned int pub_count = 0;
   ros::Time last_stamp(0.0);
   sensor_msgs::JointState joint_states;
-  motion_retargeting::RosbaggerPtr rosbagger;
-  try
+  motion_retargeting::Rosbagger rosbagger;
+  motion_retargeting::FollowJointTrajectoryActionHandler output_handler(output_topic);
+
+  if (!rosbagger.preparePlayback(filename))
   {
-    rosbagger = motion_retargeting::RosbaggerPtr(new motion_retargeting::Rosbagger(rosbag::bagmode::Read, filename));
-  }
-  catch (std::exception& e)
-  {
-    ROS_ERROR_STREAM("Robosem Motion Playback: An exception was thrown when trying to initialise the rosbagger. ["
-                     << node_name << "]");
-    ROS_DEBUG_STREAM(e.what());
+    ROS_ERROR_STREAM("Error occurred while preparing for motion playback. [" << node_name << "]");
     return -4;
   }
-  catch (...)
-  {
-    ROS_ERROR_STREAM("An unknown exception was thrown when trying to initialise the rosbagger! [" << node_name << "]");
-    return -5;
-  }
-  motion_retargeting::FollowJointTrajectoryActionHandler output_handler(output_topic);
 
   while (ros::ok())
   {
-    if(!rosbagger->readMotion(joint_states))
+    if(!rosbagger.readMotion(joint_states))
     {
       ROS_INFO_STREAM("All messages of the rosbag have been published. [" << node_name << "]");
+      rosbagger.stopPlayback();
       return 0;
     }
     if (last_stamp > ros::Time(0.0))

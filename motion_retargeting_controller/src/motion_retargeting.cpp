@@ -35,29 +35,29 @@
 /** \author Marcus Liebhardt */
 
 #include "motion_retargeting_controller/motion_retargeting.h"
-#include "motion_retargeting_controller/follow_joint_trajectory_action_output_handler.h"
-#include "motion_retargeting_controller/rosbagger.h"
 
 namespace motion_retargeting
 {
 
 MotionRetargeting::MotionRetargeting(const ros::NodeHandle& nh,
-                                          const GeneralParameters& general_params,
-                                          const std::vector<motion_adaption::AdaptionParameters*>& motion_adaption_params,
-                                          const tree_kinematics::KinematicsParameters& kinematics_params) :
+                                          const motion_adaption::MotionAdaptionPtr motion_adaption,
+                                          const tree_kinematics::KinematicsParameters& kinematics_params,
+                                          const tree_kinematics::TreeKinematicsPtr tree_kinematics,
+                                          const MotionRecorderPtr motion_recorder,
+                                          const OutputHandlerPtr output_handler) :
                                           nh_(nh),
                                           joint_states_initialised_(false),
                                           process_output_(true),
                                           record_motion_(false)
 {
-  motion_adaption_ = motion_adaption::MotionAdaptionPtr(
-                     new motion_adaption::MotionAdaption(motion_adaption_params));
-  tree_kinematics_ = tree_kinematics::TreeKinematicsPtr(
-                     new tree_kinematics::TreeKinematics(kinematics_params, nh_));
+  motion_adaption_ = motion_adaption;
+  tree_kinematics_ = tree_kinematics;
+  motion_recorder_ = motion_recorder;
+  output_handler_ = output_handler;
+
   tree_ik_request_.endpt_names = kinematics_params.endpt_names;
   joint_states_subscriber_ = nh_.subscribe("joint_states", 10, &MotionRetargeting::jointStatesCallback, this);
   motion_recorder_subscriber_ = nh_.subscribe("record_motion", 10, &MotionRetargeting::motionRecorderCallback, this);
-  output_handler_ = OutputHandlerPtr(new FollowJointTrajectoryActionHandler());
   output_control_subscriber_ = nh_.subscribe("output_control", 10, &MotionRetargeting::outputControlCallback, this);
 }
 
@@ -81,7 +81,10 @@ void MotionRetargeting::motionRecorderCallback(const std_msgs::Empty::ConstPtr& 
   // This is not multi-threading safe! Do not use this callback manually!
   if(record_motion_)
   {
-    motion_recorder_ = MotionRecorderPtr();
+    if (!motion_recorder_->stopRecording())
+    {
+      ROS_ERROR_STREAM("Motion Retargeting: Error occured while stoping motion recording.");
+    }
     record_motion_ = false;
     ROS_INFO_STREAM("Motion Retargeting Controller: Motion recording deactivated.");
   }
@@ -93,9 +96,15 @@ void MotionRetargeting::motionRecorderCallback(const std_msgs::Empty::ConstPtr& 
      */
     try
     {
-      motion_recorder_ = MotionRecorderPtr(new Rosbagger(rosbag::bagmode::Write));
-      record_motion_ = true;
-      ROS_INFO_STREAM("Motion Retargeting Controller: Motion recording activated.");
+      if (motion_recorder_->prepareRecording())
+      {
+        record_motion_ = true;
+        ROS_INFO_STREAM("Motion Retargeting Controller: Motion recording activated.");
+      }
+      else
+      {
+        ROS_ERROR_STREAM("Motion Retargeting: Error occured while preparing for motion recording.");
+      }
     }
     catch (std::exception& e)
     {
@@ -121,7 +130,7 @@ void MotionRetargeting::outputControlCallback(const std_msgs::Empty::ConstPtr& m
   return;
 }
 
-bool MotionRetargeting::retarget(/*trajectory_msgs::JointTrajectoryPoint& output_joint_states*/)
+bool MotionRetargeting::retarget()
 {
   adapted_entpt_poses_.clear();
   /*

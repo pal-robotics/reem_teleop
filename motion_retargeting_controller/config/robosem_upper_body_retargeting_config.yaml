@@ -1,6 +1,4 @@
-general_configuration:
-  retargeting_name: "robosem_upper_body_retargeting"
-  retargeting_freq: 5.0
+retargeting_frequency: 5.0
 motion_adaption:
   # providing the toatl number of adaptions makes it easier to parse the config file
   nr_of_adaptions: 2
