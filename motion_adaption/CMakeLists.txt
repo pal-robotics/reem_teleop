@@ -17,14 +17,10 @@ catkin_package(INCLUDE_DIRS include
                DEPENDS eigen
                        Boost)
 
-include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+include_directories(include
+                    ${catkin_INCLUDE_DIRS}
+                    ${Boost_INCLUDE_DIRS})
 
-#add_library(motion_adaption src/motion_adaption.cpp
-#                            src/get_transforms.cpp
-#                            src/set_ref_frame.cpp
-#                            src/adapt_transforms.cpp
-#                            src/set_goals.cpp
-#                            src/publish_msgs.cpp)
 add_library(motion_adaption src/motion_adaption.cpp)
 target_link_libraries(motion_adaption ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
