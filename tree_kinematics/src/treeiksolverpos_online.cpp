@@ -28,7 +28,7 @@
 namespace KDL
 {
 
-TreeIkSolverPos_Online::TreeIkSolverPos_Online(const double& nr_of_jnts,
+TreeIkSolverPosOnline::TreeIkSolverPosOnline(const double& nr_of_jnts,
                                                      const std::vector<std::string>& endpoints,
                                                      TreeFkSolverPos& fksolver,
                                                      TreeIkSolverVel& iksolver,
@@ -87,9 +87,9 @@ TreeIkSolverPos_Online::TreeIkSolverPos_Online(const double& nr_of_jnts,
   }
 }
 
-TreeIkSolverPos_Online::~TreeIkSolverPos_Online(){}
+TreeIkSolverPosOnline::~TreeIkSolverPosOnline(){}
 
-double TreeIkSolverPos_Online::CartToJnt(const JntArray& q_in, const Frames& p_in, JntArray& q_out)
+double TreeIkSolverPosOnline::CartToJnt(const JntArray& q_in, const Frames& p_in, JntArray& q_out)
 {
   assert(q_out.rows() == q_in.rows());
   assert(q_dot_.rows() == q_out.rows());
@@ -137,7 +137,11 @@ double TreeIkSolverPos_Online::CartToJnt(const JntArray& q_in, const Frames& p_i
   return res;
 }
 
-double TreeIkSolverPos_Online::CartToJnt_it(const JntArray& q_in, const Frames& p_in, JntArray& q_out)
+/*
+ * The original version didn't do iterations, hence this one has been added
+ * plus adapted versions of cart vel and joint vel limiter
+ */
+double TreeIkSolverPosOnline::CartToJnt_it(const JntArray& q_in, const Frames& p_in, JntArray& q_out)
 {
   assert(q_out.rows() == q_in.rows());
   assert(q_out_old_.rows() == q_in.rows());
@@ -158,9 +162,12 @@ double TreeIkSolverPos_Online::CartToJnt_it(const JntArray& q_in, const Frames& 
 
   for (Frames::const_iterator f_des_it = p_in.begin(); f_des_it != p_in.end(); ++f_des_it)
   {
+    // Check if we are configured for this end point
     if (frames_.find(f_des_it->first) == frames_.end())
+    {
       return -2;
-    else
+    }
+    else // Check if end effector is performing small motions
     {
       /*
        Twists::iterator old_twists_it = old_twists_.find(f_des_it->first);
@@ -203,10 +210,10 @@ double TreeIkSolverPos_Online::CartToJnt_it(const JntArray& q_in, const Frames& 
       nr_of_endeffectors++;
     }
   }
+  // has no effect, because nr_of_still_endeffectors_ is set by enforceCartVelLimits(), which is not used in this context! (Marcus)
   if (nr_of_still_endeffectors_ == nr_of_endeffectors)
   {
     small_task_space_movement_ = true;
-
   }
   else
     small_task_space_movement_ = false;
@@ -283,7 +290,7 @@ double TreeIkSolverPos_Online::CartToJnt_it(const JntArray& q_in, const Frames& 
     return -3;
 }
 
-bool TreeIkSolverPos_Online::enforceCartVelLimits()
+bool TreeIkSolverPosOnline::enforceCartVelLimits()
 {
   // relative overshoot
   double rel_os_trans = 0.0;
@@ -334,12 +341,11 @@ bool TreeIkSolverPos_Online::enforceCartVelLimits()
     return false;
 }
 
-bool TreeIkSolverPos_Online::enforceJointVelLimits()
+bool TreeIkSolverPosOnline::enforceJointVelLimits()
 {
   // check, if one (or more) joint velocities exceed the maximum value
   // and if so, safe the biggest overshoot for scaling q_dot_ properly
   // to keep the direction of the velocity vector the same
-
   // relative overshoot
   double rel_os = 0.0;
   // biggest relative overshoot
@@ -380,7 +386,7 @@ bool TreeIkSolverPos_Online::enforceJointVelLimits()
     return false;
 }
 
-void TreeIkSolverPos_Online::enforceCartVelLimits_it(Twist& old_twist, Twist& current_twist)
+void TreeIkSolverPosOnline::enforceCartVelLimits_it(Twist& old_twist, Twist& current_twist)
 {
   bool max_exceeded = false;
   double x_dot_trans, x_dot_rot;
@@ -412,7 +418,7 @@ void TreeIkSolverPos_Online::enforceCartVelLimits_it(Twist& old_twist, Twist& cu
   //old_twist = old_twist + current_twist;
 }
 
-void TreeIkSolverPos_Online::enforceJointVelLimits_it(JntArray& q_dot_old, JntArray& q_dot_current)
+void TreeIkSolverPosOnline::enforceJointVelLimits_it(JntArray& q_dot_old, JntArray& q_dot_current)
 {
   // check, if one (or more) joint velocities exceed the maximum value
   // and if so, safe the biggest overshoot for scaling q_dot_ properly
@@ -455,7 +461,7 @@ void TreeIkSolverPos_Online::enforceJointVelLimits_it(JntArray& q_dot_old, JntAr
   }
 }
 
-void TreeIkSolverPos_Online::filter(JntArray& q_dot, JntArray& q_out, JntArray& q_out_old)
+void TreeIkSolverPosOnline::filter(JntArray& q_dot, JntArray& q_out, JntArray& q_out_old)
 {
   // deadband filter
   //bool min_exceeded = false;

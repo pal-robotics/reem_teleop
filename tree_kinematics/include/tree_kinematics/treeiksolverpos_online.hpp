@@ -43,7 +43,7 @@ namespace KDL {
  *
  * @ingroup KinematicFamily
  */
-class TreeIkSolverPos_Online: public TreeIkSolverPos {
+class TreeIkSolverPosOnline: public TreeIkSolverPos {
 public:
     /**
      * @param nr_of_jnts number of joints of the tree to calculate the joint positions for
@@ -57,7 +57,7 @@ public:
      * @param iksolver an inverse velocity kinematics solver
      *
      */
-    TreeIkSolverPos_Online(const double& nr_of_jnts,
+    TreeIkSolverPosOnline(const double& nr_of_jnts,
                            const std::vector<std::string>& endpoints,
                            TreeFkSolverPos& fksolver,
                            TreeIkSolverVel& iksolver,
@@ -73,7 +73,7 @@ public:
                            const unsigned int maxiter = 100,
                            const double eps = 1e-6);
 
-    ~TreeIkSolverPos_Online();
+    ~TreeIkSolverPosOnline();
 
     virtual double CartToJnt(const JntArray& q_in, const Frames& p_in, JntArray& q_out);
 

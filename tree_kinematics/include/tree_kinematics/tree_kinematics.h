@@ -127,7 +127,7 @@ private:
   /**
    * The IK position solver
    */
-  boost::scoped_ptr<KDL::TreeIkSolverPos_Online> ik_pos_solver_;
+  boost::scoped_ptr<KDL::TreeIkSolverPosOnline> ik_pos_solver_;
   /**
    * The IK velocity solver - used by the IK position solver
    */

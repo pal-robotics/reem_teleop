@@ -98,7 +98,7 @@ TreeKinematics::TreeKinematics(const KinematicsParameters& parameters, const ros
    */
   fk_solver_.reset(new KDL::TreeFkSolverPos_recursive(kdl_tree_));
   ik_vel_solver_.reset(new KDL::TreeIkSolverVel_wdls(kdl_tree_, parameters_.endpt_names));
-  ik_pos_solver_.reset(new KDL::TreeIkSolverPos_Online(nr_of_jnts_,
+  ik_pos_solver_.reset(new KDL::TreeIkSolverPosOnline(nr_of_jnts_,
                                                        parameters_.endpt_names,
                                                        *fk_solver_,
                                                        *ik_vel_solver_,
