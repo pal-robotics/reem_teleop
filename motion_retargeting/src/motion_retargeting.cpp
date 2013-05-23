@@ -34,31 +34,61 @@
 
 /** \author Marcus Liebhardt */
 
+#include <stdexcept>
 #include "motion_retargeting/motion_retargeting.h"
 
 namespace motion_retargeting
 {
 
 MotionRetargeting::MotionRetargeting(const ros::NodeHandle& nh,
+                                          const ros::NodeHandle& nh_private,
                                           const motion_adaption::MotionAdaptionPtr motion_adaption,
                                           const tree_kinematics::KinematicsParameters& kinematics_params,
                                           const tree_kinematics::TreeKinematicsPtr tree_kinematics,
-                                          const MotionRecorderPtr motion_recorder,
-                                          const OutputHandlerPtr output_handler) :
+                                          const OutputHandlerPtr output_handler,
+                                          const MotionRecorderPtr motion_recorder) :
                                           nh_(nh),
+                                          nh_private_(nh_private),
                                           joint_states_initialised_(false),
                                           process_output_(true),
                                           record_motion_(false)
 {
-  motion_adaption_ = motion_adaption;
-  tree_kinematics_ = tree_kinematics;
-  motion_recorder_ = motion_recorder;
-  output_handler_ = output_handler;
-
-  tree_ik_request_.endpt_names = kinematics_params.endpt_names;
-  joint_states_subscriber_ = nh_.subscribe("joint_states", 10, &MotionRetargeting::jointStatesCallback, this);
-  motion_recorder_subscriber_ = nh_.subscribe("record_motion", 10, &MotionRetargeting::motionRecorderCallback, this);
-  output_control_subscriber_ = nh_.subscribe("output_control", 10, &MotionRetargeting::outputControlCallback, this);
+  if (motion_adaption)
+  {
+    motion_adaption_ = motion_adaption;
+  }
+  else
+  {
+    throw std::invalid_argument("No valid pointer to motion adaption provided!");
+  }
+  if (tree_kinematics)
+  {
+    tree_kinematics_ = tree_kinematics;
+    joint_states_subscriber_ = nh_.subscribe("joint_states", 10, &MotionRetargeting::jointStatesCallback, this);
+    tree_ik_request_.endpt_names = kinematics_params.endpt_names;
+  }
+  else
+  {
+    throw std::invalid_argument("No valid pointer to tree kinematics provided!");
+  }
+  if (output_handler)
+  {
+    output_handler_ = output_handler;
+    output_control_subscriber_ = nh_private_.subscribe("output_control", 10, &MotionRetargeting::outputControlCallback, this);
+  }
+  else
+  {
+    throw std::invalid_argument("No valid pointer to an output handler provided!");
+  }
+  if (motion_recorder)
+  {
+    motion_recorder_ = motion_recorder;
+    motion_recorder_subscriber_ = nh_private_.subscribe("record_motion", 10, &MotionRetargeting::motionRecorderCallback, this);
+  }
+  else
+  {
+    ROS_WARN_STREAM("Motion retargeting: No motion recorder provided. Motion recording disabled.");
+  }
 }
 
 MotionRetargeting::~MotionRetargeting(){};
@@ -132,73 +162,81 @@ void MotionRetargeting::outputControlCallback(const std_msgs::Empty::ConstPtr& m
 
 bool MotionRetargeting::retarget()
 {
-  adapted_entpt_poses_.clear();
-  /*
-   * Motion adaption
-   */
-  if(!(motion_adaption_->adapt(adapted_entpt_poses_)))
+  if (motion_adaption_ && tree_kinematics_ && output_handler_)
   {
-    ROS_WARN_STREAM("Motion adaption failed. Skipping.");
-    return false;
-  }
-  /*
-   * Tree kinematics
-   */
-  if(joint_states_initialised_)
-  {
-    tree_ik_request_.endpt_poses = adapted_entpt_poses_;
-    tree_ik_request_.ik_seed_state = joint_states_;
-    if (tree_kinematics_->getPositionIk(tree_ik_request_, tree_ik_response_))
+    adapted_entpt_poses_.clear();
+    /*
+     * Motion adaption
+     */
+    if(!(motion_adaption_->adapt(adapted_entpt_poses_)))
     {
-      goal_joint_states_ = tree_ik_response_.solution;
-//      joint_states_ = goal_joint_states_;
-    }
-    else
-    {
-      ROS_WARN_STREAM("IK failed. Skipping.");
+      ROS_WARN_STREAM("Motion adaption failed. Skipping.");
       return false;
     }
-  }
-  else
-  {
-    ROS_WARN_STREAM("Can't perform IK, since no joint states have been retrieved yet.");
-    return false;
-  }
-  /*
-   * Recording
-   */
-  if(record_motion_)
-  {
-    if (motion_recorder_)
+    /*
+     * Tree kinematics
+     */
+    if(joint_states_initialised_)
     {
-      motion_recorder_->storeMotion(goal_joint_states_);
-    }
-    else
-    {
-      record_motion_ = false;
-      ROS_WARN_STREAM("Motion recording was turned on, but a motion recorder hasn't been initialised yet!" <<
-                      "Motion recording is now turned off.");
-    }
-  }
-  /*
-   * Publish the results
-   */
-  if (process_output_)
-  {
-    if (output_handler_)
-    {
-      if(!(output_handler_->setOutput(goal_joint_states_)))
+      tree_ik_request_.endpt_poses = adapted_entpt_poses_;
+      tree_ik_request_.ik_seed_state = joint_states_;
+      if (tree_kinematics_->getPositionIk(tree_ik_request_, tree_ik_response_))
       {
-        ROS_WARN_STREAM("Publishing the goal joint states failed!");
+        goal_joint_states_ = tree_ik_response_.solution;
+  //      joint_states_ = goal_joint_states_;
+      }
+      else
+      {
+        ROS_WARN_STREAM("IK failed. Skipping.");
         return false;
       }
     }
     else
     {
-      ROS_WARN_STREAM("Can't process output, since output handler hasn't been initialised yet!");
+      ROS_WARN_STREAM("Can't perform IK, since no joint states have been retrieved yet.");
+      return false;
     }
+    /*
+     * Recording
+     */
+    if(record_motion_)
+    {
+      if (motion_recorder_)
+      {
+        motion_recorder_->storeMotion(goal_joint_states_);
+      }
+      else
+      {
+        record_motion_ = false;
+        ROS_WARN_STREAM("Motion recording was turned on, but a motion recorder hasn't been initialised yet!" <<
+                        "Motion recording is now turned off.");
+      }
+    }
+    /*
+     * Publish the results
+     */
+    if (process_output_)
+    {
+      if (output_handler_)
+      {
+        if(!(output_handler_->setOutput(goal_joint_states_)))
+        {
+          ROS_WARN_STREAM("Publishing the goal joint states failed!");
+          return false;
+        }
+      }
+      else
+      {
+        ROS_WARN_STREAM("Can't process output, since output handler hasn't been initialised yet!");
+      }
+    }
+    return true;
   }
-  return true;
+  else
+  {
+    ROS_ERROR_STREAM("Motion Retargeting: Can't retarget, since motion retargeting hasn't been set up correctly!");
+    return false;
+  }
 }
 
 } // namespace motion_retargeting

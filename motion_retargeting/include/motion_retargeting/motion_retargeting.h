@@ -34,14 +34,22 @@ class MotionRetargeting
 {
 public:
   /**
-   * Initialies motion retargeting by configures motion adaption and tree kinematics
+   * Initialies motion retargeting by configures motion adaption and tree kinematics and few control inputs
+   * @param nh normal node handle for the joint states subscriber
+   * @param nh_private private node handle for registering motion retargeting control subscribers
+   * @param motion_adaption pointer to motion adaption
+   * @param kinematics_params kinematics parameters used for the calls to the IK solver
+   * @param tree_kinematics pointer to tree kinematics
+   * @param motion_recorder pointer to the motion recorder
+   * @param output_handler pointer to the output handler
    */
   MotionRetargeting(const ros::NodeHandle& nh,
+                      const ros::NodeHandle& nh_private,
                       const motion_adaption::MotionAdaptionPtr motion_adaption,
                       const tree_kinematics::KinematicsParameters& kinematics_params,
                       const tree_kinematics::TreeKinematicsPtr tree_kinematics,
-                      const MotionRecorderPtr motion_recorder,
-                      const OutputHandlerPtr output_handler);
+                      const OutputHandlerPtr output_handler,
+                      const MotionRecorderPtr motion_recorder);
   /**
    * Throws out the trash
    */
@@ -62,9 +70,13 @@ public:
 
 private:
   /**
-   * ROS node handle
+   * ROS node handle for the joint states subscriber
    */
   ros::NodeHandle nh_;
+  /**
+   * Private ROS node handle for motion retargeting control topics (e.g. (de)activate motion recording)
+   */
+  ros::NodeHandle nh_private_;
   /**
    * Motion adaption for adapting the input motion to the target system (e.g. robot)
    */
