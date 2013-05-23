@@ -82,18 +82,19 @@ int main(int argc, char** argv)
       // Initialise tree kinematics
       tree_kinematics = tree_kinematics::TreeKinematicsPtr(
                         new tree_kinematics::TreeKinematics(kinematics_params, nh));
-      // Initialise motion recorder
-      motion_recorder = motion_retargeting::MotionRecorderPtr(new motion_retargeting::Rosbagger());
       // Initialise output handler
       output_handler = motion_retargeting::OutputHandlerPtr(
                        new motion_retargeting::FollowJointTrajectoryActionHandler());
+      // Initialise motion recorder
+      motion_recorder = motion_retargeting::MotionRecorderPtr(new motion_retargeting::Rosbagger());
       // Initialise motion retargeting
       motion_retargeting = MoRetPtr(new MoRet(nh,
+                                              nh_private,
                                               motion_adaption,
                                               kinematics_params,
                                               tree_kinematics,
-                                              motion_recorder,
-                                              output_handler));
+                                              output_handler,
+                                              motion_recorder));
       ROS_INFO_STREAM("Motion retargeting ready to rock! [" << node_name << "]");
     }
     catch (std::exception& e)
