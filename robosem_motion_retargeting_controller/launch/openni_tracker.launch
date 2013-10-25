@@ -4,7 +4,7 @@
  -->
 <launch>
   <include file="$(find openni_launch)/launch/openni.launch"/>
-  <node name="openni_tracker" pkg="openni_tracker" type="openni_tracker" args="">
+  <node name="openni_tracker" pkg="openni_tracker" type="openni_tracker" args="" output="screen">
     <param name="camera_frame_id" value="camera_link"/>
   </node>
   <node name="tf_pub_robot_camera" pkg="tf" type="static_transform_publisher" args="0.3 0.0 0.325 0 -0.2 0 base_link camera_link 30" />

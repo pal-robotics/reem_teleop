@@ -1,0 +1,25 @@
+<!--
+  Visualise the REEM robot model using RViz
+ -->
+<launch>
+  <param name="robosem_robot_description" command="$(find xacro)/xacro.py '$(find robosem_meta)/resources/urdf/robosem.xacro'"/>
+  <node name="robosem_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+    <remap from="robot_description" to="robosem_robot_description"/>
+    <param name="tf_prefix" value="robosem"/>
+  </node>
+  <param name="reem_robot_description" command="$(find xacro)/xacro.py '$(find reem_description)/robots/reem.urdf.xacro'"/>
+  <node name="reem_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+    <remap from="robot_description" to="reem_robot_description"/>
+    <param name="tf_prefix" value="reem"/>
+  </node>
+  <param name="use_gui" value="true"/>
+  <node name="robosem_joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <remap from="robot_description" to="robosem_robot_description"/>
+  </node>
+  <node name="reem_joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <remap from="robot_description" to="reem_robot_description"/>
+  </node>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find robosem_motion_retargeting_controller)/rviz/view_multi_robot_model.rviz"/>
+  
+  <node name="tf_robots_link" pkg="tf" type="static_transform_publisher" args="0.0 2.0 0.0 0 0 0 /robosem/base_footprint /reem/base_footprint 100" />
+</launch>
