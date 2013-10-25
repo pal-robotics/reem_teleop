@@ -1,7 +1,7 @@
 <!-- Robosem motion retargeting rapp launcher -->
 <launch>
   <!-- Motion tracking -->
-  <include file="$(find motion_retargeting_controller)/launch/openni_tracker.launch"/>
+  <include file="$(find robosem_motion_retargeting_controller)/launch/openni_tracker.launch"/>
   <!-- Motion retargeting -->
-  <include file="$(find motion_retargeting_controller)/launch/robosem.launch"/>
+  <include file="$(find robosem_motion_retargeting_controller)/launch/controller.launch"/>
 </launch>

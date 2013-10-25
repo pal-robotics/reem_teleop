@@ -1,5 +1,11 @@
 display: Robosem Motion Retargeting
 description: Motion retargeting for Robosem
 platform: linux.ros.pc
-launch: motion_retargeting_controller/robosem_motion_retargeting.launch
-interface: motion_retargeting_controller/robosem_motion_retargeting.interface
+launch: robosem_motion_retargeting_controller/robosem_motion_retargeting.launch
+interface: robosem_motion_retargeting_controller/robosem_motion_retargeting.interface
+icon: robosem_motion_retargeting_controller/motion_retargeting_app_icon.png
+pairing_clients:
+ - type: android
+   manager:
+     api-level: 10
+     intent-action: com.github.robotics_in_concert.rocon_android_apps.motion_retargeting_remocon.MotionRetargetingRemocon

@@ -1,5 +1,10 @@
-subscribers: []
-publishers: []
+subscribers:
+  - openni_tracker/user_chooser
+  - motion_retargeting_controller/motion_control
+  - motion_retargeting_controller/motion_recording
+publishers: 
+  - openni_tracker/available_users
+  - openni_tracker/tracked_user
 services: []
 action_clients: []
 action_servers: []
