@@ -13,6 +13,7 @@ find_package(Boost REQUIRED COMPONENTS program_options)
 catkin_package()
 
 include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+link_directories(${orocos_kdl_LIBRARY_DIRS})
 
 add_executable(robosem_mo_ret_controller src/robosem_mo_ret_controller.cpp)
 target_link_libraries(robosem_mo_ret_controller ${catkin_LIBRARIES} ${Boost_LIBRARIES})
