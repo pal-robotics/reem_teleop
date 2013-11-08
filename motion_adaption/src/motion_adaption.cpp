@@ -36,6 +36,7 @@
 
 #include "motion_adaption/motion_adaption.h"
 #include "motion_adaption/types/trans_rot_adaption.h"
+#include "motion_adaption/types/hand_adaption.h"
 #include "motion_adaption/types/hands_adaption.h"
 
 namespace motion_adaption
@@ -79,12 +80,40 @@ MotionAdaption::MotionAdaption(const std::vector<AdaptionParameters*>& adaption_
                          << " do not match the request adaption type 'TransRotAdaption'! Adaption discarded.");
       }
     }
+    else if (adaption_parameters[param]->adaption_type == AdaptionParameters::HandAdaption)
+    {
+      HandAdaptionParameters* hand_adapt_params = adaption_parameters[param]->getAsHandAdaptionParams();
+      if (hand_adapt_params)
+      {
+        ROS_DEBUG_STREAM("Motion adaption: Parameters " << param << " are of type 'HandAdaptionParameters'.");
+        AdaptionTypePtr new_adaption = AdaptionTypePtr(new HandAdaption(*hand_adapt_params,
+                                                                         tf_listener_,
+                                                                         tf_broadcaster_,
+                                                                         internal_tf_));
+        if (new_adaption)
+        {
+          adaptions_.push_back(new_adaption);
+          ROS_INFO_STREAM("Motion adaption: Adaption '"
+                          << adaption_parameters[param]->adaption_name << "' of type 'HandAdaption' created.");
+        }
+        else
+        {
+          ROS_ERROR_STREAM("Motion adaption: Failed to create requested HandAdaption for adaption '"
+                           << adaption_parameters[param]->adaption_name << "'.");
+        }
+      }
+      else
+      {
+        ROS_ERROR_STREAM("Motion adaption: Provided parameters " << param
+                         << " do not match the request adaption type 'HandAdaptionAdaption'! Adaption discarded.");
+      }
+    }
     else if (adaption_parameters[param]->adaption_type == AdaptionParameters::HandsAdaption)
     {
       HandsAdaptionParameters* hands_adapt_params = adaption_parameters[param]->getAsHandsAdaptionParams();
       if (hands_adapt_params)
       {
-        ROS_DEBUG_STREAM("Motion adaption: Parameters " << param << " are of type HandsAdaptionParameters.");
+        ROS_DEBUG_STREAM("Motion adaption: Parameters " << param << " are of type 'HandsAdaptionParameters'.");
         AdaptionTypePtr new_adaption = AdaptionTypePtr(new HandsAdaption(*hands_adapt_params,
                                                                           tf_listener_,
                                                                           tf_broadcaster_,

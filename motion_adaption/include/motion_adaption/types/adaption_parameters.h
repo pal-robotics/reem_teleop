@@ -33,13 +33,14 @@ struct OrientationAdjustments
 };
 
 struct TransRotAdaptionParameters;
+struct HandAdaptionParameters;
 struct HandsAdaptionParameters;
 
 /**
  * TODO: I'm not proud nor happy of the current style of parameter handling. Let's replace it with something
- *        smarter in the future.
- *        In the meanwhile try to replace normal pointers with boost::shared_ptr - maybe not needed, check the current
- *        use of references and pointers
+ *       smarter in the future.
+ *       In the meanwhile try to replace normal pointers with boost::shared_ptr - maybe not needed, check the current
+ *       use of references and pointers
  */
 struct AdaptionParameters
 {
@@ -54,12 +55,13 @@ struct AdaptionParameters
     wait_for_tf(adapt_params.wait_for_tf)
   {};
 
-  virtual ~AdaptionParameters()
-  {
-    std::cout << "AdaptionParameters deleted." << std::endl;
-  };
+  virtual ~AdaptionParameters(){};
 
   virtual TransRotAdaptionParameters* getAsTransRotAdaptionParams()
+  {
+    return 0;
+  }
+  virtual HandAdaptionParameters* getAsHandAdaptionParams()
   {
     return 0;
   }
@@ -73,8 +75,8 @@ struct AdaptionParameters
   {
     NoAdaption,
     TransRotAdaption,
+    HandAdaption,
     HandsAdaption,
-    UpperBodyAdaption
   };
   AdaptionTypes adaption_type;
   std::string input_ref_name;
@@ -89,10 +91,7 @@ struct TransRotAdaptionParameters : public AdaptionParameters
   TransRotAdaptionParameters(){};
   TransRotAdaptionParameters(AdaptionParameters adapt_params) : AdaptionParameters(adapt_params){};
 
-  ~TransRotAdaptionParameters()
-  {
-    std::cout << "TransRotAdaptionParameters deleted." << std::endl;
-  };
+  ~TransRotAdaptionParameters(){};
 
   virtual TransRotAdaptionParameters* getAsTransRotAdaptionParams()
   {
@@ -105,15 +104,38 @@ struct TransRotAdaptionParameters : public AdaptionParameters
   OrientationAdjustments goal_orient_adjust;
 };
 
+struct HandAdaptionParameters : public AdaptionParameters
+{
+  HandAdaptionParameters(){};
+  HandAdaptionParameters(AdaptionParameters adapt_params) : AdaptionParameters(adapt_params){};
+
+  ~HandAdaptionParameters(){};
+
+  virtual HandAdaptionParameters* getAsHandAdaptionParams()
+  {
+    return static_cast<HandAdaptionParameters*>(this);
+  }
+
+  std::string input_torso_name;
+  std::string input_neck_name;
+  std::string input_shoulder_name;
+  std::string input_elbow_name;
+  std::string input_hand_name;
+  std::string target_torso_name;
+  std::string target_neck_name;
+  std::string target_shoulder_name;
+  std::string target_elbow_name;
+  std::string target_hand_name;
+  std::string goal_hand_name;
+  OrientationAdjustments goal_hand_orient_adjust;
+};
+
 struct HandsAdaptionParameters : public AdaptionParameters
 {
   HandsAdaptionParameters(){};
   HandsAdaptionParameters(AdaptionParameters adapt_params) : AdaptionParameters(adapt_params){};
 
-  ~HandsAdaptionParameters()
-  {
-    std::cout << "HandsAdaptionParameters deleted." << std::endl;
-  };
+  ~HandsAdaptionParameters(){};
 
   virtual HandsAdaptionParameters* getAsHandsAdaptionParams()
   {

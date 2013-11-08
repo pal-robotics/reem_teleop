@@ -71,6 +71,10 @@ bool getMotionRetargetingParameters(const ros::NodeHandle&  nh_private,
       {
         mo_adapt_common_params.adaption_type = motion_adaption::AdaptionParameters::TransRotAdaption;
       }
+      else if (adaption_type == "hand_adaption")
+      {
+        mo_adapt_common_params.adaption_type = motion_adaption::AdaptionParameters::HandAdaption;
+      }
       else if (adaption_type == "hands_adaption")
       {
         mo_adapt_common_params.adaption_type = motion_adaption::AdaptionParameters::HandsAdaption;
@@ -188,6 +192,124 @@ bool getMotionRetargetingParameters(const ros::NodeHandle&  nh_private,
         return false;
       }
       mo_adapt_params.push_back(trans_rot_adapt_params);
+    }
+    else if (adaption_type == "hand_adaption")
+    {
+      motion_adaption::HandAdaptionParameters* hand_adapt_params(
+        new motion_adaption::HandAdaptionParameters(mo_adapt_common_params));
+      ss.clear();
+      ss << parameter_prep << "input_torso_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hand_adapt_params->input_torso_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return false;
+      }
+      ss.clear();
+      ss << parameter_prep << "input_neck_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hand_adapt_params->input_neck_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return false;
+      }
+      ss.clear();
+      ss << parameter_prep << "input_shoulder_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hand_adapt_params->input_shoulder_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return false;
+      }
+      ss.clear();
+      ss << parameter_prep << "input_elbow_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hand_adapt_params->input_elbow_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return false;
+      }
+      ss.clear();
+      ss << parameter_prep << "input_hand_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hand_adapt_params->input_hand_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return false;
+      }
+      ss.clear();
+      ss << parameter_prep << "target_torso_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hand_adapt_params->target_torso_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return false;
+      }
+      ss.clear();
+      ss << parameter_prep << "target_neck_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hand_adapt_params->target_neck_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return false;
+      }
+      ss.clear();
+      ss << parameter_prep << "target_shoulder_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hand_adapt_params->target_shoulder_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return false;
+      }
+      ss.clear();
+      ss << parameter_prep << "target_elbow_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hand_adapt_params->target_elbow_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return false;
+      }
+      ss.clear();
+      ss << parameter_prep << "target_hand_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hand_adapt_params->target_hand_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return false;
+      }
+      ss.clear();
+      ss << parameter_prep << "goal_hand_name";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hand_adapt_params->goal_hand_name))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return false;
+      }
+      ss.clear();
+      ss << parameter_prep << "goal_hand_orient_adjust/roll";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hand_adapt_params->goal_hand_orient_adjust.roll))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return false;
+      }
+      ss.clear();
+      ss << parameter_prep <<"goal_hand_orient_adjust/pitch";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hand_adapt_params->goal_hand_orient_adjust.pitch))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return false;
+      }
+      ss.clear();
+      ss << parameter_prep << "goal_hand_orient_adjust/yaw";
+      ss >> parameter_name;
+      if(!nh_private.getParam(parameter_name, hand_adapt_params->goal_hand_orient_adjust.yaw))
+      {
+        ROS_ERROR_STREAM("Couldn't retrieve parameter " << parameter_name << " from parameter server!");
+        return false;
+      }
+      mo_adapt_params.push_back(hand_adapt_params);
     }
     else if (adaption_type == "hands_adaption")
     {
