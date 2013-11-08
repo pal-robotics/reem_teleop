@@ -1,0 +1,65 @@
+retargeting_frequency: 5.0
+motion_adaption:
+  # providing the total number of adaptions makes it easier to parse the config file
+  nr_of_adaptions: 1
+  adaption_1:
+     # name of this adaption
+    adaption_name: "korus_head_adaption"
+    # adaption type (no_adaption, trans_rot_adaption, hands_adaption, upper_body_adaption)
+    adaption_type: "trans_rot_adaption"
+    # reference frame of the input motion
+    input_ref_name: "input_ref"
+    # frame at which position the reference frame will be placed
+    input_pos_ref_name: "torso"
+    # correction needed to align the input reference frame's orientation with the target reference frame's
+    input_ref_orient_adjust:
+      roll: 0.0
+      pitch: 0.0
+      yaw: 3.1415
+    # reference frame name of the target system
+    target_ref_name: "base_link"
+    # retargeted endpoint
+    input_endpt_name: "head"
+    # endpoints of the target system
+    target_endpt_name: "head_tilt_link"
+    # names for the endpoint goals
+    goal_endpt_name: "head_goal"
+    # applied rotational correction for the input motion
+    goal_orient_adjust: 
+      roll: 0.0
+      pitch: 1.57075
+      yaw: 0.0
+kinematics:
+  # parameter name which holds the URDF robot model description
+  robot_model_description_name: "/korus/robot_description"
+  # name of all endpoints involved in the IK calculations
+  endpt_names: ["head_tilt_link"]
+  # Maximum precision for the IK calculation in meter
+  epsilon: 0.05
+  # Maximum iterations for the IK calculation
+  max_iterations: 100
+  # Damping factor for the IK velocity solver
+  lambda: 0.01
+  # Frequency of IK calls - used for velocity limiting - same as retargeting_freq TODO: sync
+  ik_call_frequency: 5
+  # Factor used for determining the maximum joint velocity (is scaled by ik_call_frequency)
+  q_dot_max_factor: 4.0
+  # Factor used for determining the minimum joint velocity (is scaled by ik_call_frequency)
+  q_dot_min_factor: 0.3
+  # Factor used for determining the maximum translational end point velocity (is scaled by ik_call_frequency)
+  x_dot_trans_max_factor: 1.0 
+  # Factor used for determining the minimum translational end point velocity (is scaled by ik_call_frequency)
+  x_dot_trans_min_factor: 1.0
+  # Factor used for determining the maximum rotational end point velocity (is scaled by ik_call_frequency)
+  x_dot_rot_max_factor: 3.14
+  # Factor used for determining the minimum rotational end point velocity (is scaled by ik_call_frequency)
+  x_dot_rot_min_factor: 3.14
+  # Factor used for low pass filtering - applied when all end points are considered resting
+  low_pass_factor: 1.0
+  # Defines the matrix for task space weights for the IK velocity solver (6 x #end points)
+  task_space_weights: [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0]]
+  # Defines the matrix of joint weights for the IK velocity solver (#joints)
+  # Joints: torso_turn, head_pan, head_tilt, torso_lift, shoulder, elbow, wrist, finger_left_knuckle_1,
+  #         finger_left_knuckle_2, finger_right_knuckle_1, finger_right_knuckle_2, gripper, wheel_left, wheel_right
+  joint_space_weights: [0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+ 

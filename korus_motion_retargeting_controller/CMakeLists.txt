@@ -8,11 +8,11 @@ find_package(catkin REQUIRED COMPONENTS motion_adaption
 
 catkin_package()
 
-#include_directories(${catkin_INCLUDE_DIRS})
-#link_directories(${orocos_kdl_LIBRARY_DIRS})
+include_directories(${catkin_INCLUDE_DIRS})
+link_directories(${orocos_kdl_LIBRARY_DIRS})
 
-#add_executable(korus_mo_ret_controller src/korus_mo_ret_controller.cpp)
-#target_link_libraries(korus_mo_ret_controller ${catkin_LIBRARIES})
+add_executable(korus_mo_ret_controller src/korus_mo_ret_controller.cpp)
+target_link_libraries(korus_mo_ret_controller ${catkin_LIBRARIES})
 
-#install(TARGETS korus_mo_ret_controller
-#        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(TARGETS korus_mo_ret_controller
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

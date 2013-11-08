@@ -1,0 +1,19 @@
+<launch>
+  <group ns="korus">
+	  <arg name="debug" default="false" />
+	  <arg unless="$(arg debug)" name="launch_prefix" value="" />
+	  <arg     if="$(arg debug)" name="launch_prefix" value="gdb --ex run --args" />
+	  
+	  <node pkg="korus_motion_retargeting_controller" type="korus_mo_ret_controller"
+	        name="korus_mo_ret_controller" launch-prefix="$(arg launch_prefix)">
+	    <!-- parameters -->
+<!-- 	    <rosparam command="load" file="$(find korus_motion_retargeting_controller)/config/head_adaption_config.yaml" /> -->
+      <rosparam command="load" file="$(find korus_motion_retargeting_controller)/config/upper_body_adaption_config.yaml" />
+	    <!-- topic remappings -->
+	    <remap from="joint_states" to="/korus/joint_states" />
+	    <remap from="action_server_name" to="/korus/upper_body_controller" />
+	    <remap from="korus_mo_ret_controller/output_control" to="motion_retargeting_controller/motion_control" />
+	    <remap from="korus_mo_ret_controller/record_motion" to="motion_retargeting_controller/motion_recording" />
+	  </node>
+  </group>
+</launch>
