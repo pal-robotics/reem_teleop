@@ -244,13 +244,11 @@ bool TreeKinematics::readJoints(urdf::Model &robot_model,
       // extract joint information
       if (joint->type != urdf::Joint::UNKNOWN && joint->type != urdf::Joint::FIXED)
       {
-        ROS_DEBUG( "getting information about joint: [%s]", joint->name.c_str() );
         double lower = 0.0, upper = 0.0, vel_limit = 0.0;
         unsigned int has_pos_limits = 0, has_vel_limits = 0;
 
         if ( joint->type != urdf::Joint::CONTINUOUS )
         {
-          ROS_DEBUG("joint is not continuous.");
           lower = joint->limits->lower;
           upper = joint->limits->upper;
           has_pos_limits = 1;
@@ -258,18 +256,15 @@ bool TreeKinematics::readJoints(urdf::Model &robot_model,
           {
             has_vel_limits = 1;
             vel_limit = joint->limits->velocity;
-            ROS_DEBUG("joint has following velocity limit: %f", vel_limit);
           }
           else
           {
             has_vel_limits = 0;
             vel_limit = 0.0;
-            ROS_DEBUG("joint has no velocity limit.");
           }
         }
         else
         {
-          ROS_DEBUG("joint is continuous.");
           lower = -M_PI;
           upper = M_PI;
           has_pos_limits = 0;
@@ -277,20 +272,17 @@ bool TreeKinematics::readJoints(urdf::Model &robot_model,
           {
             has_vel_limits = 1;
             vel_limit = joint->limits->velocity;
-            ROS_DEBUG("joint has following velocity limit: %f", vel_limit);
           }
           else
           {
             has_vel_limits = 0;
             vel_limit = 0.0;
-            ROS_DEBUG("joint has no velocity limit.");
           }
         }
 
         joint_min(seg_it->second.q_nr) = lower;
         joint_max(seg_it->second.q_nr) = upper;
         joint_vel_max(seg_it->second.q_nr) = vel_limit;
-        ROS_DEBUG("pos_min = %f, pos_max = %f, vel_max = %f", lower, upper, vel_limit);
 
         info_.joint_names[seg_it->second.q_nr] = joint->name;
         info_.limits[seg_it->second.q_nr].joint_name = joint->name;
@@ -302,6 +294,8 @@ bool TreeKinematics::readJoints(urdf::Model &robot_model,
       }
     }
   }
+  ROS_DEBUG_STREAM("tree_kinematics: Gathered joint information:");
+  ROS_DEBUG_STREAM(info_);
   return true;
 }
 
