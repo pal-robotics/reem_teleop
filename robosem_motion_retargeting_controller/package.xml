@@ -21,6 +21,7 @@
 
   <run_depend>motion_adaption</run_depend>
   <run_depend>motion_retargeting</run_depend>
+  <run_depend>openni_tracker</run_depend>
   <run_depend>rosbag</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>sensor_msgs</run_depend>
