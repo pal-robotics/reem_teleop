@@ -1,38 +1,7 @@
-/*
- * Software License Agreement (Modified BSD License)
- *
- *  Copyright (c) 2013, Yujin Robot
- *  All rights reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions
- *  are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above
- *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/or other materials provided
- *     with the distribution.
- *   * Neither the name of Yujin Robot nor the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *  POSSIBILITY OF SUCH DAMAGE.
- */
-
-/** \author Marcus Liebhardt */
+/**
+ * License: BSD
+ *   https://raw.github.com/pal-robotics/reem_teleop/hydro-devel/motion_retargeting/LICENSE
+ **/
 
 #include <stdexcept>
 #include "motion_retargeting/motion_retargeting.h"
@@ -41,17 +10,19 @@ namespace motion_retargeting
 {
 
 MotionRetargeting::MotionRetargeting(const ros::NodeHandle& nh,
-                                          const ros::NodeHandle& nh_private,
-                                          const motion_adaption::MotionAdaptionPtr motion_adaption,
-                                          const tree_kinematics::KinematicsParameters& kinematics_params,
-                                          const tree_kinematics::TreeKinematicsPtr tree_kinematics,
-                                          const OutputHandlerPtr output_handler,
-                                          const MotionRecorderPtr motion_recorder) :
-                                          nh_(nh),
-                                          nh_private_(nh_private),
-                                          joint_states_initialised_(false),
-                                          process_output_(true),
-                                          record_motion_(false)
+                                     const ros::NodeHandle& nh_private,
+                                     const motion_adaption::MotionAdaptionPtr motion_adaption,
+                                     const tree_kinematics::KinematicsParameters& kinematics_params,
+                                     const tree_kinematics::TreeKinematicsPtr tree_kinematics,
+                                     const CollisionCheckerPtr collision_checker,
+                                     const OutputHandlerPtr output_handler,
+                                     const MotionRecorderPtr motion_recorder) :
+                                     nh_(nh),
+                                     nh_private_(nh_private),
+                                     joint_states_initialised_(false),
+                                     check_collisions_(true),
+                                     process_output_(true),
+                                     record_motion_(false)
 {
   if (motion_adaption)
   {
@@ -74,16 +45,28 @@ MotionRetargeting::MotionRetargeting(const ros::NodeHandle& nh,
   if (output_handler)
   {
     output_handler_ = output_handler;
-    output_control_subscriber_ = nh_private_.subscribe("output_control", 10, &MotionRetargeting::outputControlCallback, this);
+    output_control_subscriber_ = nh_private_.subscribe("output_control", 10,
+                                                       &MotionRetargeting::outputControlCallback, this);
   }
   else
   {
     throw std::invalid_argument("No valid pointer to an output handler provided!");
   }
+  if (collision_checker)
+  {
+    collision_checker_ = collision_checker;
+    collision_checker_subscriber_ = nh_private_.subscribe("check_collisions", 10,
+                                                          &MotionRetargeting::collisionCheckerCallback, this);
+  }
+  else
+  {
+    ROS_WARN_STREAM("Motion retargeting: No collision checker provided. Motions will not be checked for collisions!");
+  }
   if (motion_recorder)
   {
     motion_recorder_ = motion_recorder;
-    motion_recorder_subscriber_ = nh_private_.subscribe("record_motion", 10, &MotionRetargeting::motionRecorderCallback, this);
+    motion_recorder_subscriber_ = nh_private_.subscribe("record_motion", 10,
+                                                        &MotionRetargeting::motionRecorderCallback, this);
   }
   else
   {
@@ -102,7 +85,21 @@ void MotionRetargeting::jointStatesCallback(const sensor_msgs::JointState::Const
     ROS_DEBUG_STREAM("Joint states initialised.");
   }
   joint_states_ = *joint_states;
-//  joint_states_subscriber_.shutdown();
+  return;
+}
+
+void MotionRetargeting::collisionCheckerCallback(const std_msgs::Empty::ConstPtr& msg)
+{
+  if(check_collisions_)
+  {
+    check_collisions_ = false;
+    ROS_WARN_STREAM("Motion Retargeting Controller: Collision checking disabled!");
+  }
+  else
+  {
+    check_collisions_ = true;
+    ROS_INFO_STREAM("Motion Retargeting Controller: Collision checking enabled.");
+  }
   return;
 }
 
@@ -170,9 +167,10 @@ bool MotionRetargeting::retarget()
      */
     if(!(motion_adaption_->adapt(adapted_entpt_poses_)))
     {
-      ROS_WARN_STREAM("Motion adaption failed. Skipping.");
+      ROS_WARN_STREAM("Motion Retargeting Controller: Motion adaption failed. Skipping.");
       return false;
     }
+
     /*
      * Tree kinematics
      */
@@ -183,51 +181,53 @@ bool MotionRetargeting::retarget()
       if (tree_kinematics_->getPositionIk(tree_ik_request_, tree_ik_response_))
       {
         goal_joint_states_ = tree_ik_response_.solution;
-  //      joint_states_ = goal_joint_states_;
       }
       else
       {
-        ROS_WARN_STREAM("IK failed. Skipping.");
+        ROS_WARN_STREAM("Motion Retargeting Controller: IK failed. Skipping.");
         return false;
       }
     }
     else
     {
-      ROS_WARN_STREAM("Can't perform IK, since no joint states have been retrieved yet.");
+      ROS_WARN_STREAM("Motion Retargeting Controller: Can't perform IK,"
+                      << " since no joint states have been retrieved yet.");
       return false;
     }
+
+    /*
+     * Collision checking
+     */
+    if (collision_checker_ && check_collisions_)
+    {
+      if (!(collision_checker_->checkState(goal_joint_states_)))
+      {
+        ROS_WARN_STREAM("Motion Retargeting Controller: Computed motion is not collision-free. Skipping.");
+        return false;
+      }
+    }
+
     /*
      * Recording
      */
-    if(record_motion_)
+    if (motion_recorder_ && record_motion_)
     {
-      if (motion_recorder_)
+      if(!(motion_recorder_->storeMotion(goal_joint_states_)))
       {
-        motion_recorder_->storeMotion(goal_joint_states_);
-      }
-      else
-      {
-        record_motion_ = false;
-        ROS_WARN_STREAM("Motion recording was turned on, but a motion recorder hasn't been initialised yet!" <<
-                        "Motion recording is now turned off.");
+        ROS_WARN_STREAM("Motion Retargeting Controller: Storing the motion failed!");
+        return false;
       }
     }
+
     /*
      * Publish the results
      */
-    if (process_output_)
+    if (output_handler_ && process_output_)
     {
-      if (output_handler_)
+      if(!(output_handler_->setOutput(goal_joint_states_)))
       {
-        if(!(output_handler_->setOutput(goal_joint_states_)))
-        {
-          ROS_WARN_STREAM("Publishing the goal joint states failed!");
-          return false;
-        }
-      }
-      else
-      {
-        ROS_WARN_STREAM("Can't process output, since output handler hasn't been initialised yet!");
+        ROS_WARN_STREAM("Motion Retargeting Controller: Publishing the goal joint states failed!");
+        return false;
       }
     }
     return true;

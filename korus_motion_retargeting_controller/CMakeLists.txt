@@ -3,6 +3,7 @@ project(korus_motion_retargeting_controller)
 
 find_package(catkin REQUIRED COMPONENTS motion_adaption
                                         motion_retargeting
+                                        moveit_collision_checking
                                         roscpp
                                         tree_kinematics)
 
