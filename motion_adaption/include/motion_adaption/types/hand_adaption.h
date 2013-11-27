@@ -17,6 +17,7 @@
 ** Includes
 *****************************************************************************/
 
+#include <cmath>
 #include "adaption_type.h"
 
 namespace motion_adaption
@@ -35,7 +36,8 @@ public:
                             tf_listener,
                             tf_broadcaster,
                             internal_tf),
-               hand_adaption_params_(hand_adaption_params)
+               hand_adaption_params_(hand_adaption_params),
+               eps(0.01)
   {
     tf_input_stamp_ =  ros::Time::now();
     std::cout << "HandAdaption constructor: adaption name: " << hand_adaption_params_.adaption_name << std::endl;
@@ -99,12 +101,14 @@ private:
   tf::StampedTransform tf_shoulder_goal_, tf_hand_goal_;
   tf::Vector3 vec_helper_, vec_hand_orient_, vec_cross_, vec_cross2_;
   tf::Matrix3x3 mat_orientation_;
-  double input_shoulder_width_, input_shoulder_height_, input_upper_arm_length_, input_arm_length_;
-  double target_shoulder_width_, target_shoulder_height_;
+  double input_shoulder_width_, input_shoulder_height_, input_shoulder_offset_;
+  double input_upper_arm_length_, input_arm_length_;
+  double target_shoulder_width_, target_shoulder_height_, target_shoulder_offset_;
   double target_upper_arm_length_, target_lower_arm_length_, target_arm_length_;
   double x_norm_, y_norm_, z_norm_, x_adapt_, y_adapt_, z_adapt_;
   bool use_elbow_;
   ros::Time tf_input_stamp_;
+  double eps;
 
   /**
    *
@@ -219,25 +223,34 @@ private:
   /**
    * Determine input and target body's properties, such as shoulder width and arm length
    *
+   * Assumptions here: x points forward, y to the side, z upwards (right hand system)
+   *
+   * TODO: Avoid assumptions by finding a smarter way to handle this.
+   *
    * @return true, if properties are valid, false otherwise
    */
   bool determineBodyProperties()
   {
-    input_shoulder_height_ = tf_input_neck_.getOrigin().length();
-    input_shoulder_width_ = tf_input_neck_shoulder_.getOrigin().length() * 2;
+    input_shoulder_height_ = std::abs(tf_input_shoulder_.getOrigin().z());
+    input_shoulder_width_ = std::abs(tf_input_shoulder_.getOrigin().y()) * 2;
+    input_shoulder_offset_ = std::abs(tf_input_shoulder_.getOrigin().x());
     input_upper_arm_length_ = tf_input_shoulder_elbow_.getOrigin().length();
     input_arm_length_ = input_upper_arm_length_ + tf_input_elbow_hand_.getOrigin().length();
     ROS_DEBUG_STREAM("input_shoulder_height  = " << input_shoulder_height_
                      << ", input_shoulder_width  = " << input_shoulder_width_
+                     << ", input_shoulder_offset  = " << input_shoulder_offset_
                      << ", input_arm_length  = " << input_arm_length_
                      << ", input_upper_arm_length  = " << input_upper_arm_length_);
 
-    target_shoulder_height_ = tf_target_neck_.getOrigin().length();
-    target_shoulder_width_ = tf_target_neck_shoulder_.getOrigin().length() * 2;
+    target_shoulder_height_ = std::abs(tf_target_shoulder_.getOrigin().z());
+    target_shoulder_width_ = std::abs(tf_target_shoulder_.getOrigin().y()) * 2;
+    target_shoulder_offset_ = std::abs(tf_target_shoulder_.getOrigin().x());
     if (use_elbow_)
     {
-      target_upper_arm_length_ = tf_target_shoulder_elbow_.getOrigin().length();
-      target_lower_arm_length_ = tf_target_elbow_hand_.getOrigin().length();
+      // not using the length of the vector, but the biggest scalar in order to avoid wrong arm lengths
+      // due to joint/link offsets and similar
+      target_upper_arm_length_ = tf_target_shoulder_elbow_.getOrigin()[tf_target_shoulder_elbow_.getOrigin().maxAxis()];
+      target_lower_arm_length_ = tf_target_elbow_hand_.getOrigin()[tf_target_elbow_hand_.getOrigin().maxAxis()];
       target_arm_length_ = target_upper_arm_length_ + target_lower_arm_length_;
     }
     else
@@ -248,6 +261,7 @@ private:
     }
     ROS_DEBUG_STREAM("target_shoulder_height = " << target_shoulder_height_
                      << ", target_shoulder_width = " << target_shoulder_width_
+                     << ", target_shoulder_offset = " << target_shoulder_offset_
                      << ", target_arm_length = " << target_arm_length_
                      << ", target_upper_arm_length  = " << target_upper_arm_length_);
 
@@ -270,19 +284,25 @@ private:
    */
   void scaleShoulderPosition()
   {
-    if ((input_shoulder_width_ != 0) && (target_shoulder_width_ != 0))
+    if ((input_shoulder_offset_ > eps) && (target_shoulder_offset_ > eps))
     {
-      x_norm_ = tf_input_shoulder_.getOrigin().x() / (0.5 * input_shoulder_width_);
-      y_norm_ = tf_input_shoulder_.getOrigin().y() / (0.5 * input_shoulder_width_);
-      x_adapt_ = x_norm_ * (0.5 * target_shoulder_width_);
-      y_adapt_ = y_norm_ * (0.5 * target_shoulder_width_);
+      x_norm_ = tf_input_shoulder_.getOrigin().x() / input_shoulder_offset_;
+      x_adapt_ = x_norm_ * target_shoulder_offset_;
     }
     else // no scaling - use target shoulder position
     {
       x_adapt_ = x_norm_ = tf_target_shoulder_.getOrigin().x();
+    }
+    if ((input_shoulder_width_ > eps) && (target_shoulder_width_ > eps))
+    {
+      y_norm_ = -tf_input_shoulder_.getOrigin().y() / (0.5 * input_shoulder_width_);
+      y_adapt_ = y_norm_ * (0.5 * target_shoulder_width_);
+    }
+    else // no scaling - use target shoulder position
+    {
       y_adapt_ = y_norm_ = tf_target_shoulder_.getOrigin().y();
     }
-    if ((input_shoulder_height_ != 0) && (target_shoulder_height_ != 0))
+    if ((input_shoulder_height_ > eps) && (target_shoulder_height_ > eps))
     {
       z_norm_ = tf_input_shoulder_.getOrigin().z() / input_shoulder_height_;
       z_adapt_ = z_norm_ * target_shoulder_height_;
@@ -317,26 +337,12 @@ private:
    */
   void scaleElbowPosition()
   {
-    x_norm_ = tf_input_elbow_.getOrigin().x() / input_upper_arm_length_;
-    x_adapt_ = x_norm_ * target_upper_arm_length_;
-    if ((input_shoulder_width_ != 0) && (target_shoulder_width_ != 0))
-    {
-      y_norm_ = (tf_input_elbow_.getOrigin().y() + 0.5 * input_shoulder_width_) / input_upper_arm_length_;
-      y_adapt_ = (y_norm_ * target_upper_arm_length_) - 0.5 * target_shoulder_width_;
-    }
-    else // no scaling - use target elbow position
-    {
-      y_adapt_ = y_norm_ = tf_target_elbow_.getOrigin().y();
-    }
-    if ((input_shoulder_height_ != 0) && (target_shoulder_height_ != 0))
-    {
-      z_norm_ = (tf_input_elbow_.getOrigin().z() - input_shoulder_height_)/ input_upper_arm_length_;
-      z_adapt_ = (z_norm_ * target_upper_arm_length_) + target_shoulder_height_;
-    }
-    else // no scaling - use target elbow position
-    {
-      z_adapt_ = z_norm_ = tf_target_elbow_.getOrigin().z();
-    }
+    x_norm_ = tf_input_elbow_.getOrigin().x() / input_upper_arm_length_ - input_shoulder_offset_;
+    x_adapt_ = x_norm_ * target_upper_arm_length_ + target_shoulder_offset_;
+    y_norm_ = (tf_input_elbow_.getOrigin().y() + 0.5 * input_shoulder_width_) / input_upper_arm_length_;
+    y_adapt_ = (y_norm_ * target_upper_arm_length_) - 0.5 * target_shoulder_width_;
+    z_norm_ = (tf_input_elbow_.getOrigin().z() - input_shoulder_height_)/ input_upper_arm_length_;
+    z_adapt_ = (z_norm_ * target_upper_arm_length_) + target_shoulder_height_;
 
     ROS_DEBUG_STREAM("elbow - input position:      x = " << tf_input_elbow_.getOrigin().x()
                      << ", y = " << tf_input_elbow_.getOrigin().y()
@@ -363,28 +369,12 @@ private:
    */
   void scaleHandPosition()
   {
-    x_norm_ = tf_input_hand_.getOrigin().x() / input_arm_length_;
-    x_adapt_ = x_norm_ * target_arm_length_;
-    if ((input_shoulder_width_ != 0) && (target_shoulder_width_ != 0))
-    {
-      y_norm_ = (tf_input_hand_.getOrigin().y() + 0.5 * input_shoulder_width_) / input_arm_length_;
-      y_adapt_ = (y_norm_ * target_arm_length_) - 0.5 * target_shoulder_width_;
-    }
-    else // no scaling - use input hand position
-    {
-//      y_adapt_ = y_norm_ = tf_input_hand_.getOrigin().y();
-      y_norm_ = (tf_input_hand_.getOrigin().y() + 0.5 * input_shoulder_width_) / input_arm_length_;
-      y_adapt_ = y_norm_ * target_arm_length_;
-    }
-    if ((input_shoulder_height_ != 0) && (target_shoulder_height_ != 0))
-    {
-      z_norm_ = (tf_input_hand_.getOrigin().z() - input_shoulder_height_)/ input_arm_length_;
-      z_adapt_ = (z_norm_ * target_arm_length_) + target_shoulder_height_;
-    }
-    else // no scaling - use input hand position
-    {
-      z_adapt_ = z_norm_ = tf_input_hand_.getOrigin().z();
-    }
+    x_norm_ = tf_input_hand_.getOrigin().x() / input_arm_length_ - input_shoulder_offset_;
+    x_adapt_ = x_norm_ * target_arm_length_ + target_shoulder_offset_;
+    y_norm_ = (tf_input_hand_.getOrigin().y() + 0.5 * input_shoulder_width_) / input_arm_length_;
+    y_adapt_ = y_norm_ * target_arm_length_;
+    z_norm_ = (tf_input_hand_.getOrigin().z() - input_shoulder_height_)/ input_arm_length_;
+    z_adapt_ = (z_norm_ * target_arm_length_) + target_shoulder_height_;
 
     ROS_DEBUG_STREAM("hand - input position:      x = " << tf_input_hand_.getOrigin().x()
                      << ", y = " << tf_input_hand_.getOrigin().y() << ", z = " << tf_input_hand_.getOrigin().z());

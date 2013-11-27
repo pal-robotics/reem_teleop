@@ -12,8 +12,9 @@
 	    <!-- topic remappings -->
 	    <remap from="joint_states" to="/korus/joint_states" />
 	    <remap from="action_server_name" to="/korus/upper_body_controller" />
-	    <remap from="korus_mo_ret_controller/output_control" to="motion_retargeting_controller/motion_control" />
-	    <remap from="korus_mo_ret_controller/record_motion" to="motion_retargeting_controller/motion_recording" />
+	    <remap from="korus_mo_ret_controller/check_collisions" to="motion_retargeting_controller/check_collisions" />
+      <remap from="korus_mo_ret_controller/output_control" to="motion_retargeting_controller/output_control" />
+      <remap from="korus_mo_ret_controller/record_motion" to="motion_retargeting_controller/motion_recording" />
 	  </node>
   </group>
 </launch>
