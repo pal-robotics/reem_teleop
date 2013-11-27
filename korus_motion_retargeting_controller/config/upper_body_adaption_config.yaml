@@ -53,7 +53,7 @@ motion_adaption:
     input_hand_name: "right_hand"
     target_torso_name: "torso_link"
     target_neck_name: "shoulder_link"
-    target_shoulder_name: "shoulder_link"
+    target_shoulder_name: "upper_arm_link"
     target_elbow_name: "lower_arm_link" # optional
     target_hand_name: "palm_link"
     # goal name and orientation adjustment
@@ -76,17 +76,17 @@ kinematics:
   # Frequency of IK calls - used for velocity limiting - same as retargeting_freq TODO: sync
   ik_call_frequency: 5
   # Factor used for determining the maximum joint velocity (is scaled by ik_call_frequency)
-  q_dot_max_factor: 4.0
+  q_dot_max_factor: 0.5 #4.0
   # Factor used for determining the minimum joint velocity (is scaled by ik_call_frequency)
-  q_dot_min_factor: 0.3
+  q_dot_min_factor: 0.1
   # Factor used for determining the maximum translational end point velocity (is scaled by ik_call_frequency)
-  x_dot_trans_max_factor: 1.0 
+  x_dot_trans_max_factor: 0.01 
   # Factor used for determining the minimum translational end point velocity (is scaled by ik_call_frequency)
-  x_dot_trans_min_factor: 1.0
+  x_dot_trans_min_factor: 0.01
   # Factor used for determining the maximum rotational end point velocity (is scaled by ik_call_frequency)
-  x_dot_rot_max_factor: 3.14
+  x_dot_rot_max_factor: 0.0314
   # Factor used for determining the minimum rotational end point velocity (is scaled by ik_call_frequency)
-  x_dot_rot_min_factor: 3.14
+  x_dot_rot_min_factor: 0.0314
   # Factor used for low pass filtering - applied when all end points are considered resting
   low_pass_factor: 1.0
   # Defines the matrix for task space weights for the IK velocity solver (6 x #end points)

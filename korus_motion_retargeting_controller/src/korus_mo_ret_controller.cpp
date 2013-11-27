@@ -10,8 +10,10 @@
 #include <motion_adaption/types/adaption_type.h>
 #include <motion_retargeting/motion_retargeting.h>
 #include <motion_retargeting/motion_retargeting_parameters.h>
+#include <motion_retargeting/collision_checking/collision_checker.h>
 #include <motion_retargeting/motion_recorder/rosbagger.h>
 #include <motion_retargeting/output_handler/follow_joint_trajectory_action_output_handler.h>
+#include <moveit_collision_checking/moveit_collision_checker.h>
 #include <tree_kinematics/tree_kinematics.h>
 
 // Globals
@@ -29,6 +31,7 @@ int main(int argc, char** argv)
 
   motion_adaption::MotionAdaptionPtr motion_adaption;
   tree_kinematics::TreeKinematicsPtr tree_kinematics;
+  motion_retargeting::CollisionCheckerPtr collision_checker;
   motion_retargeting::MotionRecorderPtr motion_recorder;
   motion_retargeting::OutputHandlerPtr output_handler;
   motion_retargeting::MotionRetargetingPtr motion_retargeting;
@@ -54,6 +57,9 @@ int main(int argc, char** argv)
     // Initialise tree kinematics
     tree_kinematics = tree_kinematics::TreeKinematicsPtr(
                       new tree_kinematics::TreeKinematics(kinematics_params, nh));
+    // Initialise collision checker
+    collision_checker = motion_retargeting::CollisionCheckerPtr(
+                        new motion_retargeting::MoveItCollisionChecker("/korus/robot_description"));
     // Initialise output handler
     output_handler = motion_retargeting::OutputHandlerPtr(
                      new motion_retargeting::FollowJointTrajectoryActionHandler());
@@ -65,6 +71,7 @@ int main(int argc, char** argv)
                                             motion_adaption,
                                             kinematics_params,
                                             tree_kinematics,
+                                            collision_checker,
                                             output_handler,
                                             motion_recorder));
     ROS_INFO_STREAM("Motion retargeting ready to rock! [" << node_name << "]");
@@ -84,7 +91,7 @@ int main(int argc, char** argv)
     ROS_INFO_STREAM_THROTTLE(1.0, "Retargeting ... [" << node_name << "]");
     if (!motion_retargeting->retarget())
     {
-      ROS_WARN_STREAM("Retargeting failed! [" << node_name << "]");
+      ROS_WARN_STREAM_THROTTLE(1.0, "Retargeting failed! [" << node_name << "]");
     }
     loop_rate.sleep();
   }
