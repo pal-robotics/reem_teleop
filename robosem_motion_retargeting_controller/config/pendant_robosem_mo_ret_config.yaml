@@ -1,0 +1,104 @@
+retargeting_frequency: 5.0
+motion_adaption:
+  # providing the toatl number of adaptions makes it easier to parse the config file
+  nr_of_adaptions: 2
+  adaption_1:
+     # name of this adaption
+    adaption_name: "robosem_head_adaption"
+    # adaption type (no_adaption, trans_rot_adaption, hands_adaption, upper_body_adaption)
+    adaption_type: "trans_rot_adaption"
+    # reference frame of the input motion
+    input_ref_name: "input_ref"
+    # frame at which position the reference frame will be placed
+    input_pos_ref_name: "torso_link"
+    # correction needed to align the input reference frame's orientation with the target reference frame's
+    input_ref_orient_adjust:
+      roll: 0.0
+      pitch: 0.0
+      yaw: 0.0 #3.1415
+    # reference frame name of the target system
+    target_ref_name: "base_link"
+    # retargeted endpoint
+    input_endpt_name: "robot_head_link"
+    # endpoints of the target system
+    target_endpt_name: "head_link"
+    # names for the endpoint goals
+    goal_endpt_name: "head_goal_link"
+    # applied rotational correction for the input motion
+    goal_orient_adjust: 
+      roll: 0.0
+      pitch: 1.5707
+      yaw: 0.0
+  adaption_2:
+    # name of this adaption
+    adaption_name: "robosem_hands_adaption"
+    # adaption type (no_adaption, trans_rot_adaption, hands_adaption, upper_body_adaption)
+    adaption_type: "hands_adaption"
+    # reference frame of the input motion
+    input_ref_name: "input_ref"
+    # frame at which position the reference frame will be placed
+    input_pos_ref_name: "torso_link"
+    # correction needed to align the input reference frame's orientation with the target reference frame's
+    input_ref_orient_adjust:
+      roll: 0.0
+      pitch: 0.0
+      yaw: 0.0 #3.1415
+    # reference frame name of the target system
+    target_ref_name: "base_link"
+    # input required for retargeting 
+    input_torso_name: "torso_link"
+    input_r_shoulder_name: "right_shoulder_link"
+    input_r_elbow_name: "right_forearm_link"
+    input_r_hand_name: "right_hand_link"
+    input_l_shoulder_name: "left_shoulder_link"
+    input_l_elbow_name: "left_forearm_link"
+    input_l_hand_name: "left_hand_link"
+    target_torso_name: "turret_link"
+    target_r_shoulder_name: "arm_right_two_link"
+    target_r_elbow_name: "" # optional
+    target_r_hand_name: "hand_right_link"
+    target_l_shoulder_name: "arm_left_two_link"
+    target_l_elbow_name: "" # optional
+    target_l_hand_name: "hand_left_link"
+    # goal names and orientation adjustments
+    goal_r_hand_name: "hand_right_goal"
+    goal_r_hand_orient_adjust:
+      roll: 1.5707
+      pitch: 0.0
+      yaw: 0.0
+    goal_l_hand_name: "hand_left_goal"
+    goal_l_hand_orient_adjust:
+      roll: 1.5707
+      pitch: 0.0
+      yaw: 0.0
+kinematics:
+  # parameter name which holds the URDF robot model description
+  robot_model_description_name: "/robosem/robot_description"
+  # name of all endpoints involved in the IK calculations
+  endpt_names: ["head_link", "hand_right_link", "hand_left_link"]
+  # Maximum precision for the IK calculation in meter
+  epsilon: 0.05
+  # Maximum iterations for the IK calculation
+  max_iterations: 100
+  # Damping factor for the IK velocity solver
+  lambda: 0.01
+  # Frequency of IK calls - used for velocity limiting - same as retargeting_freq TODO: sync
+  ik_call_frequency: 5
+  # Factor used for determining the maximum joint velocity (is scaled by ik_call_frequency)
+  q_dot_max_factor: 4.0
+  # Factor used for determining the minimum joint velocity (is scaled by ik_call_frequency)
+  q_dot_min_factor: 0.3
+  # Factor used for determining the maximum translational end point velocity (is scaled by ik_call_frequency)
+  x_dot_trans_max_factor: 1.0 
+  # Factor used for determining the minimum translational end point velocity (is scaled by ik_call_frequency)
+  x_dot_trans_min_factor: 1.0
+  # Factor used for determining the maximum rotational end point velocity (is scaled by ik_call_frequency)
+  x_dot_rot_max_factor: 3.14
+  # Factor used for determining the minimum rotational end point velocity (is scaled by ik_call_frequency)
+  x_dot_rot_min_factor: 3.14
+  # Factor used for low pass filtering - applied when all end points are considered resting
+  low_pass_factor: 1.0
+  # Defines the matrix for task space weights for the IK velocity solver (6 x #end points)
+  task_space_weights: [[1.0, 1.0, 1.0, 0.1, 0.1, 0.1], [1.0, 1.0, 1.0, 0.1, 0.1, 0.1], [0.0, 0.0, 0.0, 0.0, 0.8, 0.8]]
+  # Defines the matrix of joint weights for the IK velocity solver (#joints)
+  joint_space_weights: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]

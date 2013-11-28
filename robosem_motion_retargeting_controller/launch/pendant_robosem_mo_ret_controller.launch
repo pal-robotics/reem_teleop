@@ -1,0 +1,14 @@
+<!-- launch-prefix="gdb -ex run -args" -->
+<launch>
+  <node pkg="robosem_motion_retargeting_controller" type="robosem_mo_ret_controller" name="robosem_mo_ret_controller">
+    <!-- motion retargeting config -->
+    <rosparam command="load"
+              file="$(find robosem_motion_retargeting_controller)/config/pendant_robosem_mo_ret_config.yaml" />
+    <!-- topic remappings -->
+    <remap from="joint_states" to="/robosem/joint_states" />
+    <remap from="action_server_name" to="/robosem/upper_body_controller" />
+    <remap from="robosem_mo_ret_controller/check_collision" to="motion_retargeting_controller/check_collision" />
+    <remap from="robosem_mo_ret_controller/output_control" to="motion_retargeting_controller/motion_control" />
+    <remap from="robosem_mo_ret_controller/record_motion" to="motion_retargeting_controller/motion_recording" />
+  </node>
+</launch>
