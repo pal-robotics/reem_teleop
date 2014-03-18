@@ -10,7 +10,8 @@ motion_adaption:
     # reference frame of the input motion
     input_ref_name: "input_ref"
     # frame at which position the reference frame will be placed
-    input_pos_ref_name: "torso_link"
+#    input_pos_ref_name: "torso_link"
+    input_pos_ref_name: "plate_to_torso"
     # correction needed to align the input reference frame's orientation with the target reference frame's
     input_ref_orient_adjust:
       roll: 0.0
@@ -26,9 +27,9 @@ motion_adaption:
     goal_endpt_name: "head_goal_link"
     # applied rotational correction for the input motion
     goal_orient_adjust: 
-      roll: 0.0
-      pitch: 1.5707
-      yaw: 0.0
+      roll: 1.5707
+      pitch: 0.0
+      yaw: 1.5707
   adaption_2:
     # name of this adaption
     adaption_name: "robosem_hands_adaption"
@@ -37,7 +38,7 @@ motion_adaption:
     # reference frame of the input motion
     input_ref_name: "input_ref"
     # frame at which position the reference frame will be placed
-    input_pos_ref_name: "torso_link"
+    input_pos_ref_name: "plate_to_torso"
     # correction needed to align the input reference frame's orientation with the target reference frame's
     input_ref_orient_adjust:
       roll: 0.0
@@ -99,6 +100,6 @@ kinematics:
   # Factor used for low pass filtering - applied when all end points are considered resting
   low_pass_factor: 1.0
   # Defines the matrix for task space weights for the IK velocity solver (6 x #end points)
-  task_space_weights: [[1.0, 1.0, 1.0, 0.1, 0.1, 0.1], [1.0, 1.0, 1.0, 0.1, 0.1, 0.1], [0.0, 0.0, 0.0, 0.0, 0.8, 0.8]]
+  task_space_weights: [[1.0, 1.0, 1.0, 0.1, 0.1, 0.1], [1.0, 1.0, 1.0, 0.1, 0.1, 0.1], [0.0, 0.0, 0.0, 0.0, 1.0, 1.0]]
   # Defines the matrix of joint weights for the IK velocity solver (#joints)
   joint_space_weights: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]

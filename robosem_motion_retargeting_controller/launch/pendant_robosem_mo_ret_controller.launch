@@ -11,4 +11,7 @@
     <remap from="robosem_mo_ret_controller/output_control" to="motion_retargeting_controller/motion_control" />
     <remap from="robosem_mo_ret_controller/record_motion" to="motion_retargeting_controller/motion_recording" />
   </node>
+  
+  <node name="tf_robot_pendant_link" pkg="tf" type="static_transform_publisher"
+        args="-1.0 0.0 0.0 1.57 0 0 plate odom 100" />
 </launch>
