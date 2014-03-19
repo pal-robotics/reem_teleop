@@ -1,0 +1,2 @@
+motion_retargeting_msgs/StatusCode status_code
+string status_message
