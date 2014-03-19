@@ -1,0 +1,6 @@
+<!--
+  Visualise the Robosem and the motion tracker input
+ -->
+<launch>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find robosem_motion_retargeting_controller)/rviz/view_pendant_motion_retargeting.rviz"/>
+</launch>
