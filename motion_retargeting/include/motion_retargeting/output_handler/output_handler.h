@@ -32,6 +32,13 @@ class OutputHandler
 public:
   OutputHandler(){};
   virtual ~OutputHandler(){};
+
+  /**
+   * Every output handler needs to implement this function for initialising itself.
+   * @return true, if initialised
+   */
+  virtual bool init() = 0;
+
   /**
    * Every output handler needs to implement this function for publishing the goal joint states
    * @param output_joint_states goal joint states
@@ -42,6 +49,11 @@ private:
 };
 
 typedef boost::shared_ptr<OutputHandler> OutputHandlerPtr;
+
+/**
+ * Flag indicating, if the output handler has been initialised.
+ */
+bool initialised_;
 
 } // namespace motion_retargeting
 

@@ -9,16 +9,27 @@
   <author email="marcus.liebhardt@yujinrobot.com">Marcus Liebhardt</author>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>rosbag</build_depend>
+  
+  <build_depend>actionlib</build_depend>
+  <build_depend>control_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
   <build_depend>motion_adaption</build_depend>
+  <build_depend>motion_retargeting_msgs</build_depend>
+  <build_depend>rosbag</build_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>roslib</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>tree_kinematics</build_depend>
-  <run_depend>rosbag</run_depend>
+
+  <run_depend>actionlib</run_depend>
+  <run_depend>control_msgs</run_depend>
   <run_depend>motion_adaption</run_depend>
+  <run_depend>motion_retargeting_msgs</run_depend>
+  <run_depend>rosbag</run_depend>
   <run_depend>roscpp</run_depend>
+  <run_depend>roslib</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>tf</run_depend>

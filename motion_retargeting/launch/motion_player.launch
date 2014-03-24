@@ -1,0 +1,6 @@
+<launch>
+  <node name="motion_player" pkg="motion_retargeting" type="motion_player_rosbag_fjta">
+    <param name="action_server_name" value="/robosem/upper_body_controller"/>
+    <param name="motion_package" value="robosem_motions"/>
+  </node>
+</launch>
