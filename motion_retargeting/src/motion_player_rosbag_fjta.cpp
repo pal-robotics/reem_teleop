@@ -196,6 +196,7 @@ int main (int argc, char** argv)
           playback_status_msg.status_message =
               motion_retargeting_msgs::errorCodeToString(playback_status_msg.status_code);
           pub_playback_status.publish(playback_status_msg);
+          ROS_INFO_STREAM("Playing back motion. [" << node_name << "]");
           status_message_published = true;
         }
         if(rosbagger.readMotion(joint_states))
@@ -213,7 +214,7 @@ int main (int argc, char** argv)
           pub_count++;
           time_step.sleep();
           output_handler.setOutput(joint_states);
-          ROS_INFO_STREAM_THROTTLE(1.0, "Current/Average publishing frequency: " << (1/time_step.toSec()) << " / "
+          ROS_DEBUG_STREAM_THROTTLE(1.0, "Current/Average publishing frequency: " << (1/time_step.toSec()) << " / "
                                    << avg_freq << " [" << node_name << "]");
         }
         else
