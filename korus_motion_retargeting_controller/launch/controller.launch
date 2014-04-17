@@ -16,5 +16,9 @@
       <remap from="korus_mo_ret_controller/output_control" to="motion_retargeting_controller/output_control" />
       <remap from="korus_mo_ret_controller/record_motion" to="motion_retargeting_controller/motion_recording" />
 	  </node>
+    
+    <include file="$(find korus_moveit_config)/launch/planning_context.launch">
+      <arg name="load_robot_description" value="false"/>
+    </include>
   </group>
 </launch>
