@@ -48,7 +48,7 @@ public:
   ~Rosbagger()
   {
     // Just to make sure the bag is closed
-    bag_.close();
+    bag_ptr_->close();
   };
 
   virtual bool prepareRecording()
@@ -60,13 +60,14 @@ public:
       ss >> bag_name_;
       try
       {
-        bag_.open(bag_name_, rosbag::bagmode::Write);
+        bag_ptr_ = boost::shared_ptr<rosbag::Bag>(new rosbag::Bag(bag_name_, rosbag::bagmode::Write));
         ROS_INFO_STREAM("Rosbagger: Ready to write to rosbag '" << bag_name_ << "'.");
         recording_ = true;
       }
       catch (rosbag::BagException& e)
       {
-        ROS_ERROR_STREAM("Rosbagger: Exception thrown while creating rosbag '" << bag_name_ << "'!");
+        ROS_ERROR_STREAM("Rosbagger: Exception thrown while creating rosbag '" << bag_name_ << "'!"
+                         << "Error: " << e.what());
         throw std::invalid_argument(bag_name_);
       }
       return true;
@@ -82,7 +83,7 @@ public:
   {
     if (recording_)
     {
-      bag_.close();
+      bag_ptr_->close();
       recording_ = false;
       ROS_INFO_STREAM("Rosbagger: Rosbag '" << bag_name_ << "' closed.");
       return true;
@@ -100,7 +101,7 @@ public:
     {
       try
       {
-        bag_.write(recorded_motion_topic_name_, ros::Time::now(), joint_states);
+        bag_ptr_->write(recorded_motion_topic_name_, ros::Time::now(), joint_states);
         return true;
       }
       catch (rosbag::BagIOException& e)
@@ -126,15 +127,16 @@ public:
       {
         try
         {
-          bag_.open(bag_name_, rosbag::bagmode::Read);
+          bag_ptr_ = boost::shared_ptr<rosbag::Bag>(new rosbag::Bag(bag_name_, rosbag::bagmode::Read));
         }
         catch (rosbag::BagException& e)
         {
-          ROS_ERROR_STREAM("Rosbagger: Exception thrown while opening rosbag '" << bag_name_ << "'!");
+          ROS_ERROR_STREAM("Rosbagger: Exception thrown while opening rosbag '" << bag_name_ << "'!"
+                           << "Error: " << e.what());
           throw std::invalid_argument(bag_name_);
           return false;
         }
-        view_ptr_ = boost::shared_ptr<rosbag::View>(new rosbag::View(bag_,
+        view_ptr_ = boost::shared_ptr<rosbag::View>(new rosbag::View(*bag_ptr_,
                                                                      rosbag::TopicQuery(recorded_motion_topic_name_)));
         view_it_ = view_ptr_->begin();
         ROS_INFO_STREAM("Rosbagger: Ready to read from rosbag '" << bag_name_ << "'.");
@@ -160,7 +162,7 @@ public:
     if (playback_)
     {
       playback_ = false;
-      bag_.close();
+      bag_ptr_->close();
       ROS_INFO_STREAM("Rosbagger: Rosbag '" << bag_name_ << "' closed.");
       return true;
     }
@@ -175,23 +177,32 @@ public:
   {
     if (playback_)
     {
-      if (view_it_ != view_ptr_->end())
+      while (view_it_ != view_ptr_->end())
       {
-        sensor_msgs::JointState::ConstPtr js_ptr = view_it_->instantiate<sensor_msgs::JointState>();
-        if (js_ptr != NULL)
+        sensor_msgs::JointState::ConstPtr js_ptr;
+        try
         {
-          joint_states = *js_ptr;
-          ROS_DEBUG_STREAM("Rosbagger: Retrieved this joint state message from the rosbag: "
-                           << joint_states);
-          view_it_++;
-          return true;
+          js_ptr = view_it_->instantiate<sensor_msgs::JointState>();
+          if (js_ptr != NULL)
+          {
+            joint_states = *js_ptr;
+            ROS_DEBUG_STREAM("Rosbagger: Retrieved this joint state message from the rosbag: "
+                             << joint_states);
+            view_it_++;
+            return true;
+          }
+          else
+          {
+            ROS_WARN_STREAM("Rosbagger: Couldn't retrieve joint state message from rosbag!");
+          }
         }
-        else
+        catch (rosbag::BagFormatException& e)
         {
-          ROS_WARN_STREAM("Rosbagger: Couldn't retrieve joint state message from rosbag!");
-          return false;
+          ROS_WARN_STREAM("Couldn't read message from bag. Error: " << e.what());
         }
+        view_it_++;
       }
+
       ROS_INFO_STREAM("Rosbagger: We reached the end of the rosbag.");
       return false;
     }
@@ -206,7 +217,7 @@ private:
   /**
    * The rosbag to write data to/read data from
    */
-  rosbag::Bag bag_;
+  boost::shared_ptr<rosbag::Bag> bag_ptr_;
   /**
    * Pointer to a rosbag view for reading from the rosbag
    */

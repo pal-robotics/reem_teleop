@@ -1,0 +1,2 @@
+bool start_playback
+string motion_name

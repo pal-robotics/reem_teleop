@@ -35,39 +35,55 @@ class FollowJointTrajectoryActionHandler : public OutputHandler
 {
 public:
   FollowJointTrajectoryActionHandler(const std::string& action_server_name = std::string("action_server_name")) :
-                                         OutputHandler(),
-                                         action_server_name_(action_server_name)
+                                     OutputHandler(),
+                                     action_server_name_(action_server_name)
   {};
 
   ~FollowJointTrajectoryActionHandler(){};
 
+  virtual bool init()
+  {
+    if (!initialised_)
+    {
+      ROS_INFO_STREAM("FollowJointTrajectoryAction Output Handler: Connecting to action server '"
+                       << action_server_name_ << "'.");
+      action_client_.reset(new actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>(
+                           action_server_name_, true));
+      action_client_->waitForServer();
+      initialised_ = true;
+      ROS_INFO_STREAM("FollowJointTrajectoryAction Output Handler: Connected to action server.");
+    }
+  };
+
   virtual bool setOutput(const sensor_msgs::JointState& output_joint_states)
   {
-    if (!action_client_)
+    if (initialised_)
     {
-      action_client_.reset(new actionlib::SimpleActionClient<control_msgs::FollowJointTrajectoryAction>(
-          action_server_name_, true));
-    }
-    action_goal_.trajectory.points.clear();
-    action_goal_.trajectory.joint_names.clear();
-    trajectory_point_.positions.clear();
-    trajectory_point_.velocities.clear();
-    trajectory_point_.accelerations.clear();
-    for ( unsigned int joint = 0; joint < output_joint_states.name.size(); ++joint )
-    {
-      if((output_joint_states.name[joint] != "wheel_left") && (output_joint_states.name[joint] != "wheel_right"))
+      action_goal_.trajectory.points.clear();
+      action_goal_.trajectory.joint_names.clear();
+      trajectory_point_.positions.clear();
+      trajectory_point_.velocities.clear();
+      trajectory_point_.accelerations.clear();
+      for ( unsigned int joint = 0; joint < output_joint_states.name.size(); ++joint )
       {
-        action_goal_.trajectory.joint_names.push_back(output_joint_states.name[joint]);
-        trajectory_point_.positions.push_back(output_joint_states.position[joint]);
-        trajectory_point_.velocities.push_back(output_joint_states.velocity[joint]);
-        trajectory_point_.accelerations.push_back(0.0);
+        if((output_joint_states.name[joint] != "wheel_left") && (output_joint_states.name[joint] != "wheel_right"))
+        {
+          action_goal_.trajectory.joint_names.push_back(output_joint_states.name[joint]);
+          trajectory_point_.positions.push_back(output_joint_states.position[joint]);
+          trajectory_point_.velocities.push_back(output_joint_states.velocity[joint]);
+          trajectory_point_.accelerations.push_back(0.0);
+        }
       }
+      action_goal_.trajectory.points.push_back(trajectory_point_);
+      action_goal_.trajectory.header.stamp = output_joint_states.header.stamp;
+      action_client_->sendGoal(action_goal_);
+      ROS_DEBUG_STREAM("FollowJointTrajectoryAction Output Handler: Action goal sent.");
+      return true;
     }
-    action_goal_.trajectory.points.push_back(trajectory_point_);
-    action_goal_.trajectory.header.stamp = output_joint_states.header.stamp;
-    action_client_->sendGoal(action_goal_);
-    ROS_DEBUG_STREAM("FollowJointTrajectoryAction Output Handler: Action goal sent.");
-    return true;
+    else
+    {
+      ROS_WARN_STREAM("FollowJointTrajectoryAction Output Handler: Not initialised.");
+    }
   };
 
 private:
