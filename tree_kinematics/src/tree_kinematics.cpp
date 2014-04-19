@@ -325,7 +325,6 @@ bool TreeKinematics::getPositionFk(GetPositionFK::Request& request,
     if (tmp_index >=0)
     {
       q_in(tmp_index) = request.robot_state.position[i];
-      ROS_DEBUG_STREAM("Joint '" << request.robot_state.name[i] << "' is now number '" << tmp_index << "'.");
     }
     else
     {
@@ -387,7 +386,6 @@ bool TreeKinematics::getPositionIk(tree_kinematics::GetTreePositionIK::Request &
     if (tmp_index >=0)
     {
       q(tmp_index) = request.ik_seed_state.position[i];
-      ROS_DEBUG_STREAM("Joint '" << request.ik_seed_state.name[i] << "' is now number '" << tmp_index << "'.");
     }
     else
     {
@@ -431,7 +429,7 @@ bool TreeKinematics::getPositionIk(tree_kinematics::GetTreePositionIK::Request &
 
   // use the solver to compute desired joint positions
   ik_duration_ = ros::Time::now().toSec();
-  int ik_ret = ik_pos_solver_->CartToJnt_it(q, desired_poses, q_desi); // NOTE: Before it was CartToJnt (without the _it). What's the difference?
+  int ik_ret = ik_pos_solver_->CartToJnt(q, desired_poses, q_desi); // NOTE: Before it was CartToJnt (without the _it). What's the difference?
   ik_duration_ = ros::Time::now().toSec() - ik_duration_;
   ik_duration_median_ = ((ik_duration_median_ * (loop_count_ - 1)) + ik_duration_) / loop_count_;
 

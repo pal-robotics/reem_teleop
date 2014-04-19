@@ -44,7 +44,7 @@ motion_adaption:
       pitch: 0.0
       yaw: 3.1415
     # reference frame name of the target system
-    target_ref_name: "base_link"
+    target_ref_name: "torso_mo_ret_link"
     # input required for retargeting 
     input_torso_name: "torso"
     input_neck_name: "neck"
@@ -76,17 +76,17 @@ kinematics:
   # Frequency of IK calls - used for velocity limiting - same as retargeting_freq TODO: sync
   ik_call_frequency: 5
   # Factor used for determining the maximum joint velocity (is scaled by ik_call_frequency)
-  q_dot_max_factor: 0.5 #4.0
+  q_dot_max_factor: 2.0 #4.0
   # Factor used for determining the minimum joint velocity (is scaled by ik_call_frequency)
   q_dot_min_factor: 0.1
   # Factor used for determining the maximum translational end point velocity (is scaled by ik_call_frequency)
-  x_dot_trans_max_factor: 0.01 
+  x_dot_trans_max_factor: 10.0 
   # Factor used for determining the minimum translational end point velocity (is scaled by ik_call_frequency)
-  x_dot_trans_min_factor: 0.01
+  x_dot_trans_min_factor: 0.1
   # Factor used for determining the maximum rotational end point velocity (is scaled by ik_call_frequency)
-  x_dot_rot_max_factor: 0.0314
+  x_dot_rot_max_factor: 35.7
   # Factor used for determining the minimum rotational end point velocity (is scaled by ik_call_frequency)
-  x_dot_rot_min_factor: 0.0314
+  x_dot_rot_min_factor: 0.357
   # Factor used for low pass filtering - applied when all end points are considered resting
   low_pass_factor: 1.0
   # Defines the matrix for task space weights for the IK velocity solver (6 x #end points)
