@@ -40,7 +40,6 @@ public:
                eps(0.01)
   {
     tf_input_stamp_ =  ros::Time::now();
-    std::cout << "HandAdaption constructor: adaption name: " << hand_adaption_params_.adaption_name << std::endl;
     tf_hand_scaled_.setIdentity();
     tf_shoulder_scaled_.setIdentity();
     tf_hand_goal_.setIdentity();
@@ -372,7 +371,7 @@ private:
     x_norm_ = tf_input_hand_.getOrigin().x() / input_arm_length_ - input_shoulder_offset_;
     x_adapt_ = x_norm_ * target_arm_length_ + target_shoulder_offset_;
     y_norm_ = (tf_input_hand_.getOrigin().y() + 0.5 * input_shoulder_width_) / input_arm_length_;
-    y_adapt_ = y_norm_ * target_arm_length_;
+    y_adapt_ = (y_norm_* target_arm_length_) - 0.5 * target_shoulder_width_;
     z_norm_ = (tf_input_hand_.getOrigin().z() - input_shoulder_height_)/ input_arm_length_;
     z_adapt_ = (z_norm_ * target_arm_length_) + target_shoulder_height_;
 
